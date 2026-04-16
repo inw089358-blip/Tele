@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://qdj7pmjcfkpr"
+path="res://.godot/imported/Favorite Kind of Strange.mp3-bbc18fb9db9d48744e735f29b70210e3.mp3str"
+
+[deps]
+
+source_file="res://audio/Favorite Kind of Strange.mp3"
+dest_files=["res://.godot/imported/Favorite Kind of Strange.mp3-bbc18fb9db9d48744e735f29b70210e3.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0.0
+bpm=0.0
+beat_count=0
+bar_beats=4

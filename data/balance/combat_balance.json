@@ -1,0 +1,240 @@
+{
+  "global": {
+    "combat": {
+      "initial_enemy_count": 8,
+      "enemy_min_spawn_radius": 360.0,
+      "enemy_max_spawn_radius": 580.0,
+      "arena_half_extents": {
+        "x": 620.0,
+        "y": 340.0
+      },
+      "elite_spawn_relief_duration": 8.0,
+      "elite_spawn_relief_multiplier": 1.2,
+      "auto_attack_interval": 0.38,
+      "auto_attack_base_damage": 2,
+      "bullet_speed": 480.0,
+      "contact_damage_default": 1,
+      "contact_damage_interval": 0.42,
+      "xp_base_value": 12.0,
+      "xp_growth_factor": 1.12,
+      "reward_target_range_bonus": 50.0,
+      "reward_attack_damage_bonus": 1,
+      "reward_move_speed_bonus": 8.0,
+      "gold_drop": {
+        "melee": 1,
+        "ranged": 2,
+        "elite": 8
+      }
+    }
+  },
+  "characters": {
+    "the_fool": {
+      "move_speed": 240.0,
+      "max_hp": 9,
+      "base_target_range": 320.0
+    },
+    "the_chariot": {
+      "move_speed": 195.0,
+      "max_hp": 8,
+      "base_target_range": 280.0
+    },
+    "the_hanged_man": {
+      "move_speed": 205.0,
+      "max_hp": 7,
+      "base_target_range": 360.0
+    }
+  },
+  "enemies": {
+    "melee": {
+      "move_speed": 92.0,
+      "max_hp": 6,
+      "xp_drop": 3
+    },
+    "ranged": {
+      "move_speed": 88.0,
+      "max_hp": 5,
+      "xp_drop": 4,
+      "desired_min_distance": 240.0,
+      "desired_max_distance": 320.0,
+      "attack_cooldown": 2.5,
+      "attack_windup": 0.5,
+      "attack_damage": 1,
+      "projectile_speed": 230.0,
+      "projectile_radius": 4.5,
+      "projectile_life_time": 4.0
+    },
+    "barrage": {
+      "move_speed": 82.0,
+      "max_hp": 7,
+      "xp_drop": 5,
+      "desired_min_distance": 190.0,
+      "desired_max_distance": 280.0,
+      "ring_attack_cooldown": 3.0,
+      "ring_windup": 0.35,
+      "ring_projectile_count": 8,
+      "ring_projectile_damage": 1,
+      "ring_projectile_speed": 210.0,
+      "ring_projectile_radius": 5.0,
+      "ring_projectile_life_time": 4.2,
+      "ring_rotation_step_deg": 14.0
+    },
+    "elite_warden": {
+      "move_speed": 70.0,
+      "max_hp": 26,
+      "xp_drop": 20,
+      "shield_interval": 8.0,
+      "shield_duration": 3.0,
+      "shield_damage_reduction": 0.7,
+      "heavy_bolt_interval": 3.0,
+      "heavy_bolt_damage": 2,
+      "heavy_bolt_speed": 220.0,
+      "tri_burst_interval": 9.5,
+      "tri_burst_damage": 2,
+      "tri_burst_speed": 210.0,
+      "tri_burst_angle_deg": 15.0
+    }
+  },
+  "stages": {
+    "stage_001": {
+      "stage_id": "stage_001",
+      "is_boss_stage": false,
+      "spawn_profile": {
+        "target_duration": 30.0,
+        "spawn_interval_start": 1.45,
+        "spawn_interval_end": 1.18,
+        "max_enemy_count": 14
+      },
+      "enemy_mix": {
+        "melee_weight": 0.82,
+        "ranged_weight": 0.18,
+        "barrage_weight": 0.02
+      },
+      "elite_schedule": {
+        "enabled": false
+      },
+      "reward": {
+        "xp_reward": 30,
+        "gold_reward": 40
+      }
+    },
+    "stage_002": {
+      "stage_id": "stage_002",
+      "is_boss_stage": false,
+      "spawn_profile": {
+        "target_duration": 30.0,
+        "spawn_interval_start": 1.35,
+        "spawn_interval_end": 1.12,
+        "max_enemy_count": 16
+      },
+      "enemy_mix": {
+        "melee_weight": 0.78,
+        "ranged_weight": 0.22,
+        "barrage_weight": 0.06
+      },
+      "elite_schedule": {
+        "enabled": true,
+        "first_spawn_time": 95.0,
+        "respawn_check_interval": 100.0,
+        "max_alive": 1
+      },
+      "reward": {
+        "xp_reward": 40,
+        "gold_reward": 55
+      }
+    },
+    "stage_003": {
+      "stage_id": "stage_003",
+      "is_boss_stage": false,
+      "spawn_profile": {
+        "target_duration": 30.0,
+        "spawn_interval_start": 1.25,
+        "spawn_interval_end": 1.0,
+        "max_enemy_count": 18
+      },
+      "enemy_mix": {
+        "melee_weight": 0.72,
+        "ranged_weight": 0.28,
+        "barrage_weight": 0.1
+      },
+      "elite_schedule": {
+        "enabled": true,
+        "first_spawn_time": 80.0,
+        "respawn_check_interval": 120.0,
+        "max_alive": 1,
+        "elite_hp_override": 32
+      },
+      "reward": {
+        "xp_reward": 55,
+        "gold_reward": 75
+      }
+    },
+    "stage_004": {
+      "stage_id": "stage_004",
+      "is_boss_stage": false,
+      "spawn_profile": {
+        "target_duration": 30.0,
+        "spawn_interval_start": 1.16,
+        "spawn_interval_end": 0.92,
+        "max_enemy_count": 20
+      },
+      "enemy_mix": {
+        "melee_weight": 0.66,
+        "ranged_weight": 0.34,
+        "barrage_weight": 0.14
+      },
+      "elite_schedule": {
+        "enabled": true,
+        "first_spawn_time": 65.0,
+        "respawn_check_interval": 110.0,
+        "max_alive": 1,
+        "elite_hp_override": 34
+      },
+      "reward": {
+        "xp_reward": 70,
+        "gold_reward": 95
+      }
+    },
+    "stage_005": {
+      "stage_id": "stage_005",
+      "is_boss_stage": true,
+      "arena_half_extents": {
+        "x": 600.0,
+        "y": 330.0
+      },
+      "spawn_profile": {
+        "target_duration": 480.0,
+        "spawn_interval_start": 99.0,
+        "spawn_interval_end": 99.0,
+        "max_enemy_count": 18
+      },
+      "enemy_mix": {
+        "melee_weight": 0.7,
+        "ranged_weight": 0.3,
+        "barrage_weight": 0.0
+      },
+      "elite_schedule": {
+        "enabled": false
+      },
+      "boss": {
+        "hp": 420,
+        "contact_damage": 3,
+        "p1_beam_cd": 2.4,
+        "p1_summon_interval": 40.0,
+        "p1_summon_count": 2,
+        "p2_sweep_cd": 3.0,
+        "p2_tracking_interval": 8.0,
+        "p2_tracking_count": 3,
+        "p2_summon_interval": 35.0,
+        "p2_summon_count": 3,
+        "p3_death_laser_interval": 10.0,
+        "p3_storm_interval": 7.0,
+        "p3_despair_interval": 12.0,
+        "p3_despair_hp_ratio": 0.15
+      },
+      "reward": {
+        "xp_reward": 120,
+        "gold_reward": 220
+      }
+    }
+  }
+}

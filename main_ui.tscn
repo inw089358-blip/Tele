@@ -1,0 +1,255 @@
+[gd_scene format=3 uid="uid://bgioxe4rtpc2l"]
+
+[node name="MainUI" type="Control" unique_id=1886545832]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="." unique_id=1235728907]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0705882, 0.0862745, 0.145098, 1)
+
+[node name="MainMargin" type="MarginContainer" parent="." unique_id=367782833]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="MainVBox" type="VBoxContainer" parent="MainMargin" unique_id=1974865970]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="TopBar" type="PanelContainer" parent="MainMargin/MainVBox" unique_id=226647377]
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+
+[node name="TopContent" type="HBoxContainer" parent="MainMargin/MainVBox/TopBar" unique_id=107489280]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="GameTitle" type="Label" parent="MainMargin/MainVBox/TopBar/TopContent" unique_id=403830097]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 34
+text = "Tele Tarot"
+
+[node name="TopStatus" type="HBoxContainer" parent="MainMargin/MainVBox/TopBar/TopContent" unique_id=92751960]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="CoinLabel" type="Label" parent="MainMargin/MainVBox/TopBar/TopContent/TopStatus" unique_id=1409275522]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "金币 1280"
+
+[node name="EnergyLabel" type="Label" parent="MainMargin/MainVBox/TopBar/TopContent/TopStatus" unique_id=1595753016]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "灵能 36"
+
+[node name="ClockLabel" type="Label" parent="MainMargin/MainVBox/TopBar/TopContent/TopStatus" unique_id=389335202]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "00:00"
+
+[node name="BodyLayout" type="HBoxContainer" parent="MainMargin/MainVBox" unique_id=1738307791]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+
+[node name="LeftPanel" type="PanelContainer" parent="MainMargin/MainVBox/BodyLayout" unique_id=1957882156]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LeftMargin" type="MarginContainer" parent="MainMargin/MainVBox/BodyLayout/LeftPanel" unique_id=2057676618]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="LeftVBox" type="VBoxContainer" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin" unique_id=1131180680]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="DeckTitle" type="Label" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox" unique_id=949849097]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "当前牌组"
+
+[node name="DeckInfo" type="RichTextLabel" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox" unique_id=1453227764]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[b]主牌:[/b] 星辰旅者
+[b]副牌:[/b] 逆位命运轮
+[b]核心效果:[/b] 抽牌时有 35% 概率附加护盾。
+
+你可以在战前调整牌组策略。"
+fit_content = true
+scroll_active = false
+
+[node name="CardStrip" type="GridContainer" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox" unique_id=1460688544]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+columns = 4
+
+[node name="CardSlot1" type="PanelContainer" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip" unique_id=547814969]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="CardText1" type="Label" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip/CardSlot1" unique_id=1677824305]
+layout_mode = 2
+text = "权杖"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardSlot2" type="PanelContainer" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip" unique_id=1007900119]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="CardText2" type="Label" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip/CardSlot2" unique_id=1541851350]
+layout_mode = 2
+text = "圣杯"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardSlot3" type="PanelContainer" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip" unique_id=1259171091]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="CardText3" type="Label" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip/CardSlot3" unique_id=1008371487]
+layout_mode = 2
+text = "宝剑"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardSlot4" type="PanelContainer" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip" unique_id=1090811519]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="CardText4" type="Label" parent="MainMargin/MainVBox/BodyLayout/LeftPanel/LeftMargin/LeftVBox/CardStrip/CardSlot4" unique_id=1305840202]
+layout_mode = 2
+text = "星币"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightPanel" type="PanelContainer" parent="MainMargin/MainVBox/BodyLayout" unique_id=1332350386]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RightMargin" type="MarginContainer" parent="MainMargin/MainVBox/BodyLayout/RightPanel" unique_id=262118630]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="RightVBox" type="VBoxContainer" parent="MainMargin/MainVBox/BodyLayout/RightPanel/RightMargin" unique_id=2100006798]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="MissionTitle" type="Label" parent="MainMargin/MainVBox/BodyLayout/RightPanel/RightMargin/RightVBox" unique_id=1567831514]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "下一场战役"
+
+[node name="MissionText" type="RichTextLabel" parent="MainMargin/MainVBox/BodyLayout/RightPanel/RightMargin/RightVBox" unique_id=1163771838]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[b]区域:[/b] 倒影回廊
+[b]危险等级:[/b] III
+[b]敌人特性:[/b] 高爆发、低续航
+
+推荐策略：优先使用控制类塔罗延长回合，叠加防御后再反打。"
+fit_content = true
+scroll_active = false
+
+[node name="PreviewPanel" type="PanelContainer" parent="MainMargin/MainVBox/BodyLayout/RightPanel/RightMargin/RightVBox" unique_id=71105874]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+
+[node name="PreviewHint" type="Label" parent="MainMargin/MainVBox/BodyLayout/RightPanel/RightMargin/RightVBox/PreviewPanel" unique_id=483794756]
+layout_mode = 2
+text = "战场预览区域（占位）"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomBar" type="PanelContainer" parent="MainMargin/MainVBox" unique_id=641292792]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="BottomMargin" type="MarginContainer" parent="MainMargin/MainVBox/BottomBar" unique_id=819551987]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="ButtonRow" type="HBoxContainer" parent="MainMargin/MainVBox/BottomBar/BottomMargin" unique_id=273946666]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="StartButton" type="Button" parent="MainMargin/MainVBox/BottomBar/BottomMargin/ButtonRow" unique_id=566527956]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "开始战斗"
+
+[node name="DeckButton" type="Button" parent="MainMargin/MainVBox/BottomBar/BottomMargin/ButtonRow" unique_id=1229453148]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "调整牌组"
+
+[node name="SettingsButton" type="Button" parent="MainMargin/MainVBox/BottomBar/BottomMargin/ButtonRow" unique_id=598062843]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "设置"
+
+[node name="ExitButton" type="Button" parent="MainMargin/MainVBox/BottomBar/BottomMargin/ButtonRow" unique_id=1182445225]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "退出"
+
+[node name="NoticeLabel" type="Label" parent="MainMargin/MainVBox/BottomBar/BottomMargin" unique_id=1022108268]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "欢迎来到 Tele Tarot。"

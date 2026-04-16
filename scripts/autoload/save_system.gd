@@ -1,0 +1,353 @@
+extends Node
+
+const LEGACY_SAVE_PATH: String = "user://save_data.json"
+const SAVE_SLOT_PATH: String = "user://save_slots.json"
+const SLOT_IDS: PackedStringArray = ["slot_1", "slot_2", "slot_3"]
+const XP_BASE_VALUE: float = 20.0
+const XP_GROWTH_FACTOR: float = 1.15
+const DEFAULT_SETTINGS: Dictionary = {
+    "display": {
+        "resolution": "1920x1080", 
+        "window_mode": "fullscreen", 
+        "vsync": true, 
+        "fps_cap": 60, 
+        "crt_intensity": "high", 
+        "ui_scale": 100, 
+    }, 
+    "audio": {
+        "master_volume": 80, 
+        "music_volume": 70, 
+        "sfx_volume": 90, 
+        "ui_volume": 80, 
+    }, 
+    "input": {
+        "right_click_skill": true, 
+    }, 
+    "accessibility": {
+        "colorblind_mode": "off", 
+        "high_contrast_ui": false, 
+        "font_size": "medium", 
+        "glitch_intensity": "mid", 
+        "simple_ui": false, 
+    }, 
+    "system": {
+        "language": "zh_CN", 
+        "show_boss_test_entry": true, 
+    }, 
+}
+
+func load_save() -> Dictionary:
+    var slot_data: Dictionary = load_from_slot(SLOT_IDS[0])
+    if slot_data.is_empty():
+        return _default_save()
+    return slot_data
+
+func write_save(data: Dictionary) -> void :
+    save_to_slot(SLOT_IDS[0], data)
+    _write_legacy_save(_normalize_save_data(data))
+
+func get_settings() -> Dictionary:
+    var save_data: Dictionary = load_save()
+    return _normalize_settings(save_data.get("settings", {}))
+
+func list_save_slots() -> Array[Dictionary]:
+    var root: Dictionary = _load_slot_root()
+    var slots: Dictionary = _extract_slots_dict(root)
+    var list: Array[Dictionary] = []
+
+    for slot_id: String in SLOT_IDS:
+        var slot_entry_value: Variant = slots.get(slot_id, {})
+        var slot_entry: Dictionary = {}
+        if slot_entry_value is Dictionary:
+            slot_entry = slot_entry_value
+        var has_data: bool = not slot_entry.is_empty()
+        var summary: Dictionary = {
+            "slot_id": slot_id, 
+            "has_data": has_data, 
+        }
+        if has_data:
+            summary["stage_id"] = str(slot_entry.get("stage_id", "stage_001"))
+            summary["wave"] = int(slot_entry.get("wave", 1))
+            summary["selected_character"] = str(slot_entry.get("selected_character", "the_fool"))
+            summary["difficulty"] = str(slot_entry.get("difficulty", "normal"))
+            summary["saved_at"] = str(slot_entry.get("saved_at", ""))
+        list.append(summary)
+
+    return list
+
+func load_from_slot(slot_id: String) -> Dictionary:
+    if not _is_valid_slot_id(slot_id):
+        return {}
+
+    var root: Dictionary = _load_slot_root()
+    var slots: Dictionary = _extract_slots_dict(root)
+    var raw_value: Variant = slots.get(slot_id, {})
+    if not (raw_value is Dictionary):
+        return {}
+
+    var raw_slot: Dictionary = raw_value
+    if raw_slot.is_empty():
+        return {}
+
+    return _normalize_save_data(raw_slot)
+
+func save_to_slot(slot_id: String, data: Dictionary) -> void :
+    if not _is_valid_slot_id(slot_id):
+        return
+
+    var root: Dictionary = _load_slot_root()
+    var slots: Dictionary = _extract_slots_dict(root)
+    var normalized: Dictionary = _normalize_save_data(data)
+    slots[slot_id] = normalized
+    root["slots"] = slots
+    _write_slot_root(root)
+
+    if slot_id == SLOT_IDS[0]:
+        _write_legacy_save(normalized)
+
+func _load_slot_root() -> Dictionary:
+    if FileAccess.file_exists(SAVE_SLOT_PATH):
+        var parsed_slot_root: Dictionary = _read_json_dict(SAVE_SLOT_PATH)
+        if not parsed_slot_root.is_empty():
+            return _normalize_slot_root(parsed_slot_root)
+
+    if FileAccess.file_exists(LEGACY_SAVE_PATH):
+        var legacy: Dictionary = _read_json_dict(LEGACY_SAVE_PATH)
+        if not legacy.is_empty():
+            var migrated_root: Dictionary = _normalize_slot_root({})
+            var migrated_slots: Dictionary = _extract_slots_dict(migrated_root)
+            migrated_slots[SLOT_IDS[0]] = _normalize_save_data(legacy)
+            migrated_root["slots"] = migrated_slots
+            _write_slot_root(migrated_root)
+            return migrated_root
+
+    return _normalize_slot_root({})
+
+func _write_slot_root(root: Dictionary) -> void :
+    var file: FileAccess = FileAccess.open(SAVE_SLOT_PATH, FileAccess.WRITE)
+    if file == null:
+        return
+    file.store_string(JSON.stringify(root, "\t"))
+
+func _write_legacy_save(data: Dictionary) -> void :
+    var file: FileAccess = FileAccess.open(LEGACY_SAVE_PATH, FileAccess.WRITE)
+    if file == null:
+        return
+    file.store_string(JSON.stringify(data, "\t"))
+
+func _read_json_dict(path: String) -> Dictionary:
+    var file: FileAccess = FileAccess.open(path, FileAccess.READ)
+    if file == null:
+        return {}
+
+    var raw_text: String = file.get_as_text()
+    var parsed: Variant = JSON.parse_string(raw_text)
+    if parsed is Dictionary:
+        var parsed_dict: Dictionary = parsed
+        return parsed_dict
+    return {}
+
+func _normalize_slot_root(raw_root: Dictionary) -> Dictionary:
+    var slots: Dictionary = _extract_slots_dict(raw_root)
+    return {"slots": slots}
+
+func _extract_slots_dict(root: Dictionary) -> Dictionary:
+    var slots_value: Variant = root.get("slots", {})
+    if slots_value is Dictionary:
+        var slots: Dictionary = slots_value
+        return slots
+    return {}
+
+func _normalize_save_data(input_data: Dictionary) -> Dictionary:
+    var normalized: Dictionary = _default_save()
+    var unlocked_characters: Array[String] = _normalize_character_array(input_data.get("unlocked_characters", ["the_fool"]))
+    var default_character: String = unlocked_characters[0] if not unlocked_characters.is_empty() else "the_fool"
+    normalized["unlocked_characters"] = unlocked_characters
+    normalized["best_stage"] = str(input_data.get("best_stage", "stage_001"))
+    normalized["total_kills"] = int(input_data.get("total_kills", 0))
+    normalized["total_gold"] = int(input_data.get("total_gold", 0))
+    normalized["total_play_time"] = float(input_data.get("total_play_time", 0.0))
+    normalized["selected_character"] = str(input_data.get("selected_character", default_character))
+    normalized["difficulty"] = _normalize_difficulty(str(input_data.get("difficulty", "normal")))
+    var best_stage: String = str(normalized.get("best_stage", "stage_001"))
+    normalized["stage_id"] = str(input_data.get("stage_id", best_stage))
+    normalized["wave"] = max(1, int(input_data.get("wave", 1)))
+    normalized["player_hp"] = int(input_data.get("player_hp", 100))
+    normalized["player_max_hp"] = int(input_data.get("player_max_hp", 100))
+    normalized["player_stamina"] = float(input_data.get("player_stamina", 100.0))
+    normalized["player_stamina_max"] = float(input_data.get("player_stamina_max", 100.0))
+    normalized["player_move_speed"] = float(input_data.get("player_move_speed", 220.0))
+    normalized["bonus_target_range"] = float(input_data.get("bonus_target_range", 0.0))
+    normalized["bonus_attack_damage"] = int(input_data.get("bonus_attack_damage", 0))
+    var current_level: int = max(1, int(input_data.get("current_level", 1)))
+    normalized["current_level"] = current_level
+    normalized["current_xp"] = max(0, int(input_data.get("current_xp", 0)))
+    normalized["current_gold"] = max(0, int(input_data.get("current_gold", 0)))
+    normalized["reward_history"] = _normalize_string_array(input_data.get("reward_history", []))
+    normalized["recent_categories"] = _normalize_string_array(input_data.get("recent_categories", []))
+    normalized["build_tags"] = _normalize_string_array(input_data.get("build_tags", []))
+    var pity_value: Variant = input_data.get("reward_pity_state", {"no_output_streak": 0})
+    if pity_value is Dictionary:
+        normalized["reward_pity_state"] = pity_value
+    else:
+        normalized["reward_pity_state"] = {"no_output_streak": 0}
+    var reward_owned_value: Variant = input_data.get("reward_owned", {})
+    if reward_owned_value is Dictionary:
+        normalized["reward_owned"] = reward_owned_value
+    else:
+        normalized["reward_owned"] = {}
+    var xp_to_next_default: int = _xp_required_for_level(current_level)
+    if input_data.has("xp_to_next_level"):
+        var raw_xp_to_next: int = max(1, int(input_data.get("xp_to_next_level", xp_to_next_default)))
+        if current_level == 1 and raw_xp_to_next == 10:
+            raw_xp_to_next = xp_to_next_default
+        normalized["xp_to_next_level"] = raw_xp_to_next
+    else:
+        normalized["xp_to_next_level"] = xp_to_next_default
+    normalized["player_pos_x"] = float(input_data.get("player_pos_x", 0.0))
+    normalized["player_pos_y"] = float(input_data.get("player_pos_y", 0.0))
+    normalized["settings"] = _normalize_settings(input_data.get("settings", {}))
+    normalized["saved_at"] = str(input_data.get("saved_at", _build_timestamp()))
+    return normalized
+
+func _normalize_settings(settings_value: Variant) -> Dictionary:
+    var settings_root: Dictionary = {}
+    if settings_value is Dictionary:
+        settings_root = settings_value
+
+    var normalized: Dictionary = DEFAULT_SETTINGS.duplicate(true)
+
+    var display_input: Dictionary = {}
+    var display_value: Variant = settings_root.get("display", {})
+    if display_value is Dictionary:
+        display_input = display_value
+    var display_root: Dictionary = normalized["display"]
+    display_root["resolution"] = str(display_input.get("resolution", display_root["resolution"]))
+    display_root["window_mode"] = str(display_input.get("window_mode", display_root["window_mode"]))
+    display_root["vsync"] = bool(display_input.get("vsync", display_root["vsync"]))
+    display_root["fps_cap"] = int(display_input.get("fps_cap", display_root["fps_cap"]))
+    # CRT intensity is fixed at runtime and exposed as read-only in settings.
+    display_root["crt_intensity"] = "high"
+    display_root["ui_scale"] = clamp(int(display_input.get("ui_scale", display_root["ui_scale"])), 80, 120)
+
+    var audio_input: Dictionary = {}
+    var audio_value: Variant = settings_root.get("audio", {})
+    if audio_value is Dictionary:
+        audio_input = audio_value
+    var audio_root: Dictionary = normalized["audio"]
+    audio_root["master_volume"] = clamp(int(audio_input.get("master_volume", audio_root["master_volume"])), 0, 100)
+    audio_root["music_volume"] = clamp(int(audio_input.get("music_volume", audio_root["music_volume"])), 0, 100)
+    audio_root["sfx_volume"] = clamp(int(audio_input.get("sfx_volume", audio_root["sfx_volume"])), 0, 100)
+    audio_root["ui_volume"] = clamp(int(audio_input.get("ui_volume", audio_root["ui_volume"])), 0, 100)
+
+    var input_input: Dictionary = {}
+    var input_value: Variant = settings_root.get("input", {})
+    if input_value is Dictionary:
+        input_input = input_value
+    var input_root: Dictionary = normalized["input"]
+    input_root["right_click_skill"] = bool(input_input.get("right_click_skill", input_root["right_click_skill"]))
+
+    var accessibility_input: Dictionary = {}
+    var accessibility_value: Variant = settings_root.get("accessibility", {})
+    if accessibility_value is Dictionary:
+        accessibility_input = accessibility_value
+    var accessibility_root: Dictionary = normalized["accessibility"]
+    accessibility_root["colorblind_mode"] = str(accessibility_input.get("colorblind_mode", accessibility_root["colorblind_mode"]))
+    accessibility_root["high_contrast_ui"] = bool(accessibility_input.get("high_contrast_ui", accessibility_root["high_contrast_ui"]))
+    accessibility_root["font_size"] = str(accessibility_input.get("font_size", accessibility_root["font_size"]))
+    accessibility_root["glitch_intensity"] = str(accessibility_input.get("glitch_intensity", accessibility_root["glitch_intensity"]))
+    accessibility_root["simple_ui"] = bool(accessibility_input.get("simple_ui", accessibility_root["simple_ui"]))
+
+    var system_input: Dictionary = {}
+    var system_value: Variant = settings_root.get("system", {})
+    if system_value is Dictionary:
+        system_input = system_value
+    var system_root: Dictionary = normalized["system"]
+    system_root["language"] = str(system_input.get("language", system_root["language"]))
+    system_root["show_boss_test_entry"] = bool(system_input.get("show_boss_test_entry", system_root["show_boss_test_entry"]))
+
+    return normalized
+
+func _normalize_character_array(value: Variant) -> Array[String]:
+    var characters: Array[String] = []
+    if value is Array:
+        var raw: Array = value
+        for item: Variant in raw:
+            var character_id: String = str(item)
+            if character_id.is_empty():
+                continue
+            if not characters.has(character_id):
+                characters.append(character_id)
+
+    if characters.is_empty():
+        characters.append("the_fool")
+    return characters
+
+func _build_timestamp() -> String:
+    var dt: Dictionary = Time.get_datetime_dict_from_system()
+    var year: int = int(dt.get("year", 1970))
+    var month: int = int(dt.get("month", 1))
+    var day: int = int(dt.get("day", 1))
+    var hour: int = int(dt.get("hour", 0))
+    var minute: int = int(dt.get("minute", 0))
+    var second: int = int(dt.get("second", 0))
+    return "%04d-%02d-%02d %02d:%02d:%02d" % [year, month, day, hour, minute, second]
+
+func _is_valid_slot_id(slot_id: String) -> bool:
+    return SLOT_IDS.has(slot_id)
+
+func _xp_required_for_level(current_level: int) -> int:
+    var level_safe: int = max(1, current_level)
+    var exponent: float = float(max(level_safe - 1, 0))
+    var required: int = int(round(XP_BASE_VALUE * pow(XP_GROWTH_FACTOR, exponent)))
+    return max(1, required)
+
+func _default_save() -> Dictionary:
+    return {
+        "unlocked_characters": ["the_fool"], 
+        "best_stage": "stage_001", 
+        "total_kills": 0, 
+        "total_gold": 0, 
+        "total_play_time": 0.0, 
+        "selected_character": "the_fool", 
+        "difficulty": "normal", 
+        "stage_id": "stage_001", 
+        "wave": 1, 
+        "player_hp": 100, 
+        "player_max_hp": 100, 
+        "player_stamina": 100.0, 
+        "player_stamina_max": 100.0, 
+        "player_move_speed": 220.0, 
+        "bonus_target_range": 0.0, 
+        "bonus_attack_damage": 0, 
+        "current_level": 1, 
+        "current_xp": 0, 
+        "current_gold": 0, 
+        "reward_history": [],
+        "recent_categories": [],
+        "build_tags": [],
+        "reward_pity_state": {"no_output_streak": 0},
+        "reward_owned": {},
+        "xp_to_next_level": _xp_required_for_level(1), 
+        "player_pos_x": 0.0, 
+        "player_pos_y": 0.0, 
+        "settings": DEFAULT_SETTINGS.duplicate(true), 
+        "saved_at": "", 
+    }
+
+func _normalize_difficulty(raw_value: String) -> String:
+    var lowered: String = raw_value.to_lower()
+    if lowered == "easy" or lowered == "hard":
+        return lowered
+    return "normal"
+
+func _normalize_string_array(value: Variant) -> Array[String]:
+    var result: Array[String] = []
+    if value is Array:
+        var raw: Array = value
+        for item in raw:
+            var text: String = str(item)
+            if text.is_empty():
+                continue
+            result.append(text)
+    return result

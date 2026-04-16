@@ -1,0 +1,95 @@
+[gd_scene format=3 uid="uid://caew5elmyj27m"]
+
+[ext_resource type="Script" uid="uid://o1s4dtcs5tsy" path="res://scripts/ui/hub_placeholder.gd" id="1"]
+
+[node name="HubPlaceholder" type="Control" unique_id=979482137]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="CrtWorldContainer" type="SubViewportContainer" parent="."]
+groups = ["crt_surface"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch = true
+
+[node name="CrtWorldViewport" type="SubViewport" parent="CrtWorldContainer"]
+groups = ["crt_viewport"]
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="GameWorldRoot" type="Control" parent="CrtWorldContainer/CrtWorldViewport"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="CrtWorldContainer/CrtWorldViewport/GameWorldRoot" unique_id=1650020333]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.12, 0.16, 1)
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=136494063]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -210.0
+offset_right = 280.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="VBox" unique_id=1727282620]
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+text = "Hub (Placeholder)"
+horizontal_alignment = 1
+
+[node name="HealLabel" type="Label" parent="VBox" unique_id=640312829]
+layout_mode = 2
+text = "Recover: future slot"
+horizontal_alignment = 1
+
+[node name="ShopLabel" type="Label" parent="VBox" unique_id=2059639711]
+layout_mode = 2
+text = "Shop: future slot"
+horizontal_alignment = 1
+
+[node name="UpgradeLabel" type="Label" parent="VBox" unique_id=335445014]
+layout_mode = 2
+text = "Upgrade: future slot"
+horizontal_alignment = 1
+
+[node name="ContinueButton" type="Button" parent="VBox" unique_id=1258968348]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Continue Mainline"
+
+[node name="StageSelectButton" type="Button" parent="VBox" unique_id=427172588]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Back to Stage Select"
