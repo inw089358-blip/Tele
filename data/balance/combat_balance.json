@@ -98,6 +98,7 @@
     "stage_001": {
       "stage_id": "stage_001",
       "is_boss_stage": false,
+      "background_key": "tutorial",
       "spawn_profile": {
         "target_duration": 30.0,
         "spawn_interval_start": 1.45,
@@ -120,6 +121,7 @@
     "stage_002": {
       "stage_id": "stage_002",
       "is_boss_stage": false,
+      "background_key": "combat",
       "spawn_profile": {
         "target_duration": 30.0,
         "spawn_interval_start": 1.35,
@@ -145,6 +147,7 @@
     "stage_003": {
       "stage_id": "stage_003",
       "is_boss_stage": false,
+      "background_key": "combat",
       "spawn_profile": {
         "target_duration": 30.0,
         "spawn_interval_start": 1.25,
@@ -171,6 +174,7 @@
     "stage_004": {
       "stage_id": "stage_004",
       "is_boss_stage": false,
+      "background_key": "combat",
       "spawn_profile": {
         "target_duration": 30.0,
         "spawn_interval_start": 1.16,
@@ -197,6 +201,7 @@
     "stage_005": {
       "stage_id": "stage_005",
       "is_boss_stage": true,
+      "background_key": "boss",
       "arena_half_extents": {
         "x": 600.0,
         "y": 330.0
