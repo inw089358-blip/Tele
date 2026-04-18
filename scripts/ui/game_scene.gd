@@ -18,6 +18,9 @@ const PLAYER_SCRIPT_MAP: Dictionary[String, Script] = {
 }
 const SAVE_SLOT_PANEL_SCENE_PATH: String = "res://scenes/ui/save_slot_panel.tscn"
 const SETTINGS_SCENE_PATH: String = "res://scenes/settings.tscn"
+const BG_TUTORIAL_TEXTURE: Texture2D = preload("res://sprite/maps/map_tutorial_dream_entrance.png")
+const BG_COMBAT_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_combat_default.png")
+const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_arena.png")
 
 var _player: Player
 var _current_player_id: String = "the_fool"
@@ -56,6 +59,7 @@ var _gold_multiplier: float = 1.0
 var _arena_half_extents: Vector2 = Vector2(620.0, 340.0)
 var _enemy_ranged_weight_runtime: float = ENEMY_RANGED_WEIGHT
 var _enemy_barrage_weight_runtime: float = ENEMY_BARRAGE_WEIGHT
+var _stage_background_key: String = ""
 
 const INITIAL_ENEMY_COUNT: int = 10
 const MAX_ENEMY_COUNT: int = 24
@@ -567,14 +571,27 @@ func _update_elite_boss_bar() -> void :
 func _draw() -> void :
     var world_rect: Rect2 = Rect2(-3000.0, -3000.0, 6000.0, 6000.0)
     draw_rect(world_rect, Color(0.05, 0.09, 0.11, 1.0), true)
-    var grid_color_major: Color = Color(0.2, 0.33, 0.37, 0.26)
-    var grid_color_minor: Color = Color(0.13, 0.22, 0.25, 0.18)
-    for x: int in range(-3000, 3001, 80):
+    var arena_rect: Rect2 = _arena_rect()
+    var stage_texture: Texture2D = _get_stage_background_texture()
+    if stage_texture != null:
+        draw_texture_rect(stage_texture, arena_rect, true, Color(1.0, 1.0, 1.0, 0.95))
+
+    # Keep a lightweight grid/border overlay so movement and scale stay readable.
+    var grid_color_major: Color = Color(0.2, 0.33, 0.37, 0.22)
+    var grid_color_minor: Color = Color(0.13, 0.22, 0.25, 0.14)
+    var min_x: int = int(floor(arena_rect.position.x / 80.0)) * 80
+    var max_x: int = int(ceil(arena_rect.end.x / 80.0)) * 80
+    var min_y: int = int(floor(arena_rect.position.y / 80.0)) * 80
+    var max_y: int = int(ceil(arena_rect.end.y / 80.0)) * 80
+
+    for x: int in range(min_x, max_x + 1, 80):
         var cx: Color = grid_color_major if x % 320 == 0 else grid_color_minor
-        draw_line(Vector2(x, -3000), Vector2(x, 3000), cx, 1.0)
-    for y: int in range(-3000, 3001, 80):
+        draw_line(Vector2(x, arena_rect.position.y), Vector2(x, arena_rect.end.y), cx, 1.0)
+    for y: int in range(min_y, max_y + 1, 80):
         var cy: Color = grid_color_major if y % 320 == 0 else grid_color_minor
-        draw_line(Vector2(-3000, y), Vector2(3000, y), cy, 1.0)
+        draw_line(Vector2(arena_rect.position.x, y), Vector2(arena_rect.end.x, y), cy, 1.0)
+
+    draw_rect(arena_rect, Color(0.23, 0.36, 0.4, 0.35), false, 2.0)
 
 func _bind_pause_menu() -> void :
     resume_button.text = "返回战斗"
@@ -1073,6 +1090,7 @@ func _apply_arena_config_from_balance(stage_id: String) -> void:
         max(40.0, resolved_extents.x),
         max(40.0, resolved_extents.y)
     )
+    queue_redraw()
 
 func _apply_enemy_mix_from_balance(stage_id: String) -> void:
     var stage_profile: Dictionary = BalanceService.get_stage_profile(stage_id)
@@ -1096,8 +1114,26 @@ func _apply_enemy_mix_from_balance(stage_id: String) -> void:
 func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     var stage_profile: Dictionary = BalanceService.get_stage_profile(stage_id)
     _stage_is_boss_stage = bool(stage_profile.get("is_boss_stage", false))
+    _stage_background_key = str(stage_profile.get("background_key", "")).to_lower()
     var spawn_profile: Dictionary = stage_profile.get("spawn_profile", {})
     _stage_target_duration = max(0.0, float(spawn_profile.get("target_duration", 0.0)))
+    queue_redraw()
+
+func _get_stage_background_texture() -> Texture2D:
+    match _stage_background_key:
+        "tutorial":
+            return BG_TUTORIAL_TEXTURE
+        "boss":
+            return BG_BOSS_TEXTURE
+        "combat":
+            return BG_COMBAT_TEXTURE
+        _:
+            # Backward-compatible fallback for old stage configs.
+            if _stage_is_boss_stage:
+                return BG_BOSS_TEXTURE
+            if GameManager.current_stage_id == "stage_001":
+                return BG_TUTORIAL_TEXTURE
+            return BG_COMBAT_TEXTURE
 
 func _resolve_next_stage_id(current_stage_id: String) -> String:
     if current_stage_id.is_empty():
