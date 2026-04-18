@@ -22,6 +22,7 @@ GameManager="*res://scripts/autoload/game_manager.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 SaveSystem="*res://scripts/autoload/save_system.gd"
 BalanceService="*res://scripts/autoload/balance_service.gd"
+CRTTransition="*res://scripts/autoload/crt_transition.gd"
 
 [display]
 
@@ -30,6 +31,10 @@ window/size/viewport_height=720
 window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://themes/global_ui_theme.tres"
 
 [editor_overrides]
 

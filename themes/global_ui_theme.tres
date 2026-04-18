@@ -1,0 +1,7 @@
+[gd_resource type="Theme" format=3]
+
+[ext_resource type="FontFile" path="res://Fonts/zpix.ttf" id="1_w1a2b"]
+
+[resource]
+default_font = ExtResource("1_w1a2b")
+default_font_size = 24

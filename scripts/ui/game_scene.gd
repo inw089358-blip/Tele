@@ -5,6 +5,7 @@ extends Node2D
 @onready var hud: CanvasLayer = $HUD
 @onready var pause_overlay: Control = %PauseOverlay
 @onready var pause_panel: PanelContainer = $PauseLayer / PauseOverlay / PausePanel
+@onready var pause_dimmer: ColorRect = $PauseLayer / PauseOverlay / Dimmer
 @onready var crt_overlay: ColorRect = $CRTLayer / CRTOverlay
 @onready var resume_button: Button = %ResumeButton
 @onready var main_menu_button: Button = %MainMenuButton
@@ -23,6 +24,7 @@ const BG_COMBAT_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_combat
 const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_arena.png")
 
 var _player: Player
+var _player_camera: Camera2D
 var _current_player_id: String = "the_fool"
 var _enemy_spawn_timer: float = 0.0
 var _auto_attack_timer: float = 0.0
@@ -60,6 +62,7 @@ var _arena_half_extents: Vector2 = Vector2(620.0, 340.0)
 var _enemy_ranged_weight_runtime: float = ENEMY_RANGED_WEIGHT
 var _enemy_barrage_weight_runtime: float = ENEMY_BARRAGE_WEIGHT
 var _stage_background_key: String = ""
+var _pause_transition_tween: Tween
 
 const INITIAL_ENEMY_COUNT: int = 10
 const MAX_ENEMY_COUNT: int = 24
@@ -84,6 +87,9 @@ const XP_GROWTH_FACTOR: float = 1.15
 const REWARD_TARGET_RANGE_BONUS: float = 80.0
 const REWARD_ATTACK_DAMAGE_BONUS: int = 3
 const REWARD_MOVE_SPEED_BONUS: float = 15.0
+const PAUSE_OPEN_DURATION: float = 0.18
+const PAUSE_CLOSE_DURATION: float = 0.13
+const PAUSE_PANEL_POP_SCALE: float = 0.94
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_ALWAYS
@@ -259,7 +265,10 @@ func _spawn_player(force_character_id: String = "") -> void :
     camera.enabled = true
     camera.position_smoothing_enabled = true
     camera.position_smoothing_speed = 8.0
+    camera.limit_enabled = true
     _player.add_child(camera)
+    _player_camera = camera
+    _update_camera_limits()
 
     for enemy: Enemy in _enemies:
         if enemy != null and is_instance_valid(enemy):
@@ -574,7 +583,8 @@ func _draw() -> void :
     var arena_rect: Rect2 = _arena_rect()
     var stage_texture: Texture2D = _get_stage_background_texture()
     if stage_texture != null:
-        draw_texture_rect(stage_texture, arena_rect, true, Color(1.0, 1.0, 1.0, 0.95))
+        # Render one full map image in the arena instead of tiled repetition.
+        draw_texture_rect(stage_texture, arena_rect, false, Color(1.0, 1.0, 1.0, 0.95))
 
     # Keep a lightweight grid/border overlay so movement and scale stay readable.
     var grid_color_major: Color = Color(0.2, 0.33, 0.37, 0.22)
@@ -709,7 +719,7 @@ func _open_pause_menu() -> void :
     _pause_opened = true
     _hide_pause_sub_panels()
     GameManager.pause_game()
-    _set_pause_overlay_visible(true)
+    _play_pause_overlay_open_transition()
 
 func _resume_game_from_pause() -> void :
     if _reward_opened:
@@ -717,14 +727,90 @@ func _resume_game_from_pause() -> void :
         return
     _pause_opened = false
     _hide_pause_sub_panels()
-    _set_pause_overlay_visible(false)
-    GameManager.resume_game()
+    _play_pause_overlay_close_transition(func() -> void:
+        GameManager.resume_game()
+    )
 
 func _set_pause_overlay_visible(visible: bool) -> void :
+    _stop_pause_transition_tween()
     pause_overlay.visible = visible
     pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP if visible else Control.MOUSE_FILTER_IGNORE
+    if pause_dimmer != null:
+        pause_dimmer.modulate.a = 1.0 if visible else 0.0
+    if pause_panel != null:
+        pause_panel.modulate.a = 1.0 if visible else 0.0
+        pause_panel.scale = Vector2.ONE
+        pause_panel.pivot_offset = pause_panel.size * 0.5
     if not visible:
         _hide_pause_sub_panels()
+
+func _play_pause_overlay_open_transition() -> void:
+    if pause_overlay == null or pause_panel == null:
+        _set_pause_overlay_visible(true)
+        return
+    _stop_pause_transition_tween()
+    pause_overlay.visible = true
+    pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+    pause_panel.visible = true
+    pause_panel.pivot_offset = pause_panel.size * 0.5
+    pause_panel.scale = Vector2(PAUSE_PANEL_POP_SCALE, PAUSE_PANEL_POP_SCALE)
+    pause_panel.modulate.a = 0.0
+    if pause_dimmer != null:
+        pause_dimmer.modulate.a = 0.0
+    _pause_transition_tween = create_tween()
+    _pause_transition_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+    _pause_transition_tween.set_trans(Tween.TRANS_QUART)
+    _pause_transition_tween.set_ease(Tween.EASE_OUT)
+    _pause_transition_tween.parallel().tween_property(pause_panel, "modulate:a", 1.0, PAUSE_OPEN_DURATION)
+    _pause_transition_tween.parallel().tween_property(pause_panel, "scale", Vector2.ONE, PAUSE_OPEN_DURATION)
+    if pause_dimmer != null:
+        _pause_transition_tween.parallel().tween_property(pause_dimmer, "modulate:a", 1.0, PAUSE_OPEN_DURATION)
+    _pause_transition_tween.finished.connect(func() -> void:
+        _pause_transition_tween = null
+    )
+
+func _play_pause_overlay_close_transition(on_finished: Callable = Callable()) -> void:
+    if pause_overlay == null or pause_panel == null:
+        _set_pause_overlay_visible(false)
+        if on_finished.is_valid():
+            on_finished.call()
+        return
+    if not pause_overlay.visible:
+        if on_finished.is_valid():
+            on_finished.call()
+        return
+    _stop_pause_transition_tween()
+    pause_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    pause_panel.visible = true
+    pause_panel.pivot_offset = pause_panel.size * 0.5
+    _pause_transition_tween = create_tween()
+    _pause_transition_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+    _pause_transition_tween.set_trans(Tween.TRANS_QUART)
+    _pause_transition_tween.set_ease(Tween.EASE_IN)
+    _pause_transition_tween.parallel().tween_property(pause_panel, "modulate:a", 0.0, PAUSE_CLOSE_DURATION)
+    _pause_transition_tween.parallel().tween_property(
+        pause_panel,
+        "scale",
+        Vector2(PAUSE_PANEL_POP_SCALE, PAUSE_PANEL_POP_SCALE),
+        PAUSE_CLOSE_DURATION
+    )
+    if pause_dimmer != null:
+        _pause_transition_tween.parallel().tween_property(pause_dimmer, "modulate:a", 0.0, PAUSE_CLOSE_DURATION)
+    _pause_transition_tween.finished.connect(func() -> void:
+        pause_overlay.visible = false
+        pause_panel.modulate.a = 1.0
+        pause_panel.scale = Vector2.ONE
+        if pause_dimmer != null:
+            pause_dimmer.modulate.a = 1.0
+        _pause_transition_tween = null
+        if on_finished.is_valid():
+            on_finished.call()
+    )
+
+func _stop_pause_transition_tween() -> void:
+    if _pause_transition_tween != null and is_instance_valid(_pause_transition_tween):
+        _pause_transition_tween.kill()
+    _pause_transition_tween = null
 
 func _on_resume_button_pressed() -> void :
     if _reward_opened:
@@ -734,8 +820,9 @@ func _on_resume_button_pressed() -> void :
 
 func _on_main_menu_button_pressed() -> void :
     _pause_opened = false
-    _set_pause_overlay_visible(false)
-    GameManager.go_to_menu()
+    _play_pause_overlay_close_transition(func() -> void:
+        GameManager.go_to_menu()
+    )
 
 func _on_save_button_pressed() -> void :
     _show_slot_panel(SaveSlotPanel.MODE_SAVE)
@@ -1090,6 +1177,7 @@ func _apply_arena_config_from_balance(stage_id: String) -> void:
         max(40.0, resolved_extents.x),
         max(40.0, resolved_extents.y)
     )
+    _update_camera_limits()
     queue_redraw()
 
 func _apply_enemy_mix_from_balance(stage_id: String) -> void:
@@ -1117,6 +1205,7 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     _stage_background_key = str(stage_profile.get("background_key", "")).to_lower()
     var spawn_profile: Dictionary = stage_profile.get("spawn_profile", {})
     _stage_target_duration = max(0.0, float(spawn_profile.get("target_duration", 0.0)))
+    _apply_arena_size_from_background_texture()
     queue_redraw()
 
 func _get_stage_background_texture() -> Texture2D:
@@ -1134,6 +1223,30 @@ func _get_stage_background_texture() -> Texture2D:
             if GameManager.current_stage_id == "stage_001":
                 return BG_TUTORIAL_TEXTURE
             return BG_COMBAT_TEXTURE
+
+func _apply_arena_size_from_background_texture() -> void:
+    var texture: Texture2D = _get_stage_background_texture()
+    if texture == null:
+        return
+    var texture_size: Vector2 = texture.get_size()
+    if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+        return
+
+    # Map size follows source image dimensions directly.
+    _arena_half_extents = Vector2(
+        max(40.0, texture_size.x * 0.5),
+        max(40.0, texture_size.y * 0.5)
+    )
+    _update_camera_limits()
+
+func _update_camera_limits() -> void:
+    if _player_camera == null or not is_instance_valid(_player_camera):
+        return
+    var arena_rect: Rect2 = _arena_rect()
+    _player_camera.limit_left = int(round(arena_rect.position.x))
+    _player_camera.limit_top = int(round(arena_rect.position.y))
+    _player_camera.limit_right = int(round(arena_rect.end.x))
+    _player_camera.limit_bottom = int(round(arena_rect.end.y))
 
 func _resolve_next_stage_id(current_stage_id: String) -> String:
     if current_stage_id.is_empty():

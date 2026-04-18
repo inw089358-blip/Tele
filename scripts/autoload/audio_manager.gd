@@ -8,6 +8,7 @@ const BGM_COMBAT_PATH: String = "res://audio/Factory Synapse.mp3"
 var _bgm_player: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _bgm_cache: Dictionary = {}
+var _sfx_cache: Dictionary = {}
 
 func _ready() -> void :
     _bgm_player = AudioStreamPlayer.new()
@@ -49,6 +50,10 @@ func play_sfx(stream: AudioStream, volume_db: float = 0.0) -> void :
     player.volume_db = volume_db
     player.play()
 
+func play_sfx_by_path(path: String, volume_db: float = 0.0) -> void:
+    var stream: AudioStream = _get_or_load_sfx_stream(path)
+    play_sfx(stream, volume_db)
+
 func _get_available_sfx_player() -> AudioStreamPlayer:
     for player in _sfx_players:
         if not player.playing:
@@ -86,3 +91,18 @@ func _load_mp3_stream(path: String) -> AudioStream:
     stream.data = data
     stream.loop = true
     return stream
+
+func _get_or_load_sfx_stream(path: String) -> AudioStream:
+    if _sfx_cache.has(path):
+        var cached: Variant = _sfx_cache[path]
+        if cached is AudioStream:
+            var cached_stream: AudioStream = cached
+            return cached_stream
+
+    var loaded: Resource = ResourceLoader.load(path)
+    if loaded is AudioStream:
+        var stream: AudioStream = loaded
+        _sfx_cache[path] = stream
+        return stream
+
+    return null

@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://q72srgiec0jv" path="res://scripts/systems/wave_manager.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://cfew37lt2wtgt" path="res://scenes/ui/hud.tscn" id="3"]
 [ext_resource type="Shader" uid="uid://rngcbghhe148" path="res://shaders/crt_overlay.gdshader" id="4"]
+[ext_resource type="Script" uid="uid://dp0h4ow8wmo1i" path="res://scripts/ui/neon_option_button.gd" id="5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
 shader = ExtResource("4")
@@ -103,7 +104,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_pause_panel")
 
 [node name="PauseVBox" type="VBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel" unique_id=13137867]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 14
 alignment = 1
 
 [node name="ResumeButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=619423384]
@@ -111,6 +112,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 62)
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
+script = ExtResource("5")
 text = "继续游戏"
 
 [node name="MainMenuButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=952059632]
@@ -118,6 +120,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 62)
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
+script = ExtResource("5")
 text = "主界面"
 
 [node name="SaveButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=1086506952]
@@ -125,6 +128,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 62)
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
+script = ExtResource("5")
 text = "保存"
 
 [node name="SettingsButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=34564584]
@@ -132,4 +136,5 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 62)
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
+script = ExtResource("5")
 text = "设置"
