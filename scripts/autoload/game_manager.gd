@@ -29,6 +29,7 @@ var current_difficulty: String = "normal"
 var current_stage_id: String = "stage_001"
 var current_wave: int = 0
 var _pending_slot_data: Dictionary = {}
+var _scene_transition_busy: bool = false
 
 func _ready() -> void :
     _apply_settings_from_save()
@@ -42,19 +43,13 @@ func change_state(next_state: GameState) -> void :
     EventBus.game_state_changed.emit(previous_state, next_state)
 
 func go_to_menu() -> void :
-    change_state(GameState.MENU)
-    get_tree().paused = false
-    get_tree().change_scene_to_file(SCENE_MENU)
+    _change_scene_with_crt(GameState.MENU, SCENE_MENU)
 
 func go_to_character_select() -> void :
-    change_state(GameState.CHARACTER_SELECT)
-    get_tree().paused = false
-    get_tree().change_scene_to_file(SCENE_CHARACTER_SELECT)
+    _change_scene_with_crt(GameState.CHARACTER_SELECT, SCENE_CHARACTER_SELECT)
 
 func go_to_settings() -> void :
-    change_state(GameState.SETTINGS)
-    get_tree().paused = false
-    get_tree().change_scene_to_file(SCENE_SETTINGS)
+    _change_scene_with_crt(GameState.SETTINGS, SCENE_SETTINGS)
 
 func apply_runtime_settings(settings: Dictionary) -> void :
     var display_settings: Dictionary = settings.get("display", {})
@@ -114,15 +109,11 @@ func _apply_bus_volume(bus_name: String, value_percent: int) -> void :
 
 func go_to_stage_select(character_id: String) -> void :
     selected_character = character_id
-    change_state(GameState.STAGE_SELECT)
-    get_tree().paused = false
-    get_tree().change_scene_to_file(SCENE_STAGE_SELECT)
+    _change_scene_with_crt(GameState.STAGE_SELECT, SCENE_STAGE_SELECT)
 
 func go_to_difficulty_select(character_id: String) -> void :
     selected_character = character_id
-    change_state(GameState.DIFFICULTY_SELECT)
-    get_tree().paused = false
-    get_tree().change_scene_to_file(SCENE_DIFFICULTY_SELECT)
+    _change_scene_with_crt(GameState.DIFFICULTY_SELECT, SCENE_DIFFICULTY_SELECT)
 
 func start_new_run_with_difficulty(difficulty_id: String) -> void :
     current_difficulty = _normalize_difficulty(difficulty_id)
@@ -159,9 +150,7 @@ func start_game(stage_id: String = "stage_001") -> void :
     current_stage_id = stage_id
     current_wave = 1
     _pending_slot_data = {}
-    change_state(GameState.PLAYING)
-    get_tree().paused = false
-    get_tree().change_scene_to_file(SCENE_GAME)
+    _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 
 func start_game_from_slot(slot_data: Dictionary) -> void :
     selected_character = str(slot_data.get("selected_character", "the_fool"))
@@ -171,9 +160,7 @@ func start_game_from_slot(slot_data: Dictionary) -> void :
     current_stage_id = str(slot_data.get("stage_id", "stage_001"))
     current_wave = max(1, int(slot_data.get("wave", 1)))
     _pending_slot_data = slot_data.duplicate(true)
-    change_state(GameState.PLAYING)
-    get_tree().paused = false
-    get_tree().change_scene_to_file(SCENE_GAME)
+    _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 
 func consume_pending_slot_data() -> Dictionary:
     var result: Dictionary = _pending_slot_data.duplicate(true)
@@ -181,9 +168,7 @@ func consume_pending_slot_data() -> Dictionary:
     return result
 
 func open_reward() -> void :
-    change_state(GameState.REWARD)
-    get_tree().paused = true
-    get_tree().change_scene_to_file(SCENE_REWARD)
+    _change_scene_with_crt(GameState.REWARD, SCENE_REWARD, true)
 
 func pause_game() -> void :
     if current_state != GameState.PLAYING:
@@ -198,10 +183,48 @@ func resume_game() -> void :
     get_tree().paused = false
 
 func end_game(is_victory: bool) -> void :
-    change_state(GameState.VICTORY if is_victory else GameState.GAME_OVER)
+    var next_state: GameState = GameState.VICTORY if is_victory else GameState.GAME_OVER
+    change_state(next_state)
     get_tree().paused = false
     EventBus.game_over.emit(is_victory)
-    get_tree().change_scene_to_file(SCENE_GAME_OVER)
+    _change_scene_with_crt(next_state, SCENE_GAME_OVER, false, false)
+
+func _change_scene_with_crt(
+    next_state: GameState,
+    scene_path: String,
+    pause_after_transition: bool = false,
+    emit_state_before_transition: bool = true
+) -> void:
+    if _scene_transition_busy:
+        return
+    _run_scene_transition(next_state, scene_path, pause_after_transition, emit_state_before_transition)
+
+func _run_scene_transition(
+    next_state: GameState,
+    scene_path: String,
+    pause_after_transition: bool,
+    emit_state_before_transition: bool
+) -> void:
+    _scene_transition_busy = true
+    get_tree().paused = false
+
+    if emit_state_before_transition:
+        change_state(next_state)
+
+    if CRTTransition != null and CRTTransition.has_method("play_shutdown"):
+        await CRTTransition.play_shutdown()
+
+    get_tree().change_scene_to_file(scene_path)
+    await get_tree().process_frame
+
+    if not emit_state_before_transition:
+        change_state(next_state)
+
+    if CRTTransition != null and CRTTransition.has_method("play_startup"):
+        await CRTTransition.play_startup()
+
+    get_tree().paused = pause_after_transition
+    _scene_transition_busy = false
 
 func _normalize_difficulty(value: String) -> String:
     var lowered: String = value.to_lower()

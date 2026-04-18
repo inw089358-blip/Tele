@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://b3p3puiq47d0h"
+path="res://.godot/imported/ark-pixel-10px-monospaced-zh_cn-bmfont.fnt-13cd6fc6b3c1989bb873a41a3cb89a75.fontdata"
+
+[deps]
+
+source_file="res://Fonts/ark-pixel-10px-monospaced-zh_cn-bmfont.fnt"
+dest_files=["res://.godot/imported/ark-pixel-10px-monospaced-zh_cn-bmfont.fnt-13cd6fc6b3c1989bb873a41a3cb89a75.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

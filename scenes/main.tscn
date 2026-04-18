@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cfhq72uxd4f8m" path="res://scripts/ui/main_menu.gd" id="1"]
 [ext_resource type="Shader" uid="uid://rngcbghhe148" path="res://shaders/crt_overlay.gdshader" id="2"]
+[ext_resource type="Script" uid="uid://bluorya04gmv1" path="res://scripts/ui/neon_option_button.gd" id="3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
 bg_color = Color(0.0352941, 0.0392157, 0.0470588, 1)
@@ -27,19 +28,7 @@ shader_parameter/postprocess_mode = 0.0
 shader_parameter/curvature = 0.0
 shader_parameter/clamp_edges = 0.0
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu"]
-bg_color = Color(0.0941176, 0.160784, 0.184314, 0.92)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.203922, 0.298039, 0.333333, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_color = Color(0, 0, 0, 0.45)
-shadow_size = 8
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_menu"]
 
 [node name="MainMenu" type="Control" unique_id=1270881811]
 layout_mode = 3
@@ -174,9 +163,9 @@ color = Color(0.792157, 0.352941, 0.317647, 1)
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 420.0
-offset_top = 250.0
+offset_top = 150.0
 offset_right = 860.0
-offset_bottom = 350.0
+offset_bottom = 250.0
 theme_override_colors/font_color = Color(0.862745, 0.529412, 0.0784314, 1)
 theme_override_colors/font_shadow_color = Color(0.301961, 0.2, 0.0431373, 0.92)
 theme_override_constants/shadow_offset_x = 5
@@ -219,55 +208,60 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="UIRoot" type="Control" parent="ScreenCenter/CRTFrame" unique_id=1055167034]
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="MenuPanel" type="PanelContainer" parent="ScreenCenter/CRTFrame/UIRoot" unique_id=905338833]
-layout_mode = 0
-offset_left = 510.0
-offset_top = 450.0
-offset_right = 770.0
-offset_bottom = 710.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -65.0
+offset_right = 210.0
+offset_bottom = 221.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_menu")
 
 [node name="MenuVBox" type="VBoxContainer" parent="ScreenCenter/CRTFrame/UIRoot/MenuPanel" unique_id=1979572178]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 14
 alignment = 1
 
 [node name="StartButton" type="Button" parent="ScreenCenter/CRTFrame/UIRoot/MenuPanel/MenuVBox" unique_id=1264244010]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 42)
+custom_minimum_size = Vector2(400, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 text = "开始游戏"
+script = ExtResource("3")
 
 [node name="BossTestButton" type="Button" parent="ScreenCenter/CRTFrame/UIRoot/MenuPanel/MenuVBox" unique_id=1498822711]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 42)
+custom_minimum_size = Vector2(400, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
 text = "Boss Test (Stage 5)"
+script = ExtResource("3")
 
 [node name="ContinueButton" type="Button" parent="ScreenCenter/CRTFrame/UIRoot/MenuPanel/MenuVBox" unique_id=2077236340]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 42)
+custom_minimum_size = Vector2(400, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 text = "继续游戏"
-
-[node name="CharacterButton" type="Button" parent="ScreenCenter/CRTFrame/UIRoot/MenuPanel/MenuVBox" unique_id=718941489]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 42)
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "角色选择"
+script = ExtResource("3")
 
 [node name="QuitButton" type="Button" parent="ScreenCenter/CRTFrame/UIRoot/MenuPanel/MenuVBox" unique_id=292922901]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 42)
+custom_minimum_size = Vector2(400, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
 text = "退出"
+script = ExtResource("3")
 
 [node name="SettingsButton" type="Button" parent="ScreenCenter/CRTFrame/UIRoot" unique_id=1423790188]
 unique_name_in_owner = true
@@ -289,20 +283,35 @@ text = "⚙ 设置"
 [node name="NoticeLabel" type="Label" parent="ScreenCenter/CRTFrame/UIRoot" unique_id=1977397955]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 420.0
-offset_top = 426.0
-offset_right = 860.0
-offset_bottom = 456.0
+offset_left = 429.0
+offset_top = 256.0
+offset_right = 869.0
+offset_bottom = 286.0
 theme_override_colors/font_color = Color(0.905882, 0.929412, 0.917647, 0.85)
 theme_override_font_sizes/font_size = 20
 text = "闪烁着雪花点的CRT屏幕"
 horizontal_alignment = 1
+
+[node name="UIFeedbackFlash" type="ColorRect" parent="ScreenCenter/CRTFrame/UIRoot" unique_id=893625104]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.509804, 1, 0.768627, 0)
 
 [node name="OutsideVignette" type="ColorRect" parent="." unique_id=1924741447]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 725.0
+offset_top = -258.0
+offset_right = 725.0
+offset_bottom = -258.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
