@@ -36,8 +36,9 @@ const LANGUAGE_LABELS: PackedStringArray = ["Chinese (Simplified)", "English"]
 @onready var display_tab_button: Button = %DisplayTabButton
 @onready var audio_tab_button: Button = %AudioTabButton
 @onready var input_tab_button: Button = %InputTabButton
-@onready var accessibility_tab_button: Button = %AccessibilityTabButton
 @onready var system_tab_button: Button = %SystemTabButton
+@onready var crt_frame: PanelContainer = $ScreenCenter/CRTFrame
+@onready var title_label: Label = $ScreenCenter/CRTFrame/MainMargin/RootVBox/TitleLabel
 
 @onready var display_panel: VBoxContainer = %DisplayPanel
 @onready var audio_panel: VBoxContainer = %AudioPanel
@@ -83,12 +84,14 @@ const LANGUAGE_LABELS: PackedStringArray = ["Chinese (Simplified)", "English"]
 @onready var restore_confirm_dialog: ConfirmationDialog = %RestoreConfirmDialog
 
 var _saved_settings: Dictionary = {}
-var _active_category: String = "display"
+var _active_category: String = "graphics"
 var _embedded_mode: bool = false
 
 func _ready() -> void :
     _setup_options()
     _connect_signals()
+    _merge_graphics_sections()
+    _enable_graphics_scrolling()
     _load_settings()
     _show_category(_active_category)
     _refresh_live_labels()
@@ -112,7 +115,6 @@ func _connect_signals() -> void :
     display_tab_button.pressed.connect(_on_display_tab_pressed)
     audio_tab_button.pressed.connect(_on_audio_tab_pressed)
     input_tab_button.pressed.connect(_on_input_tab_pressed)
-    accessibility_tab_button.pressed.connect(_on_accessibility_tab_pressed)
     system_tab_button.pressed.connect(_on_system_tab_pressed)
 
     ui_scale_slider.value_changed.connect(_on_ui_scale_changed)
@@ -142,11 +144,74 @@ func _load_settings() -> void :
 
 func _show_category(category: String) -> void :
     _active_category = category
-    display_panel.visible = category == "display"
+    display_panel.visible = category == "graphics"
     audio_panel.visible = category == "audio"
-    input_panel.visible = category == "input"
-    accessibility_panel.visible = category == "accessibility"
-    system_panel.visible = category == "system"
+    input_panel.visible = category == "controls"
+    accessibility_panel.visible = false
+    system_panel.visible = category == "gameplay"
+    _refresh_nav_visuals()
+
+func _merge_graphics_sections() -> void:
+    if display_panel == null or accessibility_panel == null:
+        return
+    if accessibility_panel.get_parent() != display_panel.get_parent():
+        return
+    var moved_marker: Node = display_panel.get_node_or_null("GraphicsExtraMarker")
+    if moved_marker != null:
+        return
+
+    var marker: Node = Node.new()
+    marker.name = "GraphicsExtraMarker"
+    display_panel.add_child(marker)
+
+    var separator: HSeparator = HSeparator.new()
+    display_panel.add_child(separator)
+    var section_label: Label = Label.new()
+    section_label.text = "Advanced Visual Options"
+    section_label.add_theme_font_size_override("font_size", 22)
+    section_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.86, 1.0))
+    display_panel.add_child(section_label)
+
+    var children_to_move: Array[Node] = []
+    for child: Node in accessibility_panel.get_children():
+        children_to_move.append(child)
+    for child: Node in children_to_move:
+        accessibility_panel.remove_child(child)
+        display_panel.add_child(child)
+
+func _enable_graphics_scrolling() -> void:
+    if display_panel == null:
+        return
+    if display_panel.get_node_or_null("GraphicsScroll") != null:
+        return
+
+    var title: Node = display_panel.get_node_or_null("DisplayTitle")
+    var content_nodes: Array[Node] = []
+    for child: Node in display_panel.get_children():
+        if child == title:
+            continue
+        content_nodes.append(child)
+
+    if content_nodes.is_empty():
+        return
+
+    var scroll: ScrollContainer = ScrollContainer.new()
+    scroll.name = "GraphicsScroll"
+    scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    scroll.follow_focus = true
+    display_panel.add_child(scroll)
+
+    var content_vbox: VBoxContainer = VBoxContainer.new()
+    content_vbox.name = "GraphicsScrollContent"
+    content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    content_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    content_vbox.add_theme_constant_override("separation", 10)
+    scroll.add_child(content_vbox)
+
+    for child: Node in content_nodes:
+        display_panel.remove_child(child)
+        content_vbox.add_child(child)
 
 func _apply_settings_to_controls(settings: Dictionary) -> void :
     var display_settings: Dictionary = settings.get("display", {})
@@ -220,19 +285,16 @@ func _refresh_live_labels() -> void :
     ui_volume_value_label.text = "%d%%" % int(ui_volume_slider.value)
 
 func _on_display_tab_pressed() -> void :
-    _show_category("display")
+    _show_category("graphics")
 
 func _on_audio_tab_pressed() -> void :
     _show_category("audio")
 
 func _on_input_tab_pressed() -> void :
-    _show_category("input")
-
-func _on_accessibility_tab_pressed() -> void :
-    _show_category("accessibility")
+    _show_category("controls")
 
 func _on_system_tab_pressed() -> void :
-    _show_category("system")
+    _show_category("gameplay")
 
 func _on_ui_scale_changed(_value: float) -> void :
     _refresh_live_labels()
@@ -342,6 +404,31 @@ func set_embedded_mode(enabled: bool) -> void :
     var black_bg: ColorRect = get_node_or_null("BlackBg") as ColorRect
     if black_bg != null:
         black_bg.visible = not enabled
+    if crt_frame != null:
+        if enabled:
+            crt_frame.anchor_left = 0.03
+            crt_frame.anchor_top = 0.04
+            crt_frame.anchor_right = 0.97
+            crt_frame.anchor_bottom = 0.96
+        else:
+            crt_frame.anchor_left = 0.08
+            crt_frame.anchor_top = 0.06
+            crt_frame.anchor_right = 0.92
+            crt_frame.anchor_bottom = 0.94
+    if title_label != null:
+        title_label.text = "SYSTEM SETTINGS"
+        title_label.add_theme_font_size_override("font_size", 34 if enabled else 42)
+
+func _refresh_nav_visuals() -> void:
+    _set_tab_active(display_tab_button, _active_category == "graphics")
+    _set_tab_active(audio_tab_button, _active_category == "audio")
+    _set_tab_active(input_tab_button, _active_category == "controls")
+    _set_tab_active(system_tab_button, _active_category == "gameplay")
+
+func _set_tab_active(button: Button, is_active: bool) -> void:
+    if button == null:
+        return
+    button.modulate = Color(0.5, 1.0, 0.86, 1.0) if is_active else Color(0.62, 0.86, 0.92, 0.92)
 
 func _request_close_embedded() -> void :
     request_close.emit()
