@@ -168,10 +168,12 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
     normalized["total_gold"] = int(input_data.get("total_gold", 0))
     normalized["total_play_time"] = float(input_data.get("total_play_time", 0.0))
     normalized["selected_character"] = str(input_data.get("selected_character", default_character))
+    normalized["selected_starter_weapon_id"] = str(input_data.get("selected_starter_weapon_id", ""))
     normalized["difficulty"] = _normalize_difficulty(str(input_data.get("difficulty", "normal")))
     var best_stage: String = str(normalized.get("best_stage", "stage_001"))
     normalized["stage_id"] = str(input_data.get("stage_id", best_stage))
     normalized["wave"] = max(1, int(input_data.get("wave", 1)))
+    normalized["wave_progress_index"] = max(0, int(input_data.get("wave_progress_index", normalized["wave"] - 1)))
     normalized["player_hp"] = int(input_data.get("player_hp", 100))
     normalized["player_max_hp"] = int(input_data.get("player_max_hp", 100))
     normalized["player_stamina"] = float(input_data.get("player_stamina", 100.0))
@@ -179,10 +181,22 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
     normalized["player_move_speed"] = float(input_data.get("player_move_speed", 220.0))
     normalized["bonus_target_range"] = float(input_data.get("bonus_target_range", 0.0))
     normalized["bonus_attack_damage"] = int(input_data.get("bonus_attack_damage", 0))
+    var player_stats_value: Variant = input_data.get("player_stats", {})
+    if player_stats_value is Dictionary:
+        normalized["player_stats"] = player_stats_value
+    else:
+        normalized["player_stats"] = {}
     var current_level: int = max(1, int(input_data.get("current_level", 1)))
     normalized["current_level"] = current_level
     normalized["current_xp"] = max(0, int(input_data.get("current_xp", 0)))
     normalized["current_gold"] = max(0, int(input_data.get("current_gold", 0)))
+    var shop_state_value: Variant = input_data.get("shop_runtime_state", {})
+    if shop_state_value is Dictionary:
+        normalized["shop_runtime_state"] = shop_state_value
+    else:
+        normalized["shop_runtime_state"] = {}
+    normalized["equipped_weapons"] = _normalize_variant_array(input_data.get("equipped_weapons", []))
+    normalized["locked_shop_offers"] = _normalize_variant_array(input_data.get("locked_shop_offers", []))
     normalized["reward_history"] = _normalize_string_array(input_data.get("reward_history", []))
     normalized["recent_categories"] = _normalize_string_array(input_data.get("recent_categories", []))
     normalized["build_tags"] = _normalize_string_array(input_data.get("build_tags", []))
@@ -196,6 +210,8 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
         normalized["reward_owned"] = reward_owned_value
     else:
         normalized["reward_owned"] = {}
+    normalized["auto_attack_interval_multiplier"] = float(input_data.get("auto_attack_interval_multiplier", 1.0))
+    normalized["gold_gain_multiplier"] = float(input_data.get("gold_gain_multiplier", 1.0))
     var xp_to_next_default: int = _xp_required_for_level(current_level)
     if input_data.has("xp_to_next_level"):
         var raw_xp_to_next: int = max(1, int(input_data.get("xp_to_next_level", xp_to_next_default)))
@@ -310,9 +326,11 @@ func _default_save() -> Dictionary:
         "total_gold": 0, 
         "total_play_time": 0.0, 
         "selected_character": "the_fool", 
+        "selected_starter_weapon_id": "",
         "difficulty": "normal", 
         "stage_id": "stage_001", 
         "wave": 1, 
+        "wave_progress_index": 0,
         "player_hp": 100, 
         "player_max_hp": 100, 
         "player_stamina": 100.0, 
@@ -320,14 +338,20 @@ func _default_save() -> Dictionary:
         "player_move_speed": 220.0, 
         "bonus_target_range": 0.0, 
         "bonus_attack_damage": 0, 
+        "player_stats": {},
         "current_level": 1, 
         "current_xp": 0, 
         "current_gold": 0, 
+        "shop_runtime_state": {},
+        "equipped_weapons": [],
+        "locked_shop_offers": [],
         "reward_history": [],
         "recent_categories": [],
         "build_tags": [],
         "reward_pity_state": {"no_output_streak": 0},
         "reward_owned": {},
+        "auto_attack_interval_multiplier": 1.0,
+        "gold_gain_multiplier": 1.0,
         "xp_to_next_level": _xp_required_for_level(1), 
         "player_pos_x": 0.0, 
         "player_pos_y": 0.0, 
@@ -351,3 +375,9 @@ func _normalize_string_array(value: Variant) -> Array[String]:
                 continue
             result.append(text)
     return result
+
+func _normalize_variant_array(value: Variant) -> Array:
+    if value is Array:
+        var raw: Array = value
+        return raw.duplicate(true)
+    return []

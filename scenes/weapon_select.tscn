@@ -1,0 +1,105 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/weapon_select.gd" id="1"]
+
+[node name="WeaponSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.12, 0.14, 1)
+
+[node name="Root" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainVBox" type="VBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="Root/MainVBox" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "Select Starter Weapon"
+
+[node name="SubtitleLabel" type="Label" parent="Root/MainVBox" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Character: the_fool"
+
+[node name="BodyRow" type="HBoxContainer" parent="Root/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="ListPanel" type="PanelContainer" parent="Root/MainVBox/BodyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ListMargin" type="MarginContainer" parent="Root/MainVBox/BodyRow/ListPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="WeaponList" type="VBoxContainer" parent="Root/MainVBox/BodyRow/ListPanel/ListMargin" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DetailPanel" type="PanelContainer" parent="Root/MainVBox/BodyRow"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DetailMargin" type="MarginContainer" parent="Root/MainVBox/BodyRow/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="DetailLabel" type="RichTextLabel" parent="Root/MainVBox/BodyRow/DetailPanel/DetailMargin" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+text = ""
+
+[node name="BottomRow" type="HBoxContainer" parent="Root/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BackButton" type="Button" parent="Root/MainVBox/BottomRow" unique_name_in_owner=true]
+custom_minimum_size = Vector2(200, 54)
+layout_mode = 2
+text = "Back"
+
+[node name="Spacer" type="Control" parent="Root/MainVBox/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ConfirmButton" type="Button" parent="Root/MainVBox/BottomRow" unique_name_in_owner=true]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Confirm Weapon"

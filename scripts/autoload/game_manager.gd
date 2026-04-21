@@ -4,11 +4,13 @@ enum GameState{
     MENU, 
     SETTINGS, 
     CHARACTER_SELECT, 
+    WEAPON_SELECT,
     DIFFICULTY_SELECT, 
     STAGE_SELECT, 
     PLAYING, 
     PAUSED, 
     REWARD, 
+    SHOP,
     STAGE_CLEAR, 
     GAME_OVER, 
     VICTORY, 
@@ -17,18 +19,22 @@ enum GameState{
 const SCENE_MENU: String = "res://scenes/main.tscn"
 const SCENE_SETTINGS: String = "res://scenes/settings.tscn"
 const SCENE_CHARACTER_SELECT: String = "res://scenes/character_select.tscn"
+const SCENE_WEAPON_SELECT: String = "res://scenes/weapon_select.tscn"
 const SCENE_DIFFICULTY_SELECT: String = "res://scenes/difficulty_select.tscn"
 const SCENE_STAGE_SELECT: String = "res://scenes/stage_select.tscn"
 const SCENE_GAME: String = "res://scenes/game.tscn"
 const SCENE_REWARD: String = "res://scenes/reward_screen.tscn"
 const SCENE_GAME_OVER: String = "res://scenes/game_over.tscn"
+const SCENE_SHOP: String = "res://scenes/shop_scene.tscn"
 
 var current_state: GameState = GameState.MENU
 var selected_character: String = ""
 var current_difficulty: String = "normal"
 var current_stage_id: String = "stage_001"
 var current_wave: int = 0
+var selected_starter_weapon_id: String = ""
 var _pending_slot_data: Dictionary = {}
+var _pending_shop_snapshot: Dictionary = {}
 var _scene_transition_busy: bool = false
 
 func _ready() -> void :
@@ -47,6 +53,11 @@ func go_to_menu() -> void :
 
 func go_to_character_select() -> void :
     _change_scene_with_crt(GameState.CHARACTER_SELECT, SCENE_CHARACTER_SELECT)
+
+func go_to_weapon_select(character_id: String) -> void :
+    selected_character = character_id
+    selected_starter_weapon_id = ""
+    _change_scene_with_crt(GameState.WEAPON_SELECT, SCENE_WEAPON_SELECT)
 
 func go_to_settings() -> void :
     _change_scene_with_crt(GameState.SETTINGS, SCENE_SETTINGS)
@@ -115,8 +126,14 @@ func go_to_difficulty_select(character_id: String) -> void :
     selected_character = character_id
     _change_scene_with_crt(GameState.DIFFICULTY_SELECT, SCENE_DIFFICULTY_SELECT)
 
+func go_to_difficulty_select_with_weapon(weapon_id: String) -> void:
+    selected_starter_weapon_id = weapon_id
+    _change_scene_with_crt(GameState.DIFFICULTY_SELECT, SCENE_DIFFICULTY_SELECT)
+
 func start_new_run_with_difficulty(difficulty_id: String) -> void :
     current_difficulty = _normalize_difficulty(difficulty_id)
+    if selected_starter_weapon_id.is_empty():
+        selected_starter_weapon_id = _resolve_default_starter_weapon_id()
     start_game("stage_001")
 
 func get_difficulty_modifiers() -> Dictionary:
@@ -149,7 +166,24 @@ func get_difficulty_modifiers() -> Dictionary:
 func start_game(stage_id: String = "stage_001") -> void :
     current_stage_id = stage_id
     current_wave = 1
+    if selected_starter_weapon_id.is_empty():
+        selected_starter_weapon_id = _resolve_default_starter_weapon_id()
     _pending_slot_data = {}
+    _pending_shop_snapshot = {}
+    _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
+
+func start_game_with_runtime(stage_id: String, runtime_data: Dictionary) -> void:
+    current_stage_id = stage_id
+    current_wave = 1
+    _pending_slot_data = runtime_data.duplicate(true)
+    _pending_slot_data["wave"] = 1
+    _pending_slot_data["stage_id"] = stage_id
+    _pending_slot_data["selected_starter_weapon_id"] = str(
+        runtime_data.get("selected_starter_weapon_id", selected_starter_weapon_id)
+    )
+    if str(_pending_slot_data.get("selected_starter_weapon_id", "")).is_empty():
+        _pending_slot_data["selected_starter_weapon_id"] = _resolve_default_starter_weapon_id()
+    _pending_shop_snapshot = {}
     _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 
 func start_game_from_slot(slot_data: Dictionary) -> void :
@@ -158,14 +192,49 @@ func start_game_from_slot(slot_data: Dictionary) -> void :
         selected_character = "the_fool"
     current_difficulty = _normalize_difficulty(str(slot_data.get("difficulty", "normal")))
     current_stage_id = str(slot_data.get("stage_id", "stage_001"))
-    current_wave = max(1, int(slot_data.get("wave", 1)))
+    selected_starter_weapon_id = str(slot_data.get("selected_starter_weapon_id", ""))
+    if selected_starter_weapon_id.is_empty():
+        selected_starter_weapon_id = _resolve_default_starter_weapon_id()
+    current_wave = 1
     _pending_slot_data = slot_data.duplicate(true)
+    _pending_slot_data["wave"] = 1
+    _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
+    _pending_shop_snapshot = {}
     _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 
 func consume_pending_slot_data() -> Dictionary:
     var result: Dictionary = _pending_slot_data.duplicate(true)
     _pending_slot_data = {}
     return result
+
+func open_wave_shop(snapshot: Dictionary) -> void:
+    _pending_shop_snapshot = snapshot.duplicate(true)
+    _change_scene_with_crt(GameState.SHOP, SCENE_SHOP)
+
+func consume_pending_shop_snapshot() -> Dictionary:
+    var result: Dictionary = _pending_shop_snapshot.duplicate(true)
+    _pending_shop_snapshot = {}
+    return result
+
+# Legacy compatibility path for old hub scenes/scripts.
+func consume_pending_hub_snapshot() -> Dictionary:
+    return consume_pending_shop_snapshot()
+
+func continue_from_shop(snapshot: Dictionary) -> void:
+    current_stage_id = str(snapshot.get("stage_id", current_stage_id))
+    selected_starter_weapon_id = str(snapshot.get("selected_starter_weapon_id", selected_starter_weapon_id))
+    if selected_starter_weapon_id.is_empty():
+        selected_starter_weapon_id = _resolve_default_starter_weapon_id()
+    current_wave = 1
+    _pending_slot_data = snapshot.duplicate(true)
+    _pending_slot_data["wave"] = 1
+    _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
+    _pending_shop_snapshot = {}
+    _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
+
+# Legacy compatibility path for the older supply-hub workflow.
+func continue_from_hub(snapshot: Dictionary) -> void:
+    continue_from_shop(snapshot)
 
 func open_reward() -> void :
     _change_scene_with_crt(GameState.REWARD, SCENE_REWARD, true)
@@ -231,3 +300,18 @@ func _normalize_difficulty(value: String) -> String:
     if lowered == "easy" or lowered == "hard":
         return lowered
     return "normal"
+
+func _resolve_default_starter_weapon_id() -> String:
+    var shop_catalog: Dictionary = BalanceService.get_shop_catalog()
+    var weapon_pool: Variant = shop_catalog.get("weapon_pool", [])
+    if weapon_pool is Array:
+        for weapon_value in weapon_pool:
+            if not (weapon_value is Dictionary):
+                continue
+            var weapon_entry: Dictionary = weapon_value
+            if not bool(weapon_entry.get("starter", false)):
+                continue
+            var weapon_id: String = str(weapon_entry.get("weapon_id", ""))
+            if not weapon_id.is_empty():
+                return weapon_id
+    return ""

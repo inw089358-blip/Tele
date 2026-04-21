@@ -25,4 +25,4 @@ func _on_hard_pressed() -> void :
     GameManager.start_new_run_with_difficulty("hard")
 
 func _on_back_pressed() -> void :
-    GameManager.go_to_character_select()
+    GameManager.go_to_weapon_select(GameManager.selected_character)

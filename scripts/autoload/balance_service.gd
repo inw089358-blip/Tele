@@ -2,9 +2,11 @@ extends Node
 
 const COMBAT_BALANCE_PATH: String = "res://data/balance/combat_balance.json"
 const REWARD_CATALOG_PATH: String = "res://data/balance/reward_catalog.json"
+const SHOP_CATALOG_PATH: String = "res://data/balance/shop_catalog.json"
 
 var _combat_balance: Dictionary = {}
 var _reward_catalog: Dictionary = {}
+var _shop_catalog: Dictionary = {}
 
 func _ready() -> void:
     load_all()
@@ -12,6 +14,7 @@ func _ready() -> void:
 func load_all() -> void:
     _combat_balance = _load_json_dict(COMBAT_BALANCE_PATH)
     _reward_catalog = _load_json_dict(REWARD_CATALOG_PATH)
+    _shop_catalog = _load_json_dict(SHOP_CATALOG_PATH)
 
 func get_global_combat_params() -> Dictionary:
     var global_root: Dictionary = _extract_dict(_combat_balance.get("global", {}))
@@ -34,6 +37,9 @@ func get_enemy_profile(enemy_key: String) -> Dictionary:
 
 func get_reward_catalog() -> Dictionary:
     return _reward_catalog.duplicate(true)
+
+func get_shop_catalog() -> Dictionary:
+    return _shop_catalog.duplicate(true)
 
 func _load_json_dict(path: String) -> Dictionary:
     if not FileAccess.file_exists(path):

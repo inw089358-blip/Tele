@@ -163,33 +163,13 @@ static func apply_reward(reward_id: String, player: Player, run_state: Dictionar
             continue
         var effect: Dictionary = effect_value
         var effect_type: String = str(effect.get("type", ""))
+        var effect_value_raw: Variant = effect.get("value", 0)
+        if player.apply_effect(effect_type, effect_value_raw):
+            continue
         match effect_type:
-            "attack_damage_flat":
-                player.add_attack_damage(int(effect.get("value", 0)))
-            "target_range_flat":
-                player.add_target_range(float(effect.get("value", 0.0)))
-            "move_speed_flat":
-                player.add_move_speed(float(effect.get("value", 0.0)) )
-            "max_hp_flat":
-                var delta: int = int(effect.get("value", 0))
-                player.max_hp = max(1, player.max_hp + delta)
-                player.current_hp = clampi(player.current_hp + delta, 0, player.max_hp)
-            "heal_flat":
-                var heal: int = int(effect.get("value", 0))
-                player.current_hp = clampi(player.current_hp + heal, 0, player.max_hp)
-            "stamina_recover_mult":
-                var mult: float = float(effect.get("value", 1.0))
-                player.stamina_recover_per_sec = max(1.0, player.stamina_recover_per_sec * mult)
-            "auto_attack_interval_mult":
-                var current_mult: float = float(run_state.get("auto_attack_interval_multiplier", 1.0))
-                var new_mult: float = current_mult * float(effect.get("value", 1.0))
-                run_state["auto_attack_interval_multiplier"] = clampf(new_mult, 0.45, 1.5)
-            "xp_gain_mult":
-                var xp_mult: float = float(run_state.get("xp_gain_multiplier", 1.0))
-                run_state["xp_gain_multiplier"] = clampf(xp_mult * float(effect.get("value", 1.0)), 1.0, 2.5)
             "gold_gain_mult":
                 var gold_mult: float = float(run_state.get("gold_gain_multiplier", 1.0))
-                run_state["gold_gain_multiplier"] = clampf(gold_mult * float(effect.get("value", 1.0)), 1.0, 2.5)
+                run_state["gold_gain_multiplier"] = clampf(gold_mult * float(effect_value_raw), 1.0, 2.5)
 
     var reward_history: Array = run_state.get("reward_history", [])
     reward_history.append(reward_id)

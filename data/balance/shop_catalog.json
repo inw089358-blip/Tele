@@ -1,0 +1,176 @@
+﻿{
+    "shop_rules":  {
+                       "offers_per_wave":  4,
+                       "weapon_chance":  0.55,
+                       "refresh_base_cost":  20,
+                       "refresh_cost_step":  12
+                   },
+    "merge_rules":  {
+                        "rule":  "2_to_1_same_weapon_same_rarity",
+                        "rarity_order":  [
+                                             "common",
+                                             "uncommon",
+                                             "rare",
+                                             "epic",
+                                             "legendary"
+                                         ]
+                    },
+    "item_pool":  [
+                      {
+                          "item_id":  "item_damage_chip",
+                          "name":  "Damage Chip",
+                          "description":  "Attack damage +1",
+                          "rarity":  "common",
+                          "base_price":  24,
+                          "price_wave_scale":  1.04,
+                          "weight":  0.75,
+                          "effects":  {
+                                          "bonus_attack_damage":  1
+                                      }
+                      },
+                      {
+                          "item_id":  "item_attack_speed",
+                          "name":  "Overclock Trigger",
+                          "description":  "Attack speed +8%",
+                          "rarity":  "uncommon",
+                          "base_price":  38,
+                          "price_wave_scale":  1.05,
+                          "weight":  0.9,
+                          "effects":  {
+                                          "attack_speed_mult":  1.08
+                                      }
+                      },
+                      {
+                          "item_id":  "item_armor_plate",
+                          "name":  "Armor Plate",
+                          "description":  "Armor +1.5",
+                          "rarity":  "common",
+                          "base_price":  30,
+                          "price_wave_scale":  1.04,
+                          "weight":  0.95,
+                          "effects":  {
+                                          "armor":  1.5
+                                      }
+                      },
+                      {
+                          "item_id":  "item_crit_lens",
+                          "name":  "Crit Lens",
+                          "description":  "Crit chance +3%",
+                          "rarity":  "uncommon",
+                          "base_price":  36,
+                          "price_wave_scale":  1.05,
+                          "weight":  0.85,
+                          "effects":  {
+                                          "crit_chance":  0.03
+                                      }
+                      },
+                      {
+                          "item_id":  "item_vampire_fang",
+                          "name":  "Vampire Fang",
+                          "description":  "Lifesteal +2%",
+                          "rarity":  "rare",
+                          "base_price":  46,
+                          "price_wave_scale":  1.06,
+                          "weight":  0.55,
+                          "effects":  {
+                                          "lifesteal":  0.02
+                                      }
+                      }
+                  ],
+    "weapon_pool":  [
+                        {
+                            "weapon_id":  "arc_blade",
+                            "name":  "Arc Blade",
+                            "description":  "Fast melee arc weapon.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "fast"
+                                     ],
+                            "base_price":  44,
+                            "price_wave_scale":  1.06,
+                            "weight":  1.0,
+                            "stack_key":  "arc_blade",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  10,
+                                                   "interval":  0.3,
+                                                   "range":  95
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  70,
+                                                   "uncommon":  24,
+                                                   "rare":  6
+                                               }
+                        },
+                        {
+                            "weapon_id":  "storm_wand",
+                            "name":  "Storm Wand",
+                            "description":  "Ranged electric focus.",
+                            "starter":  true,
+                            "tags":  [
+                                         "ranged",
+                                         "magic"
+                                     ],
+                            "base_price":  50,
+                            "price_wave_scale":  1.06,
+                            "weight":  0.9,
+                            "stack_key":  "storm_wand",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "ranged_homing",
+                                                   "base_damage":  9,
+                                                   "interval":  0.39,
+                                                   "range":  340,
+                                                   "projectile_speed":  560,
+                                                   "projectile_radius":  4
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0,
+                                            "bonus_target_range":  12
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  62,
+                                                   "uncommon":  28,
+                                                   "rare":  8,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "void_gun",
+                            "name":  "Void Gun",
+                            "description":  "High-impact slow weapon.",
+                            "starter":  true,
+                            "tags":  [
+                                         "ranged",
+                                         "heavy"
+                                     ],
+                            "base_price":  58,
+                            "price_wave_scale":  1.07,
+                            "weight":  0.65,
+                            "stack_key":  "void_gun",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "ranged_heavy",
+                                                   "base_damage":  16,
+                                                   "interval":  0.68,
+                                                   "range":  420,
+                                                   "projectile_speed":  680,
+                                                   "projectile_radius":  6
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  1
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  55,
+                                                   "uncommon":  30,
+                                                   "rare":  12,
+                                                   "epic":  3
+                                               }
+                        }
+                    ]
+}
