@@ -6,8 +6,12 @@ extends Area2D
 @export var damage: int = 10
 @export var hit_radius: float = 4.0
 @export var life_time: float = 1.6
+@export var crit_chance: float = 0.0
+@export var crit_multiplier: float = 1.5
+@export var lifesteal_ratio: float = 0.0
 
 var _target: Node2D
+var owner_player: Player
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_PAUSABLE

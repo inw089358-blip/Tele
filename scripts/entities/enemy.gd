@@ -76,11 +76,11 @@ func try_fire_projectile(
         return
     enemy_projectile_fired.emit(global_position, direction.normalized(), speed, damage, hit_radius, life_time, tint)
 
-func take_damage(amount: int) -> void :
+func take_damage(amount: int) -> int:
     if _is_dead:
-        return
+        return 0
     if amount <= 0:
-        return
+        return 0
     var reduced_ratio: float = clampf(damage_reduction_ratio, 0.0, 0.95)
     var final_damage: int = int(round(float(amount) * (1.0 - reduced_ratio)))
     final_damage = max(1, final_damage)
@@ -91,6 +91,7 @@ func take_damage(amount: int) -> void :
         _is_dead = true
         died.emit(self)
         queue_free()
+    return final_damage
 
 func _draw() -> void :
     draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.18, 0.04, 0.05, 0.9))

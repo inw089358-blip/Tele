@@ -62,7 +62,7 @@ func _on_right_arrow_pressed() -> void :
     _refresh_character_view()
 
 func _on_select_button_pressed() -> void :
-    GameManager.go_to_difficulty_select(CHARACTER_IDS[_current_index])
+    GameManager.go_to_weapon_select(CHARACTER_IDS[_current_index])
 
 func _on_back_button_pressed() -> void :
     GameManager.go_to_menu()

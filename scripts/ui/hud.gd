@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+@onready var stage_timer_label: Label = %StageTimerLabel
 @onready var boss_bar_root: PanelContainer = %BossBarRoot
 @onready var boss_name_label: Label = %BossNameLabel
 @onready var boss_hp_bar: ProgressBar = %BossHpBar
@@ -37,6 +38,15 @@ func _process(delta: float) -> void:
 
 func _on_wave_started(wave_id: int) -> void :
     set_status_entries(_build_preview_status_entries(wave_id))
+
+func set_stage_timer(visible: bool, value_text: String = "", tint: Color = Color(0.82, 0.96, 1.0, 0.95)) -> void:
+    if stage_timer_label == null:
+        return
+    stage_timer_label.visible = visible
+    if not visible:
+        return
+    stage_timer_label.text = value_text
+    stage_timer_label.modulate = tint
 
 func show_boss_bar(boss_name: String, max_hp: float, current_hp: float) -> void :
     _boss_hp_max = max(max_hp, 1.0)

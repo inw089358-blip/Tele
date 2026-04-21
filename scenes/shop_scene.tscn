@@ -1,0 +1,134 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/shop_scene.gd" id="1"]
+
+[node name="ShopScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.09, 0.11, 1)
+
+[node name="Root" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainVBox" type="VBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TopBar" type="HBoxContainer" parent="Root/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GoldLabel" type="Label" parent="Root/MainVBox/TopBar" unique_name_in_owner=true]
+layout_mode = 2
+text = "Gold: 0"
+
+[node name="WaveLabel" type="Label" parent="Root/MainVBox/TopBar" unique_name_in_owner=true]
+layout_mode = 2
+text = "Wave 1 Shop"
+
+[node name="SpacerTop" type="Control" parent="Root/MainVBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RefreshButton" type="Button" parent="Root/MainVBox/TopBar" unique_name_in_owner=true]
+layout_mode = 2
+text = "Refresh (20G)"
+
+[node name="LockButton" type="Button" parent="Root/MainVBox/TopBar" unique_name_in_owner=true]
+layout_mode = 2
+text = "Lock: OFF"
+
+[node name="MidRow" type="HBoxContainer" parent="Root/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="OffersPanel" type="PanelContainer" parent="Root/MainVBox/MidRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="OffersMargin" type="MarginContainer" parent="Root/MainVBox/MidRow/OffersPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="OffersGrid" type="GridContainer" parent="Root/MainVBox/MidRow/OffersPanel/OffersMargin" unique_name_in_owner=true]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="RightPanel" type="PanelContainer" parent="Root/MainVBox/MidRow"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RightMargin" type="MarginContainer" parent="Root/MainVBox/MidRow/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="AttrLabel" type="RichTextLabel" parent="Root/MainVBox/MidRow/RightPanel/RightMargin" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+text = "[b]Stats[/b]"
+
+[node name="BottomPanel" type="PanelContainer" parent="Root/MainVBox"]
+layout_mode = 2
+
+[node name="BottomMargin" type="MarginContainer" parent="Root/MainVBox/BottomPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="BottomVBox" type="VBoxContainer" parent="Root/MainVBox/BottomPanel/BottomMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WeaponSlotsRow" type="HBoxContainer" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BottomActions" type="HBoxContainer" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HintLabel" type="Label" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox/BottomActions" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Shop ready."
+
+[node name="NextWaveButton" type="Button" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox/BottomActions" unique_name_in_owner=true]
+layout_mode = 2
+text = "Start Next Wave"

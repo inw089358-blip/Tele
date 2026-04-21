@@ -32,13 +32,13 @@ window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[gui]
-
-theme/custom="res://themes/global_ui_theme.tres"
-
 [editor_overrides]
 
 text_editor/behavior/indent/type=1
+
+[gui]
+
+theme/custom="res://themes/global_ui_theme.tres"
 
 [input]
 

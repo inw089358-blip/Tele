@@ -1,6 +1,6 @@
 extends Node2D
 
-@onready var state_label: Label = get_node_or_null(^"HUD/StateLabel") as Label
+@onready var state_label: Label = _resolve_state_label()
 @onready var wave_manager: WaveManager = $WaveManager
 @onready var hud: CanvasLayer = $HUD
 @onready var pause_overlay: Control = %PauseOverlay
@@ -22,6 +22,7 @@ const SETTINGS_SCENE_PATH: String = "res://scenes/settings.tscn"
 const BG_TUTORIAL_TEXTURE: Texture2D = preload("res://sprite/maps/map_tutorial_dream_entrance.png")
 const BG_COMBAT_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_combat_default.png")
 const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_arena.png")
+const MELEE_ARC_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_arc_effect.gd")
 
 var _player: Player
 var _player_camera: Camera2D
@@ -46,14 +47,27 @@ var _settings_panel: Control
 var _settings_scene_resource: PackedScene
 var _level_reward_panel: PanelContainer
 var _level_reward_title: Label
+var _level_reward_hint_label: Label
+var _level_reward_buttons: Array[Button] = []
+var _level_reward_choices: Array[Dictionary] = []
+var _owned_weapon_rewards: Dictionary = {}
+var _reward_history_runtime: Array[String] = []
+var _recent_categories_runtime: Array[String] = []
+var _build_tags_runtime: Array[String] = []
+var _reward_pity_state_runtime: Dictionary = {"no_output_streak": 0}
 var _pending_level_up_rewards: int = 0
 var _current_level: int = 1
 var _current_xp: int = 0
 var _xp_to_next_level: int = 20
 var _stage_target_duration: float = 0.0
+var _wave_elapsed: float = 0.0
+var _wave_duration_runtime: float = 30.0
+var _wave_progress_index: int = 0
 var _stage_is_boss_stage: bool = false
 var _stage_clear_triggered: bool = false
 var _enemy_hp_multiplier: float = 1.0
+var _enemy_hp_stage_multiplier: float = 1.0
+var _enemy_move_speed_stage_multiplier: float = 1.0
 var _enemy_damage_multiplier: float = 1.0
 var _spawn_interval_multiplier: float = 1.0
 var _xp_multiplier: float = 1.0
@@ -61,6 +75,15 @@ var _gold_multiplier: float = 1.0
 var _arena_half_extents: Vector2 = Vector2(620.0, 340.0)
 var _enemy_ranged_weight_runtime: float = ENEMY_RANGED_WEIGHT
 var _enemy_barrage_weight_runtime: float = ENEMY_BARRAGE_WEIGHT
+var _auto_attack_interval_multiplier_runtime: float = 1.0
+var _current_gold_runtime: int = 0
+var _selected_starter_weapon_id_runtime: String = ""
+var _shop_runtime_state: Dictionary = {
+    "equipped_weapons": [],
+    "inventory_overflow": [],
+    "locked_shop_offers": [],
+    "refresh_count": 0,
+}
 var _stage_background_key: String = ""
 var _pause_transition_tween: Tween
 
@@ -80,6 +103,30 @@ const ELITE_SPAWN_RELIEF_MULTIPLIER: float = 1.2
 const AUTO_ATTACK_INTERVAL: float = 0.35
 const AUTO_ATTACK_BASE_DAMAGE: int = 12
 const BULLET_SPEED: float = 540.0
+const DEFAULT_WEAPON_ATTACK_PROFILES: Dictionary = {
+    "arc_blade": {
+        "mode": "melee_arc",
+        "base_damage": 10,
+        "interval": 0.30,
+        "range": 95.0,
+    },
+    "storm_wand": {
+        "mode": "ranged_homing",
+        "base_damage": 9,
+        "interval": 0.39,
+        "range": 340.0,
+        "projectile_speed": 560.0,
+        "projectile_radius": 4.0,
+    },
+    "void_gun": {
+        "mode": "ranged_heavy",
+        "base_damage": 16,
+        "interval": 0.68,
+        "range": 420.0,
+        "projectile_speed": 680.0,
+        "projectile_radius": 6.0,
+    },
+}
 const CONTACT_DAMAGE: int = 8
 const CONTACT_DAMAGE_INTERVAL: float = 0.34
 const XP_BASE_VALUE: float = 20.0
@@ -87,9 +134,17 @@ const XP_GROWTH_FACTOR: float = 1.15
 const REWARD_TARGET_RANGE_BONUS: float = 80.0
 const REWARD_ATTACK_DAMAGE_BONUS: int = 3
 const REWARD_MOVE_SPEED_BONUS: float = 15.0
+const LEVEL_REWARD_CHOICES_COUNT: int = 3
+const STAGE_TIMER_DANGER_SECONDS: int = 10
 const PAUSE_OPEN_DURATION: float = 0.18
 const PAUSE_CLOSE_DURATION: float = 0.13
 const PAUSE_PANEL_POP_SCALE: float = 0.94
+
+func _resolve_state_label() -> Label:
+    var direct_label: Label = get_node_or_null(^"HUD#StateLabel") as Label
+    if direct_label != null:
+        return direct_label
+    return get_node_or_null(^"HUD/StateLabel") as Label
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_ALWAYS
@@ -105,11 +160,16 @@ func _ready() -> void :
     _spawn_player()
     if not pending_slot_data.is_empty():
         _apply_loaded_slot_data(pending_slot_data, false)
+    _ensure_starter_weapon_equipped()
     _spawn_initial_enemies()
     wave_manager.start_stage()
+    _sync_wave_runtime_from_manager()
     _apply_stage_runtime_from_balance(GameManager.current_stage_id)
     if state_label != null:
         state_label.visible = false
+        state_label.modulate = Color(0.82, 0.96, 1.0, 0.95)
+    else:
+        push_warning("Stage timer label not found. Expected HUD#StateLabel or HUD/StateLabel.")
     _bind_pause_menu()
     _prepare_pause_sub_scenes()
     _create_pause_sub_panels()
@@ -122,10 +182,28 @@ func _reset_progress_state() -> void :
     _pending_level_up_rewards = 0
     _reward_opened = false
     _battle_elapsed = 0.0
+    _wave_elapsed = 0.0
+    _wave_duration_runtime = 30.0
+    _wave_progress_index = 0
     _stage_clear_triggered = false
     _next_elite_spawn_time = ELITE_FIRST_SPAWN_TIME
     _elite_spawn_relief_timer = 0.0
     _active_elite = null
+    _owned_weapon_rewards = {}
+    _reward_history_runtime = []
+    _recent_categories_runtime = []
+    _build_tags_runtime = []
+    _reward_pity_state_runtime = {"no_output_streak": 0}
+    _level_reward_choices = []
+    _auto_attack_interval_multiplier_runtime = 1.0
+    _current_gold_runtime = 0
+    _selected_starter_weapon_id_runtime = GameManager.selected_starter_weapon_id
+    _shop_runtime_state = {
+        "equipped_weapons": [],
+        "inventory_overflow": [],
+        "locked_shop_offers": [],
+        "refresh_count": 0,
+    }
     if hud != null and hud.has_method("hide_boss_bar"):
         hud.call("hide_boss_bar")
 
@@ -135,6 +213,7 @@ func _process(delta: float) -> void :
     if GameManager.current_state != GameManager.GameState.PLAYING:
         return
     _battle_elapsed += delta
+    _wave_elapsed += delta
     _update_stage_timer(delta)
     if _stage_clear_triggered:
         return
@@ -154,7 +233,7 @@ func _process(delta: float) -> void :
 
     _try_spawn_elite_by_schedule()
 
-    if _auto_attack_timer >= AUTO_ATTACK_INTERVAL:
+    if _auto_attack_timer >= _get_auto_attack_interval_runtime():
         _auto_attack_timer = 0.0
         _auto_attack_nearest_enemy()
     _handle_projectile_hits()
@@ -210,23 +289,39 @@ func _on_player_died() -> void :
         )
     _clear_experience_orbs()
     _clear_enemy_projectiles()
+    if hud != null and hud.has_method("set_stage_timer"):
+        hud.call("set_stage_timer", false)
     if hud.has_method("hide_boss_bar"):
         hud.call("hide_boss_bar")
     GameManager.end_game(false)
 
 func _update_stage_timer(_delta: float) -> void:
-    if state_label == null:
+    if hud == null or not hud.has_method("set_stage_timer"):
         return
-    if _stage_is_boss_stage or _stage_target_duration <= 0.0:
-        state_label.visible = false
+    if _stage_is_boss_stage or _wave_duration_runtime <= 0.0:
+        hud.call("set_stage_timer", false)
         return
-    var remain: float = max(0.0, _stage_target_duration - _battle_elapsed)
-    state_label.visible = true
-    state_label.text = "Clear in: %02d" % int(ceil(remain))
+    var remain: float = max(0.0, _wave_duration_runtime - _wave_elapsed)
+    var timer_tint: Color = _update_stage_timer_color(remain)
+    hud.call("set_stage_timer", true, _format_stage_countdown(remain), timer_tint)
     if remain <= 0.0:
-        _complete_stage_by_timer()
+        _on_wave_time_up()
 
-func _complete_stage_by_timer() -> void:
+func _format_stage_countdown(remain: float) -> String:
+    var seconds_total: int = max(0, int(ceil(remain)))
+    var minutes: int = seconds_total / 60
+    var seconds: int = seconds_total % 60
+    return "%02d:%02d" % [minutes, seconds]
+
+func _update_stage_timer_color(remain: float) -> Color:
+    if remain > float(STAGE_TIMER_DANGER_SECONDS):
+        return Color(0.82, 0.96, 1.0, 0.95)
+    var pulse_t: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.014)
+    var safe_color: Color = Color(0.86, 0.96, 1.0, 0.95)
+    var danger_color: Color = Color(1.0, 0.42, 0.38, 1.0)
+    return safe_color.lerp(danger_color, pulse_t)
+
+func _on_wave_time_up() -> void:
     if _stage_clear_triggered or _is_game_over:
         return
     _stage_clear_triggered = true
@@ -236,12 +331,52 @@ func _complete_stage_by_timer() -> void:
     get_tree().paused = false
     _set_pause_overlay_visible(false)
     _clear_enemy_projectiles()
+    _clear_experience_orbs()
+    _clear_all_enemies()
+    var current_wave_profile: Dictionary = wave_manager.get_current_wave_definition()
+    _add_gold(int(current_wave_profile.get("reward_gold", 0)))
+    _add_experience(int(current_wave_profile.get("reward_xp", 0)))
+    var next_stage_id: String = _resolve_next_stage_id(GameManager.current_stage_id)
+    if next_stage_id.is_empty():
+        _stage_clear_triggered = false
+        _complete_stage_by_timer()
+        return
+    var shop_snapshot: Dictionary = _build_wave_runtime_snapshot()
+    shop_snapshot["stage_id"] = next_stage_id
+    shop_snapshot["wave"] = 1
+    shop_snapshot["wave_progress_index"] = 0
+    GameManager.open_wave_shop(shop_snapshot)
+
+func _complete_stage_by_timer() -> void:
+    if _is_game_over:
+        return
+    _stage_clear_triggered = true
+    _pause_opened = false
+    _reward_opened = false
+    _pending_level_up_rewards = 0
+    get_tree().paused = false
+    _set_pause_overlay_visible(false)
+    _clear_enemy_projectiles()
+    if hud != null and hud.has_method("set_stage_timer"):
+        hud.call("set_stage_timer", false)
     EventBus.stage_cleared.emit(GameManager.current_stage_id)
     var next_stage_id: String = _resolve_next_stage_id(GameManager.current_stage_id)
     if next_stage_id.is_empty():
         GameManager.end_game(true)
         return
-    GameManager.start_game(next_stage_id)
+    GameManager.start_game_with_runtime(next_stage_id, _build_stage_transition_payload(next_stage_id))
+
+func _build_stage_transition_payload(next_stage_id: String) -> Dictionary:
+    var payload: Dictionary = _build_runtime_save_payload()
+    payload["stage_id"] = next_stage_id
+    payload["wave"] = 1
+    payload["wave_progress_index"] = 0
+    var next_shop_state: Dictionary = _normalize_shop_runtime_state(payload.get("shop_runtime_state", {}))
+    next_shop_state["locked_shop_offers"] = []
+    next_shop_state["shop_locked"] = false
+    next_shop_state["refresh_count"] = 0
+    payload["shop_runtime_state"] = next_shop_state
+    return payload
 
 func _spawn_player(force_character_id: String = "") -> void :
     var selected_id: String = force_character_id if not force_character_id.is_empty() else GameManager.selected_character
@@ -311,9 +446,11 @@ func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy
     enemy.died.connect(_on_enemy_died)
     enemy.enemy_projectile_fired.connect(_on_enemy_projectile_fired)
     add_child(enemy)
-    var scaled_max_hp: int = max(1, int(round(float(enemy.max_hp) * _enemy_hp_multiplier)))
+    var hp_scale: float = max(0.1, _enemy_hp_multiplier * _enemy_hp_stage_multiplier)
+    var scaled_max_hp: int = max(1, int(round(float(enemy.max_hp) * hp_scale)))
     enemy.max_hp = scaled_max_hp
     enemy.current_hp = scaled_max_hp
+    enemy.move_speed = max(10.0, enemy.move_speed * max(0.1, _enemy_move_speed_stage_multiplier))
     enemy.queue_redraw()
     _enemies.append(enemy)
     return enemy
@@ -405,19 +542,20 @@ func _constrain_actor_positions_to_arena() -> void:
 func _auto_attack_nearest_enemy() -> void :
     if _player == null or not is_instance_valid(_player):
         return
-    var target_range: float = _player.get_current_target_range()
+    var primary_weapon: Dictionary = _get_primary_weapon_runtime()
+    var attack_profile: Dictionary = _resolve_attack_profile(primary_weapon)
+    var target_range: float = _resolve_weapon_attack_range(attack_profile)
     var nearest_enemy: Enemy = _find_nearest_enemy_in_range(target_range)
     if nearest_enemy == null:
         return
-    var projectile: Projectile = Projectile.new()
-    projectile.damage = AUTO_ATTACK_BASE_DAMAGE + _player.get_attack_damage_bonus()
-    projectile.speed = BULLET_SPEED
-    projectile.hit_radius = 4.0
-    projectile.global_position = _player.global_position
-    projectile.direction = (_player.global_position.direction_to(nearest_enemy.global_position)).normalized()
-    projectile.set_target(nearest_enemy)
-    add_child(projectile)
-    _projectiles.append(projectile)
+    var mode: String = str(attack_profile.get("mode", "ranged_homing"))
+    match mode:
+        "melee_arc":
+            _perform_melee_arc_attack(nearest_enemy, attack_profile)
+        "ranged_heavy":
+            _spawn_weapon_projectile(nearest_enemy, attack_profile, false)
+        _:
+            _spawn_weapon_projectile(nearest_enemy, attack_profile, true)
 
 func _find_nearest_enemy_in_range(max_distance: float) -> Enemy:
     if _player == null:
@@ -432,6 +570,70 @@ func _find_nearest_enemy_in_range(max_distance: float) -> Enemy:
             best_dist_sq = dist_sq
             best_enemy = enemy
     return best_enemy
+
+func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, homing: bool) -> void:
+    if target_enemy == null or not is_instance_valid(target_enemy):
+        return
+    var projectile: Projectile = Projectile.new()
+    projectile.damage = _resolve_weapon_damage(attack_profile)
+    projectile.speed = max(180.0, float(attack_profile.get("projectile_speed", BULLET_SPEED)))
+    projectile.hit_radius = max(2.0, float(attack_profile.get("projectile_radius", 4.0)))
+    projectile.crit_chance = _player.crit_chance
+    projectile.crit_multiplier = _player.crit_multiplier
+    projectile.lifesteal_ratio = _player.lifesteal
+    projectile.owner_player = _player
+    projectile.global_position = _player.global_position
+    projectile.direction = (_player.global_position.direction_to(target_enemy.global_position)).normalized()
+    if homing:
+        projectile.set_target(target_enemy)
+    add_child(projectile)
+    _projectiles.append(projectile)
+
+func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary) -> void:
+    if target_enemy == null or not is_instance_valid(target_enemy):
+        return
+    _spawn_melee_arc_effect(target_enemy.global_position, attack_profile)
+    var base_damage: int = _resolve_weapon_damage(attack_profile)
+    var outgoing_damage: int = _player.roll_outgoing_damage(base_damage, _player.crit_chance, _player.crit_multiplier)
+    var dealt_damage: int = target_enemy.take_damage(outgoing_damage)
+    _player.heal_from_lifesteal(dealt_damage, _player.lifesteal)
+    _cleanup_dead_enemies()
+
+func _resolve_weapon_damage(attack_profile: Dictionary) -> int:
+    var base_damage: int = int(attack_profile.get("base_damage", AUTO_ATTACK_BASE_DAMAGE))
+    return max(1, base_damage + _player.get_attack_damage_bonus())
+
+func _resolve_weapon_attack_range(attack_profile: Dictionary) -> float:
+    var mode: String = str(attack_profile.get("mode", "ranged_homing"))
+    var profile_range: float = float(attack_profile.get("range", _player.get_current_target_range()))
+    if mode == "melee_arc":
+        return clampf(profile_range, 55.0, 130.0)
+    var safe_range: float = max(60.0, profile_range)
+    return max(60.0, safe_range + _player.bonus_target_range)
+
+func _spawn_melee_arc_effect(target_position: Vector2, attack_profile: Dictionary) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    var effect: Node2D = MELEE_ARC_EFFECT_SCRIPT.new() as Node2D
+    if effect == null:
+        return
+    effect.global_position = _player.global_position
+    add_child(effect)
+    var direction: Vector2 = (_player.global_position.direction_to(target_position)).normalized()
+    if direction.length_squared() <= 0.0001:
+        direction = Vector2.RIGHT
+    var profile_range: float = clampf(float(attack_profile.get("range", 95.0)), 55.0, 130.0)
+    var arc_width: float = clampf(float(attack_profile.get("arc_width", 1.35)), 0.4, 2.2)
+    if effect.has_method("configure"):
+        effect.call(
+            "configure",
+            direction.angle(),
+            profile_range * 0.85,
+            arc_width,
+            8.0,
+            Color(0.9, 0.98, 1.0, 0.92),
+            0.11
+        )
 
 func _cleanup_dead_enemies() -> void :
     var alive: Array[Enemy] = []
@@ -451,7 +653,17 @@ func _handle_projectile_hits() -> void :
                 continue
             var hit_distance: float = projectile.hit_radius + enemy.body_radius
             if projectile.global_position.distance_squared_to(enemy.global_position) <= hit_distance * hit_distance:
-                enemy.take_damage(projectile.damage)
+                var owner: Player = projectile.owner_player
+                var outgoing_damage: int = projectile.damage
+                if owner != null and is_instance_valid(owner):
+                    outgoing_damage = owner.roll_outgoing_damage(
+                        projectile.damage,
+                        projectile.crit_chance,
+                        projectile.crit_multiplier
+                    )
+                var dealt_damage: int = enemy.take_damage(outgoing_damage)
+                if owner != null and is_instance_valid(owner):
+                    owner.heal_from_lifesteal(dealt_damage, projectile.lifesteal_ratio)
                 projectile.queue_free()
                 break
     _cleanup_dead_enemies()
@@ -556,6 +768,15 @@ func _clear_enemy_projectiles() -> void :
             projectile.queue_free()
     _enemy_projectiles.clear()
 
+func _clear_all_enemies() -> void:
+    for enemy: Enemy in _enemies:
+        if enemy != null and is_instance_valid(enemy):
+            enemy.queue_free()
+    _enemies.clear()
+    _active_elite = null
+    if hud != null and hud.has_method("hide_boss_bar"):
+        hud.call("hide_boss_bar")
+
 func _refresh_player_hud() -> void :
     if _player == null or not is_instance_valid(_player):
         return
@@ -604,7 +825,7 @@ func _draw() -> void :
     draw_rect(arena_rect, Color(0.23, 0.36, 0.4, 0.35), false, 2.0)
 
 func _bind_pause_menu() -> void :
-    resume_button.text = "返回战斗"
+    resume_button.text = "Resume"
     resume_button.pressed.connect(_on_resume_button_pressed)
     main_menu_button.pressed.connect(_on_main_menu_button_pressed)
     save_button.pressed.connect(_on_save_button_pressed)
@@ -692,17 +913,19 @@ func _create_level_reward_panel() -> void :
     _level_reward_title.add_theme_font_size_override("font_size", 28)
     vbox.add_child(_level_reward_title)
 
-    var hint_label: Label = Label.new()
-    hint_label.text = "Level Up Reward: Choose one upgrade"
-    hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    hint_label.add_theme_font_size_override("font_size", 18)
-    vbox.add_child(hint_label)
+    _level_reward_hint_label = Label.new()
+    _level_reward_hint_label.text = "Level Up Reward: Choose one weapon"
+    _level_reward_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _level_reward_hint_label.add_theme_font_size_override("font_size", 18)
+    vbox.add_child(_level_reward_hint_label)
 
     vbox.add_spacer(false)
 
-    vbox.add_child(_build_reward_button("Target Range +80", "target_range"))
-    vbox.add_child(_build_reward_button("Projectile Damage +3", "attack_damage"))
-    vbox.add_child(_build_reward_button("Move Speed +15", "move_speed"))
+    _level_reward_buttons.clear()
+    for i: int in range(LEVEL_REWARD_CHOICES_COUNT):
+        var button: Button = _build_reward_button("Loading...", "none")
+        _level_reward_buttons.append(button)
+        vbox.add_child(button)
 
     _level_reward_panel = panel
     _add_pause_sub_panel(_level_reward_panel)
@@ -712,8 +935,17 @@ func _build_reward_button(text: String, reward_id: String) -> Button:
     button.custom_minimum_size = Vector2(400.0, 52.0)
     button.text = text
     button.add_theme_font_size_override("font_size", 24)
-    button.pressed.connect(_on_level_reward_selected.bind(reward_id))
+    button.set_meta("reward_id", reward_id)
+    button.pressed.connect(_on_level_reward_button_pressed.bind(button))
     return button
+
+func _on_level_reward_button_pressed(button: Button) -> void:
+    if button == null:
+        return
+    var reward_id: String = str(button.get_meta("reward_id", ""))
+    if reward_id.is_empty() or reward_id == "none":
+        return
+    _on_level_reward_selected(reward_id)
 
 func _open_pause_menu() -> void :
     _pause_opened = true
@@ -897,7 +1129,23 @@ func _on_enemy_died(enemy: Enemy) -> void :
         _active_elite = null
         if hud.has_method("hide_boss_bar"):
             hud.call("hide_boss_bar")
+    _add_gold(_resolve_enemy_gold_drop(enemy))
     _spawn_experience_orb(enemy.global_position, enemy.xp_drop_amount)
+
+func _resolve_enemy_gold_drop(enemy: Enemy) -> int:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    var gold_drop: Dictionary = combat_params.get("gold_drop", {})
+    if enemy.is_elite:
+        return int(gold_drop.get("elite", 8))
+    if enemy.enemy_type == Enemy.EnemyType.RANGED or enemy.enemy_type == Enemy.EnemyType.BARRAGE:
+        return int(gold_drop.get("ranged", 2))
+    return int(gold_drop.get("melee", 1))
+
+func _add_gold(amount: int) -> void:
+    if amount <= 0:
+        return
+    var scaled_amount: int = max(0, int(round(float(amount) * _gold_multiplier)))
+    _current_gold_runtime = max(0, _current_gold_runtime + scaled_amount)
 
 func _spawn_experience_orb(spawn_position: Vector2, xp_value: int) -> void :
     var orb: ExperienceOrb = ExperienceOrb.new()
@@ -909,7 +1157,10 @@ func _spawn_experience_orb(spawn_position: Vector2, xp_value: int) -> void :
 func _add_experience(amount: int) -> void :
     if amount <= 0:
         return
-    var scaled_amount: int = max(1, int(round(float(amount) * _xp_multiplier)))
+    var player_xp_gain: float = 1.0
+    if _player != null and is_instance_valid(_player):
+        player_xp_gain = _player.get_xp_gain_multiplier()
+    var scaled_amount: int = max(1, int(round(float(amount) * _xp_multiplier * player_xp_gain)))
     _current_xp += scaled_amount
     while _current_xp >= _xp_to_next_level:
         _current_xp -= _xp_to_next_level
@@ -944,6 +1195,7 @@ func _show_level_reward_panel() -> void :
         _slot_panel.visible = false
     if _settings_panel != null:
         _settings_panel.visible = false
+    _refresh_level_reward_choices()
     _level_reward_panel.visible = true
     if _level_reward_title != null:
         _level_reward_title.text = "Level %d Reward Choice" % _current_level
@@ -951,27 +1203,104 @@ func _show_level_reward_panel() -> void :
 func _on_level_reward_selected(reward_id: String) -> void :
     if _player == null or not is_instance_valid(_player):
         return
-    match reward_id:
-        "target_range":
-            _player.add_target_range(REWARD_TARGET_RANGE_BONUS)
-        "attack_damage":
-            _player.add_attack_damage(REWARD_ATTACK_DAMAGE_BONUS)
-        "move_speed":
-            _player.add_move_speed(REWARD_MOVE_SPEED_BONUS)
+    if reward_id.is_empty() or reward_id == "none":
+        return
+    var run_state: Dictionary = _build_reward_run_state()
+    run_state = UpgradeSystem.apply_reward(reward_id, _player, run_state)
+    _apply_reward_run_state(run_state)
 
     _pending_level_up_rewards = max(0, _pending_level_up_rewards - 1)
     if _pending_level_up_rewards > 0:
         if _level_reward_title != null:
             _level_reward_title.text = "Level %d Reward Choice" % _current_level
+        _refresh_level_reward_choices()
         return
     _close_level_reward_panel()
 
 func _close_level_reward_panel() -> void :
     _reward_opened = false
+    _level_reward_choices = []
     if _level_reward_panel != null:
         _level_reward_panel.visible = false
     get_tree().paused = false
     _set_pause_overlay_visible(false)
+
+func _refresh_level_reward_choices() -> void:
+    var reward_context: Dictionary = UpgradeSystem.build_reward_context(_build_reward_run_state())
+    _level_reward_choices = UpgradeSystem.get_reward_choices(reward_context)
+    for i: int in range(_level_reward_buttons.size()):
+        var button: Button = _level_reward_buttons[i]
+        if button == null:
+            continue
+        if i >= _level_reward_choices.size():
+            button.disabled = true
+            button.text = "No Weapon"
+            button.set_meta("reward_id", "none")
+            button.tooltip_text = ""
+            continue
+        var reward: Dictionary = _level_reward_choices[i]
+        button.disabled = false
+        button.text = str(reward.get("name", "Unknown Weapon"))
+        button.set_meta("reward_id", str(reward.get("id", "")))
+        button.tooltip_text = str(reward.get("desc", ""))
+
+    if _level_reward_hint_label != null and not _level_reward_choices.is_empty():
+        var preview_desc: String = str(_level_reward_choices[0].get("desc", ""))
+        _level_reward_hint_label.text = preview_desc if not preview_desc.is_empty() else "Choose one weapon upgrade."
+
+func _build_reward_run_state() -> Dictionary:
+    return {
+        "stage_id": GameManager.current_stage_id,
+        "level": _current_level,
+        "hp_ratio": _get_player_hp_ratio(),
+        "difficulty": GameManager.current_difficulty,
+        "build_tags": _build_tags_runtime.duplicate(),
+        "history": _reward_history_runtime.duplicate(),
+        "recent_categories": _recent_categories_runtime.duplicate(),
+        "pity_state": _reward_pity_state_runtime.duplicate(true),
+        "owned_rewards": _owned_weapon_rewards.duplicate(true),
+        "gold_gain_multiplier": _gold_multiplier,
+        "auto_attack_interval_multiplier": _auto_attack_interval_multiplier_runtime,
+    }
+
+func _apply_reward_run_state(run_state: Dictionary) -> void:
+    var history_value: Variant = run_state.get("reward_history", _reward_history_runtime)
+    if history_value is Array:
+        _reward_history_runtime = _extract_string_array(history_value)
+
+    var recent_categories_value: Variant = run_state.get("recent_categories", _recent_categories_runtime)
+    if recent_categories_value is Array:
+        _recent_categories_runtime = _extract_string_array(recent_categories_value)
+
+    var build_tags_value: Variant = run_state.get("build_tags", _build_tags_runtime)
+    if build_tags_value is Array:
+        _build_tags_runtime = _extract_string_array(build_tags_value)
+
+    var pity_value: Variant = run_state.get("reward_pity_state", _reward_pity_state_runtime)
+    if pity_value is Dictionary:
+        _reward_pity_state_runtime = pity_value.duplicate(true)
+
+    var owned_value: Variant = run_state.get("owned_rewards", _owned_weapon_rewards)
+    if owned_value is Dictionary:
+        _owned_weapon_rewards = owned_value.duplicate(true)
+
+    _gold_multiplier = max(0.1, float(run_state.get("gold_gain_multiplier", _gold_multiplier)))
+    _auto_attack_interval_multiplier_runtime = clampf(
+        float(run_state.get("auto_attack_interval_multiplier", _auto_attack_interval_multiplier_runtime)),
+        0.45,
+        1.6
+    )
+    _refresh_player_hud()
+
+func _get_auto_attack_interval_runtime() -> float:
+    var primary_weapon: Dictionary = _get_primary_weapon_runtime()
+    var attack_profile: Dictionary = _resolve_attack_profile(primary_weapon)
+    var base_interval: float = max(0.08, float(attack_profile.get("interval", AUTO_ATTACK_INTERVAL)))
+    var player_speed_mult: float = 1.0
+    if _player != null and is_instance_valid(_player):
+        player_speed_mult = _player.get_attack_speed_multiplier()
+    var safe_speed_mult: float = max(0.01, player_speed_mult)
+    return clampf(base_interval * _auto_attack_interval_multiplier_runtime / safe_speed_mult, 0.08, 1.2)
 
 func _on_slot_button_pressed(slot_id: String) -> void :
     if _slot_panel == null:
@@ -1018,6 +1347,7 @@ func _build_runtime_save_payload() -> Dictionary:
     var player_move_speed: float = 220.0
     var bonus_target_range: float = 0.0
     var bonus_attack_damage: int = 0
+    var player_stats: Dictionary = {}
     var player_pos_x: float = 0.0
     var player_pos_y: float = 0.0
 
@@ -1029,13 +1359,11 @@ func _build_runtime_save_payload() -> Dictionary:
         player_move_speed = _player.move_speed
         bonus_target_range = _player.bonus_target_range
         bonus_attack_damage = _player.bonus_attack_damage
+        player_stats = _player.export_runtime_stats()
         player_pos_x = _player.global_position.x
         player_pos_y = _player.global_position.y
 
-    var wave_id: int = GameManager.current_wave
-    if wave_manager != null:
-        wave_id = wave_manager.current_wave
-    wave_id = max(1, wave_id)
+    var wave_id: int = 1
 
     var play_time_value: Variant = base_save.get("total_play_time", 0.0)
     var total_play_time: float = float(play_time_value) + 1.0
@@ -1048,9 +1376,11 @@ func _build_runtime_save_payload() -> Dictionary:
         "total_kills": total_kills, 
         "total_play_time": total_play_time, 
         "selected_character": _current_player_id, 
+        "selected_starter_weapon_id": _selected_starter_weapon_id_runtime,
         "difficulty": GameManager.current_difficulty, 
         "stage_id": GameManager.current_stage_id, 
         "wave": wave_id, 
+        "wave_progress_index": _wave_progress_index,
         "player_hp": player_hp, 
         "player_max_hp": player_max_hp, 
         "player_stamina": player_stamina, 
@@ -1058,11 +1388,23 @@ func _build_runtime_save_payload() -> Dictionary:
         "player_move_speed": player_move_speed, 
         "bonus_target_range": bonus_target_range, 
         "bonus_attack_damage": bonus_attack_damage, 
+        "player_stats": player_stats,
         "player_pos_x": player_pos_x, 
         "player_pos_y": player_pos_y, 
         "current_level": _current_level, 
         "current_xp": _current_xp, 
+        "current_gold": _current_gold_runtime,
         "xp_to_next_level": _xp_to_next_level, 
+        "reward_history": _reward_history_runtime.duplicate(),
+        "recent_categories": _recent_categories_runtime.duplicate(),
+        "build_tags": _build_tags_runtime.duplicate(),
+        "reward_pity_state": _reward_pity_state_runtime.duplicate(true),
+        "reward_owned": _owned_weapon_rewards.duplicate(true),
+        "auto_attack_interval_multiplier": _auto_attack_interval_multiplier_runtime,
+        "gold_gain_multiplier": _gold_multiplier,
+        "shop_runtime_state": _shop_runtime_state.duplicate(true),
+        "equipped_weapons": _extract_weapon_list_from_shop_state(_shop_runtime_state),
+        "locked_shop_offers": _extract_locked_offer_list_from_shop_state(_shop_runtime_state),
     }
 
 func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = true) -> void :
@@ -1070,7 +1412,7 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
     if selected_id.is_empty():
         selected_id = "the_fool"
     var stage_id: String = str(slot_data.get("stage_id", GameManager.current_stage_id))
-    var wave_id: int = max(1, int(slot_data.get("wave", 1)))
+    var wave_id: int = 1
     var loaded_difficulty: String = str(slot_data.get("difficulty", "normal")).to_lower()
     if loaded_difficulty != "easy" and loaded_difficulty != "hard":
         loaded_difficulty = "normal"
@@ -1078,8 +1420,12 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
     _refresh_difficulty_modifiers()
 
     GameManager.selected_character = selected_id
+    _selected_starter_weapon_id_runtime = str(
+        slot_data.get("selected_starter_weapon_id", GameManager.selected_starter_weapon_id)
+    )
+    GameManager.selected_starter_weapon_id = _selected_starter_weapon_id_runtime
     GameManager.current_stage_id = stage_id
-    GameManager.current_wave = wave_id
+    GameManager.current_wave = 1
     _apply_arena_config_from_balance(stage_id)
     _apply_enemy_mix_from_balance(stage_id)
     _apply_stage_runtime_from_balance(stage_id)
@@ -1105,6 +1451,9 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
     _player.move_speed = float(slot_data.get("player_move_speed", _player.move_speed))
     _player.bonus_target_range = float(slot_data.get("bonus_target_range", 0.0))
     _player.bonus_attack_damage = int(slot_data.get("bonus_attack_damage", 0))
+    var player_stats_value: Variant = slot_data.get("player_stats", {})
+    if player_stats_value is Dictionary:
+        _player.import_runtime_stats(player_stats_value)
 
     _current_level = max(1, int(slot_data.get("current_level", 1)))
     _current_xp = max(0, int(slot_data.get("current_xp", 0)))
@@ -1118,6 +1467,37 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
         _xp_to_next_level = _xp_required_for_level(_current_level)
     _pending_level_up_rewards = 0
     _reward_opened = false
+    _wave_progress_index = max(0, int(slot_data.get("wave_progress_index", wave_id - 1)))
+    _current_gold_runtime = max(0, int(slot_data.get("current_gold", _current_gold_runtime)))
+    _shop_runtime_state = _normalize_shop_runtime_state(slot_data.get("shop_runtime_state", {}))
+    if _shop_runtime_state.get("equipped_weapons", []).is_empty():
+        var legacy_equipped: Variant = slot_data.get("equipped_weapons", [])
+        if legacy_equipped is Array:
+            _shop_runtime_state["equipped_weapons"] = legacy_equipped.duplicate(true)
+    if _shop_runtime_state.get("locked_shop_offers", []).is_empty():
+        var legacy_locked: Variant = slot_data.get("locked_shop_offers", [])
+        if legacy_locked is Array:
+            _shop_runtime_state["locked_shop_offers"] = legacy_locked.duplicate(true)
+    _ensure_starter_weapon_equipped()
+    _reward_history_runtime = _extract_string_array(slot_data.get("reward_history", []))
+    _recent_categories_runtime = _extract_string_array(slot_data.get("recent_categories", []))
+    _build_tags_runtime = _extract_string_array(slot_data.get("build_tags", []))
+    var pity_state_value: Variant = slot_data.get("reward_pity_state", {"no_output_streak": 0})
+    if pity_state_value is Dictionary:
+        _reward_pity_state_runtime = pity_state_value.duplicate(true)
+    else:
+        _reward_pity_state_runtime = {"no_output_streak": 0}
+    var owned_rewards_value: Variant = slot_data.get("reward_owned", {})
+    if owned_rewards_value is Dictionary:
+        _owned_weapon_rewards = owned_rewards_value.duplicate(true)
+    else:
+        _owned_weapon_rewards = {}
+    _auto_attack_interval_multiplier_runtime = clampf(
+        float(slot_data.get("auto_attack_interval_multiplier", _auto_attack_interval_multiplier_runtime)),
+        0.45,
+        1.6
+    )
+    _gold_multiplier = max(0.1, float(slot_data.get("gold_gain_multiplier", _gold_multiplier)))
     _clear_experience_orbs()
     _clear_enemy_projectiles()
     _active_elite = null
@@ -1129,6 +1509,7 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
 
     if sync_wave_manager and wave_manager != null:
         wave_manager.current_wave = wave_id
+        _sync_wave_runtime_from_manager()
         EventBus.wave_started.emit(wave_id)
 
     for enemy: Enemy in _enemies:
@@ -1148,6 +1529,22 @@ func _extract_character_array(raw_value: Variant) -> Array[String]:
             if not result.has(character_id):
                 result.append(character_id)
     return result
+
+func _extract_string_array(raw_value: Variant) -> Array[String]:
+    var result: Array[String] = []
+    if raw_value is Array:
+        var raw_array: Array = raw_value
+        for item: Variant in raw_array:
+            var text: String = str(item)
+            if text.is_empty():
+                continue
+            result.append(text)
+    return result
+
+func _get_player_hp_ratio() -> float:
+    if _player == null or not is_instance_valid(_player):
+        return 1.0
+    return clampf(float(_player.current_hp) / float(max(1, _player.max_hp)), 0.0, 1.0)
 
 func _refresh_difficulty_modifiers() -> void :
     var difficulty_modifiers: Dictionary = GameManager.get_difficulty_modifiers()
@@ -1203,10 +1600,176 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     var stage_profile: Dictionary = BalanceService.get_stage_profile(stage_id)
     _stage_is_boss_stage = bool(stage_profile.get("is_boss_stage", false))
     _stage_background_key = str(stage_profile.get("background_key", "")).to_lower()
+    _enemy_hp_stage_multiplier = clampf(float(stage_profile.get("enemy_hp_multiplier", 1.0)), 0.1, 3.0)
+    _enemy_move_speed_stage_multiplier = clampf(
+        float(stage_profile.get("enemy_move_speed_multiplier", 1.0)),
+        0.1,
+        3.0
+    )
     var spawn_profile: Dictionary = stage_profile.get("spawn_profile", {})
     _stage_target_duration = max(0.0, float(spawn_profile.get("target_duration", 0.0)))
+    if wave_manager != null and wave_manager.has_method("get_current_wave_definition"):
+        var wave_profile: Dictionary = wave_manager.get_current_wave_definition()
+        _wave_duration_runtime = max(1.0, float(wave_profile.get("duration", _stage_target_duration)))
     _apply_arena_size_from_background_texture()
     queue_redraw()
+
+func _sync_wave_runtime_from_manager() -> void:
+    if wave_manager == null:
+        return
+    _wave_progress_index = max(0, int(wave_manager.current_wave) - 1)
+    var wave_profile: Dictionary = wave_manager.get_current_wave_definition()
+    var fallback_duration: float = _stage_target_duration if _stage_target_duration > 0.0 else 30.0
+    _wave_duration_runtime = max(1.0, float(wave_profile.get("duration", fallback_duration)))
+    _wave_elapsed = 0.0
+    _stage_clear_triggered = false
+    GameManager.current_wave = max(1, int(wave_manager.current_wave))
+
+func _build_wave_runtime_snapshot() -> Dictionary:
+    var snapshot: Dictionary = _build_runtime_save_payload()
+    snapshot["stage_id"] = GameManager.current_stage_id
+    snapshot["wave"] = max(1, int(wave_manager.current_wave))
+    snapshot["wave_progress_index"] = _wave_progress_index
+    snapshot["current_gold"] = _current_gold_runtime
+    snapshot["shop_runtime_state"] = _shop_runtime_state.duplicate(true)
+    return snapshot
+
+func _normalize_shop_runtime_state(raw_state: Variant) -> Dictionary:
+    var normalized: Dictionary = {
+        "equipped_weapons": [],
+        "inventory_overflow": [],
+        "locked_shop_offers": [],
+        "refresh_count": 0,
+        "shop_locked": false,
+    }
+    if raw_state is Dictionary:
+        var source: Dictionary = raw_state
+        var equipped: Variant = source.get("equipped_weapons", [])
+        if equipped is Array:
+            normalized["equipped_weapons"] = equipped.duplicate(true)
+        var overflow: Variant = source.get("inventory_overflow", [])
+        if overflow is Array:
+            normalized["inventory_overflow"] = overflow.duplicate(true)
+        var locked: Variant = source.get("locked_shop_offers", [])
+        if locked is Array:
+            normalized["locked_shop_offers"] = locked.duplicate(true)
+        normalized["refresh_count"] = max(0, int(source.get("refresh_count", 0)))
+        normalized["shop_locked"] = bool(source.get("shop_locked", false))
+    return normalized
+
+func _extract_weapon_list_from_shop_state(shop_state: Dictionary) -> Array:
+    var equipped: Variant = shop_state.get("equipped_weapons", [])
+    if equipped is Array:
+        return equipped.duplicate(true)
+    return []
+
+func _extract_locked_offer_list_from_shop_state(shop_state: Dictionary) -> Array:
+    var locked: Variant = shop_state.get("locked_shop_offers", [])
+    if locked is Array:
+        return locked.duplicate(true)
+    return []
+
+func _ensure_starter_weapon_equipped() -> void:
+    if _selected_starter_weapon_id_runtime.is_empty():
+        _selected_starter_weapon_id_runtime = GameManager.selected_starter_weapon_id
+    if _selected_starter_weapon_id_runtime.is_empty():
+        _selected_starter_weapon_id_runtime = _resolve_default_starter_weapon_id()
+    if _selected_starter_weapon_id_runtime.is_empty():
+        return
+    GameManager.selected_starter_weapon_id = _selected_starter_weapon_id_runtime
+
+    var equipped_value: Variant = _shop_runtime_state.get("equipped_weapons", [])
+    var equipped: Array = []
+    if equipped_value is Array:
+        equipped = (equipped_value as Array).duplicate(true)
+    while equipped.size() < 6:
+        equipped.append({})
+    var slot0: Variant = equipped[0] if not equipped.is_empty() else {}
+    var slot0_has_weapon: bool = slot0 is Dictionary and not str((slot0 as Dictionary).get("weapon_id", "")).is_empty()
+    if slot0_has_weapon:
+        return
+    var starter_weapon: Dictionary = _build_weapon_instance_by_id(_selected_starter_weapon_id_runtime)
+    if starter_weapon.is_empty():
+        return
+    equipped[0] = starter_weapon
+    _shop_runtime_state["equipped_weapons"] = equipped
+
+func _get_primary_weapon_runtime() -> Dictionary:
+    var equipped_value: Variant = _shop_runtime_state.get("equipped_weapons", [])
+    if not (equipped_value is Array):
+        return _build_weapon_instance_by_id(_selected_starter_weapon_id_runtime)
+    var equipped: Array = equipped_value
+    for slot_value: Variant in equipped:
+        if not (slot_value is Dictionary):
+            continue
+        var weapon: Dictionary = slot_value
+        if str(weapon.get("weapon_id", "")).is_empty():
+            continue
+        return weapon
+    return _build_weapon_instance_by_id(_selected_starter_weapon_id_runtime)
+
+func _resolve_attack_profile(weapon: Dictionary) -> Dictionary:
+    var weapon_id: String = str(weapon.get("weapon_id", ""))
+    if weapon.has("attack_profile") and weapon.get("attack_profile", {}) is Dictionary:
+        return weapon.get("attack_profile", {}).duplicate(true)
+    if DEFAULT_WEAPON_ATTACK_PROFILES.has(weapon_id):
+        return DEFAULT_WEAPON_ATTACK_PROFILES[weapon_id].duplicate(true)
+    return {
+        "mode": "ranged_homing",
+        "base_damage": AUTO_ATTACK_BASE_DAMAGE,
+        "interval": AUTO_ATTACK_INTERVAL,
+        "range": 320.0,
+        "projectile_speed": BULLET_SPEED,
+        "projectile_radius": 4.0,
+    }
+
+func _build_weapon_instance_by_id(weapon_id: String) -> Dictionary:
+    if weapon_id.is_empty():
+        return {}
+    var catalog_weapon: Dictionary = _get_weapon_catalog_entry(weapon_id)
+    if catalog_weapon.is_empty():
+        return {}
+    var attack_profile: Dictionary = catalog_weapon.get("attack_profile", {})
+    if attack_profile.is_empty() and DEFAULT_WEAPON_ATTACK_PROFILES.has(weapon_id):
+        attack_profile = DEFAULT_WEAPON_ATTACK_PROFILES[weapon_id].duplicate(true)
+    return {
+        "weapon_id": weapon_id,
+        "rarity": "common",
+        "level": 1,
+        "tags": catalog_weapon.get("tags", []),
+        "effects": catalog_weapon.get("effects", {}),
+        "stack_key": str(catalog_weapon.get("stack_key", weapon_id)),
+        "attack_profile": attack_profile.duplicate(true),
+    }
+
+func _get_weapon_catalog_entry(weapon_id: String) -> Dictionary:
+    var catalog: Dictionary = BalanceService.get_shop_catalog()
+    var pool_value: Variant = catalog.get("weapon_pool", [])
+    if pool_value is Array:
+        var pool: Array = pool_value
+        for weapon_value in pool:
+            if not (weapon_value is Dictionary):
+                continue
+            var weapon_entry: Dictionary = weapon_value
+            if str(weapon_entry.get("weapon_id", "")) == weapon_id:
+                return weapon_entry.duplicate(true)
+    return {}
+
+func _resolve_default_starter_weapon_id() -> String:
+    var catalog: Dictionary = BalanceService.get_shop_catalog()
+    var pool_value: Variant = catalog.get("weapon_pool", [])
+    if pool_value is Array:
+        var pool: Array = pool_value
+        for weapon_value in pool:
+            if not (weapon_value is Dictionary):
+                continue
+            var weapon_entry: Dictionary = weapon_value
+            if not bool(weapon_entry.get("starter", false)):
+                continue
+            var weapon_id: String = str(weapon_entry.get("weapon_id", ""))
+            if not weapon_id.is_empty():
+                return weapon_id
+    return ""
 
 func _get_stage_background_texture() -> Texture2D:
     match _stage_background_key:
