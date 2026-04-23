@@ -65,6 +65,10 @@ func go_to_settings() -> void :
 func apply_runtime_settings(settings: Dictionary) -> void :
     var display_settings: Dictionary = settings.get("display", {})
     var audio_settings: Dictionary = settings.get("audio", {})
+    var system_settings: Dictionary = settings.get("system", {})
+
+    if LocaleService != null:
+        LocaleService.apply_locale(str(system_settings.get("language", "zh_CN")))
 
     var window_mode: String = str(display_settings.get("window_mode", "windowed"))
     _apply_window_mode(window_mode)
@@ -82,7 +86,10 @@ func apply_runtime_settings(settings: Dictionary) -> void :
     _apply_bus_volume("UI", int(audio_settings.get("ui_volume", 80)))
 
 func _apply_settings_from_save() -> void :
-    apply_runtime_settings(SaveSystem.get_settings())
+    var settings: Dictionary = SaveSystem.get_settings()
+    if LocaleService != null:
+        LocaleService.init_from_settings(settings)
+    apply_runtime_settings(settings)
 
 func _apply_window_mode(window_mode: String) -> void :
     match window_mode:
@@ -251,28 +258,39 @@ func resume_game() -> void :
     change_state(GameState.PLAYING)
     get_tree().paused = false
 
-func end_game(is_victory: bool) -> void :
+func end_game(is_victory: bool, use_crt_shutdown: bool = true) -> void :
     var next_state: GameState = GameState.VICTORY if is_victory else GameState.GAME_OVER
     change_state(next_state)
     get_tree().paused = false
     EventBus.game_over.emit(is_victory)
-    _change_scene_with_crt(next_state, SCENE_GAME_OVER, false, false)
+    _change_scene_with_crt(next_state, SCENE_GAME_OVER, false, false, use_crt_shutdown, true)
 
 func _change_scene_with_crt(
     next_state: GameState,
     scene_path: String,
     pause_after_transition: bool = false,
-    emit_state_before_transition: bool = true
+    emit_state_before_transition: bool = true,
+    play_shutdown: bool = true,
+    play_startup: bool = true
 ) -> void:
     if _scene_transition_busy:
         return
-    _run_scene_transition(next_state, scene_path, pause_after_transition, emit_state_before_transition)
+    _run_scene_transition(
+        next_state,
+        scene_path,
+        pause_after_transition,
+        emit_state_before_transition,
+        play_shutdown,
+        play_startup
+    )
 
 func _run_scene_transition(
     next_state: GameState,
     scene_path: String,
     pause_after_transition: bool,
-    emit_state_before_transition: bool
+    emit_state_before_transition: bool,
+    play_shutdown: bool,
+    play_startup: bool
 ) -> void:
     _scene_transition_busy = true
     get_tree().paused = false
@@ -280,7 +298,7 @@ func _run_scene_transition(
     if emit_state_before_transition:
         change_state(next_state)
 
-    if CRTTransition != null and CRTTransition.has_method("play_shutdown"):
+    if play_shutdown and CRTTransition != null and CRTTransition.has_method("play_shutdown"):
         await CRTTransition.play_shutdown()
 
     get_tree().change_scene_to_file(scene_path)
@@ -289,7 +307,7 @@ func _run_scene_transition(
     if not emit_state_before_transition:
         change_state(next_state)
 
-    if CRTTransition != null and CRTTransition.has_method("play_startup"):
+    if play_startup and CRTTransition != null and CRTTransition.has_method("play_startup"):
         await CRTTransition.play_startup()
 
     get_tree().paused = pause_after_transition

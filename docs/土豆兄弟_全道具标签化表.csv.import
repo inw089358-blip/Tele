@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bamiokvj5gag6"
+
+[deps]
+
+files=["res://docs/土豆兄弟_全道具标签化表.Rarity.translation", "res://docs/土豆兄弟_全道具标签化表.Effects.translation", "res://docs/土豆兄弟_全道具标签化表.BasePrice.translation", "res://docs/土豆兄弟_全道具标签化表.Limit.translation", "res://docs/土豆兄弟_全道具标签化表.UnlockedBy.translation", "res://docs/土豆兄弟_全道具标签化表.Tags.translation"]
+
+source_file="res://docs/土豆兄弟_全道具标签化表.csv"
+dest_files=["res://docs/土豆兄弟_全道具标签化表.Rarity.translation", "res://docs/土豆兄弟_全道具标签化表.Effects.translation", "res://docs/土豆兄弟_全道具标签化表.BasePrice.translation", "res://docs/土豆兄弟_全道具标签化表.Limit.translation", "res://docs/土豆兄弟_全道具标签化表.UnlockedBy.translation", "res://docs/土豆兄弟_全道具标签化表.Tags.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

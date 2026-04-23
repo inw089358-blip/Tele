@@ -1,0 +1,133 @@
+﻿key,zh_CN,en_US
+data.character.the_fool.name,愚者,The Fool
+data.character.the_fool.hint,高机动，容错较低,High mobility and risky defense
+data.character.the_chariot.name,战车,The Chariot
+data.character.the_chariot.hint,高生存，稳健推进,High survivability and steady push
+data.character.the_hanged_man.name,倒吊人,The Hanged Man
+data.character.the_hanged_man.hint,均衡属性，节奏控制,Balanced stats with tempo control
+data.item.item_damage_chip.name,伤害芯片,Damage Chip
+data.item.item_damage_chip.desc,攻击伤害 +1,Attack damage +1
+data.item.item_attack_speed.name,超频触发器,Overclock Trigger
+data.item.item_attack_speed.desc,攻击速度 +8%,Attack speed +8%
+data.item.item_armor_plate.name,护甲板,Armor Plate
+data.item.item_armor_plate.desc,护甲 +1.5,Armor +1.5
+data.item.item_crit_lens.name,暴击透镜,Crit Lens
+data.item.item_crit_lens.desc,暴击率 +3%,Crit chance +3%
+data.item.item_vampire_fang.name,吸血獠牙,Vampire Fang
+data.item.item_vampire_fang.desc,吸血 +2%,Lifesteal +2%
+data.weapon.kunai.name,苦无,Kunai
+data.weapon.kunai.desc,高速投掷武器，具备精准连锁能力。,High-speed throw weapon with precise chaining.
+data.weapon.road_sign.name,路牌,Road Sign
+data.weapon.road_sign.desc,慢速重挥，具备强控场能力。,Slow heavy swing weapon with strong control.
+data.weapon.nail_gun.name,钉枪,Nail Gun
+data.weapon.nail_gun.desc,中距离高频射击武器。,Mid-range rapid-fire weapon.
+data.weapon.chain_whip.name,锁链鞭,Chain Whip
+data.weapon.chain_whip.desc,大范围横扫，擅长清杂与控场。,Sweeping attacks for crowd control.
+data.weapon.circular_saw.name,圆锯,Circular Saw
+data.weapon.circular_saw.desc,重型投射物，穿透力高。,Heavy projectile with high pierce.
+data.weapon.flare_launcher.name,信号弹发射器,Flare Launcher
+data.weapon.flare_launcher.desc,爆发型发射器，可点燃战场。,Burst launcher that ignites the battlefield.
+data.weapon.traffic_cone.name,路障锥,Traffic Cone
+data.weapon.traffic_cone.desc,稳定压制的重型投射物。,Heavy projectile with stable suppression.
+data.weapon.heavy_wrench.name,重型扳手,Heavy Wrench
+data.weapon.heavy_wrench.desc,可靠的近战重击武器。,Reliable close-range heavy strikes.
+data.weapon.molotov.name,燃烧瓶,Molotov
+data.weapon.molotov.desc,范围持续燃烧伤害。,Sustained burn damage over area.
+data.weapon.shuriken_ring.name,手里剑环,Shuriken Ring
+data.weapon.shuriken_ring.desc,多段命中，擅长中距离压制。,Multi-hit weapon for mid-range pressure.
+data.weapon.steel_pipe.name,钢管,Steel Pipe
+data.weapon.steel_pipe.desc,朴素稳定的前期近战武器。,Simple melee weapon for early game stability.
+data.weapon.rebar_spear.name,钢筋矛,Rebar Spear
+data.weapon.rebar_spear.desc,强线性穿刺，突进能力突出。,Piercing melee thrust with strong linear reach.
+data.weapon.mechanical_crossbow.name,机械弩,Mechanical Crossbow
+data.weapon.mechanical_crossbow.desc,稳定节奏的远程输出武器。,Stable ranged output with good tempo.
+data.weapon.drum_mallet.name,鼓槌,Drum Mallet
+data.weapon.drum_mallet.desc,节奏型近战连击武器。,Rhythmic melee strikes with consistent chains.
+data.weapon.meteor_hammer.name,流星锤,Meteor Hammer
+data.weapon.meteor_hammer.desc,高风险高回报的重型近战武器。,High-risk high-reward heavy melee weapon.
+data.reward.atk_flat_1.name,攻击 +1,Attack +1
+data.reward.atk_flat_1.desc,基础攻击伤害 +1,Base attack damage +1
+data.reward.range_up_40.name,射程 +40,Range +40
+data.reward.range_up_40.desc,索敌范围 +40,Targeting range +40
+data.reward.move_up_6.name,移速 +6,Move Speed +6
+data.reward.move_up_6.desc,移动速度 +6,Move speed +6
+data.reward.hp_up_2.name,生命 +2,HP +2
+data.reward.hp_up_2.desc,最大生命 +2 并治疗 2,Max HP +2 and heal 2
+data.reward.armor_up_2.name,护甲 +2,Armor +2
+data.reward.armor_up_2.desc,减少受到的伤害,Reduce incoming damage
+data.reward.dodge_up_5.name,闪避 +5%,Dodge +5%
+data.reward.dodge_up_5.desc,5% 概率完全免伤,5% chance to fully evade damage
+data.reward.atk_rate_10.name,攻速 +10%,Attack Speed +10%
+data.reward.atk_rate_10.desc,自动攻击间隔 -7%,Auto-attack interval -7%
+data.reward.atk_rate_8.name,攻速 +8%,Attack Speed +8%
+data.reward.atk_rate_8.desc,自动攻击间隔 -6%,Auto-attack interval -6%
+data.reward.crit_chance_8.name,暴击率 +8%,Crit Chance +8%
+data.reward.crit_chance_8.desc,更容易触发暴击,Higher chance to trigger crit
+data.reward.crit_damage_25.name,暴伤 +25%,Crit Damage +25%
+data.reward.crit_damage_25.desc,暴击伤害倍率 +0.18,Crit multiplier +0.18
+data.reward.lifesteal_3.name,吸血 +3%,Lifesteal +3%
+data.reward.lifesteal_3.desc,伤害转化为生命回复,Convert damage into healing
+data.reward.stamina_regen_10.name,体力回复 +10%,Stamina Regen +10%
+data.reward.stamina_regen_10.desc,体力恢复速度 +10%,Stamina recovery speed +10%
+data.reward.xp_gain_10.name,经验收益 +10%,XP Gain +10%
+data.reward.xp_gain_10.desc,经验获取倍率 +10%,XP multiplier +10%
+data.reward.gold_gain_10.name,金币收益 +10%,Gold Gain +10%
+data.reward.gold_gain_10.desc,金币获取倍率 +10%,Gold multiplier +10%
+data.reward.luck_up_8.name,幸运 +8,Luck +8
+data.reward.luck_up_8.desc,提升高价值奖励出现倾向,Increase high-value reward chance
+data.reward.glass_minor.name,玻璃炮,Glass Cannon
+data.reward.glass_minor.desc,攻击 +2，生命 -1，暴击率 +6%,ATK +2, HP -1, Crit +6%
+data.reward.fortress_minor.name,堡垒姿态,Fortress Stance
+data.reward.fortress_minor.desc,生命 +4，护甲 +3，攻速 -6%,HP +4, Armor +3, ATK speed -6%
+data.reward.precision_calibration.name,精度校准,Precision Calibration
+data.reward.precision_calibration.desc,暴击率基础值提升（随稀有度提升数值）,Base crit chance increases with rarity
+data.reward.burst_gears.name,爆发齿轮,Burst Gears
+data.reward.burst_gears.desc,攻击间隔缩短（随稀有度提升数值）,Attack interval reduced with rarity
+data.reward.impact_matrix.name,冲击矩阵,Impact Matrix
+data.reward.impact_matrix.desc,攻击与暴伤同步提升（随稀有度提升数值）,ATK and crit damage scale with rarity
+data.reward.fortified_lining.name,强化衬层,Fortified Lining
+data.reward.fortified_lining.desc,护甲提升（随稀有度提升数值）,Armor scales with rarity
+data.reward.phase_shift.name,相位偏移,Phase Shift
+data.reward.phase_shift.desc,闪避率提升（随稀有度提升数值）,Dodge scales with rarity
+data.reward.drain_route.name,汲取回路,Drain Route
+data.reward.drain_route.desc,吸血提升（随稀有度提升数值）,Lifesteal scales with rarity
+data.reward.mobility_rig.name,机动组件,Mobility Rig
+data.reward.mobility_rig.desc,移速与射程同步提升（随稀有度提升数值）,Move speed and range scale with rarity
+data.reward.field_medicine.name,战地医疗,Field Medicine
+data.reward.field_medicine.desc,回血并提升少量最大生命（随稀有度提升数值）,Heal and gain max HP with rarity
+data.reward.stamina_loop.name,体力回环,Stamina Loop
+data.reward.stamina_loop.desc,体力回复速度提升（随稀有度提升数值）,Stamina regen scales with rarity
+data.reward.study_protocol.name,学习协议,Study Protocol
+data.reward.study_protocol.desc,经验收益提升（随稀有度提升数值）,XP gain scales with rarity
+data.reward.fortune_protocol.name,幸运协议,Fortune Protocol
+data.reward.fortune_protocol.desc,幸运提升（随稀有度提升数值）,Luck scales with rarity
+data.reward.trade_contract.name,贸易契约,Trade Contract
+data.reward.trade_contract.desc,金币收益提升（随稀有度提升数值）,Gold gain scales with rarity
+data.reward.glass_pressure.name,过载增压,Glass Pressure
+data.reward.glass_pressure.desc,攻击提升，生命下降（随稀有度提升数值）,ATK up, HP down with rarity
+data.reward.iron_oath.name,铁壁誓约,Iron Oath
+data.reward.iron_oath.desc,护甲提升，攻速小幅下降（随稀有度提升数值）,Armor up with slight ATK speed loss
+data.reward.hp_flat_3.name,生命 +3,HP +3
+data.reward.hp_flat_3.desc,最大生命 +3,Max HP +3
+data.reward.melee_damage_flat_2.name,近战伤害 +2,Melee Damage +2
+data.reward.melee_damage_flat_2.desc,只提升近战武器伤害 +2,Only melee weapon damage +2
+data.reward.ranged_damage_flat_2.name,远程伤害 +2,Ranged Damage +2
+data.reward.ranged_damage_flat_2.desc,只提升远程武器伤害 +2,Only ranged weapon damage +2
+data.hub_offer.recover_small.name,小恢复,Small Recover
+data.hub_offer.recover_mid.name,中恢复,Medium Recover
+data.hub_offer.recover_full.name,完全恢复,Full Recover
+data.hub_offer.upgrade_attack_power.name,攻击力 +8%,Attack Power +8%
+data.hub_offer.upgrade_attack_speed.name,攻频 +6%,Attack Frequency +6%
+data.hub_offer.upgrade_survival.name,生存能力 +12% 生命,Survival Capacity +12% HP
+data.hub_offer.upgrade_resource_cycle.name,资源循环 +10%,Resource Cycle +10%
+data.hub_offer.upgrade_economy.name,收益效率 +8%,Yield Efficiency +8%
+data.hub_offer.item_damage_module.name,伤害模块,Damage Module
+data.hub_offer.item_shield_pack.name,护盾包（下关生命 +20）,Shield Pack (next stage HP +20)
+data.hub_offer.item_emergency_medkit.name,急救包（下关生命 +35%）,Emergency Medkit (next stage HP +35%)
+data.hub_offer.item_rift_boots.name,裂隙长靴（移速 +18）,Rift Boots (+18 Move Speed)
+data.hub_offer.item_focus_chip.name,聚焦芯片（射程 +60）,Focus Chip (+60 Target Range)
+data.hub_offer.seer_bias_output.name,先知：输出偏置,Seer: Bias Output
+data.hub_offer.seer_bias_survival.name,先知：生存偏置,Seer: Bias Survival
+data.hub_offer.seer_bias_economy.name,先知：经济偏置,Seer: Bias Economy
+data.hub_offer.broker_contract_greedy.name,经纪人契约：贪婪,Broker Contract: Greedy
+data.hub_offer.broker_contract_pressure.name,经纪人契约：压制,Broker Contract: Pressure

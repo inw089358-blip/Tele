@@ -1,0 +1,1522 @@
+﻿[
+    {
+        "id":  "1",
+        "name":  "契约胜利之剑印",
+        "slot":  "圣遗物",
+        "effect":  "终结技伤害+18%",
+        "build":  "圣誓爆发",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "2",
+        "name":  "王权鞘徽",
+        "slot":  "护符",
+        "effect":  "首次受击生成生命12%护盾",
+        "build":  "圣誓爆发",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "3",
+        "name":  "誓约圣杯碎片",
+        "slot":  "圣杯",
+        "effect":  "治疗溢出转为攻击力，持续6秒",
+        "build":  "圣誓爆发",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "4",
+        "name":  "圆桌勋章",
+        "slot":  "徽章",
+        "effect":  "队友每存活1人，技能伤害+4%",
+        "build":  "圣誓爆发",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "5",
+        "name":  "白垩王旗",
+        "slot":  "战旗",
+        "effect":  "开场10秒攻速+20%",
+        "build":  "圣誓爆发",
+        "rarity":  "common"
+    },
+    {
+        "id":  "6",
+        "name":  "荣光缎带",
+        "slot":  "饰带",
+        "effect":  "暴击后回复2%最大法力",
+        "build":  "圣誓爆发",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "7",
+        "name":  "骑士火漆",
+        "slot":  "印信",
+        "effect":  "格挡成功后下次技能必定暴击",
+        "build":  "圣誓爆发",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "8",
+        "name":  "破晓授冠",
+        "slot":  "冠饰",
+        "effect":  "清除控制后伤害减免+25%（3秒）",
+        "build":  "圣誓爆发",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "9",
+        "name":  "王星星盘",
+        "slot":  "星盘",
+        "effect":  "每30秒刷新一次强光斩增伤层",
+        "build":  "圣誓爆发",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "10",
+        "name":  "誓胜祷文页",
+        "slot":  "卷轴",
+        "effect":  "连续施法第3次伤害+35%",
+        "build":  "圣誓爆发",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "11",
+        "name":  "王选誓戒",
+        "slot":  "戒指",
+        "effect":  "生命低于35%时全伤+22%",
+        "build":  "圣誓爆发",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "12",
+        "name":  "黑魂余烬戒",
+        "slot":  "戒指",
+        "effect":  "点燃目标时额外附加暗蚀DoT",
+        "build":  "深渊余烬",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "13",
+        "name":  "薪王灰盏",
+        "slot":  "遗物",
+        "effect":  "击杀后留下余烬区，敌人易伤+10%",
+        "build":  "深渊余烬",
+        "rarity":  "common"
+    },
+    {
+        "id":  "14",
+        "name":  "无火者眼灰",
+        "slot":  "粉末",
+        "effect":  "低光区域命中率+15%",
+        "build":  "深渊余烬",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "15",
+        "name":  "深渊回声铃",
+        "slot":  "铃饰",
+        "effect":  "施放诅咒时回声复制一次（50%效能）",
+        "build":  "深渊余烬",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "16",
+        "name":  "褪色猎犬徽",
+        "slot":  "徽章",
+        "effect":  "闪避后3秒移速+30%",
+        "build":  "深渊余烬",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "17",
+        "name":  "冷墓烛芯",
+        "slot":  "烛芯",
+        "effect":  "每损失10%生命，暗伤+4%",
+        "build":  "深渊余烬",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "18",
+        "name":  "罪业赎石",
+        "slot":  "灵石",
+        "effect":  "承受负面状态时获得1层增伤",
+        "build":  "深渊余烬",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "19",
+        "name":  "空壳指骨签",
+        "slot":  "骨签",
+        "effect":  "复活后10秒内减伤+35%",
+        "build":  "深渊余烬",
+        "rarity":  "common"
+    },
+    {
+        "id":  "20",
+        "name":  "螺旋篝火针",
+        "slot":  "针具",
+        "effect":  "站桩3秒后每秒回蓝2%",
+        "build":  "深渊余烬",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "21",
+        "name":  "小镰祈印",
+        "slot":  "印记",
+        "effect":  "流血目标被击中时额外掉魂晶",
+        "build":  "深渊余烬",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "22",
+        "name":  "黑日誓链",
+        "slot":  "项链",
+        "effect":  "施加暗蚀层数上限+3",
+        "build":  "深渊余烬",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "23",
+        "name":  "猩红收割纹章",
+        "slot":  "纹章",
+        "effect":  "对流血目标暴击率+12%",
+        "build":  "血祭收割",
+        "rarity":  "common"
+    },
+    {
+        "id":  "24",
+        "name":  "血月唤潮瓶",
+        "slot":  "药瓶",
+        "effect":  "使用后8秒吸血+18%",
+        "build":  "血祭收割",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "25",
+        "name":  "凝血沙漏",
+        "slot":  "沙漏",
+        "effect":  "流血持续时间+40%",
+        "build":  "血祭收割",
+        "rarity":  "common"
+    },
+    {
+        "id":  "26",
+        "name":  "猎场红羽",
+        "slot":  "羽饰",
+        "effect":  "背击伤害+25%",
+        "build":  "血祭收割",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "27",
+        "name":  "宴血封蜡",
+        "slot":  "封蜡",
+        "effect":  "击杀流血目标重置小技能1次",
+        "build":  "血祭收割",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "28",
+        "name":  "断罪绷带",
+        "slot":  "绷带",
+        "effect":  "生命低于50%时吸血提升至2倍",
+        "build":  "血祭收割",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "29",
+        "name":  "红宴请柬",
+        "slot":  "请柬",
+        "effect":  "同屏每个流血敌人使攻击+2%",
+        "build":  "血祭收割",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "30",
+        "name":  "鲜红判币",
+        "slot":  "古币",
+        "effect":  "暴击造成额外真实伤害（基于层数）",
+        "build":  "血祭收割",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "31",
+        "name":  "祭脉符针",
+        "slot":  "符针",
+        "effect":  "第5次命中必施加重伤",
+        "build":  "血祭收割",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "32",
+        "name":  "血税契据",
+        "slot":  "契据",
+        "effect":  "治疗效果-20%，伤害+20%",
+        "build":  "血祭收割",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "33",
+        "name":  "绯雾香囊",
+        "slot":  "香囊",
+        "effect":  "近身3米内敌人每秒失血",
+        "build":  "血祭收割",
+        "rarity":  "common"
+    },
+    {
+        "id":  "34",
+        "name":  "时律棱镜",
+        "slot":  "棱镜",
+        "effect":  "技能冷却缩减+12%",
+        "build":  "时停连段",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "35",
+        "name":  "钟摆碎芯",
+        "slot":  "核心",
+        "effect":  "完美闪避后时间减速1.2秒",
+        "build":  "时停连段",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "36",
+        "name":  "回拨齿轮",
+        "slot":  "齿轮",
+        "effect":  "受致命伤时回到2秒前生命状态（90秒CD）",
+        "build":  "时停连段",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "37",
+        "name":  "瞬刻笔记",
+        "slot":  "手札",
+        "effect":  "连续释放不同技能，每次增伤+6%",
+        "build":  "时停连段",
+        "rarity":  "common"
+    },
+    {
+        "id":  "38",
+        "name":  "零秒墨滴",
+        "slot":  "墨瓶",
+        "effect":  "控制命中后法术暴击+20%（3秒）",
+        "build":  "时停连段",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "39",
+        "name":  "逆熵徽片",
+        "slot":  "徽片",
+        "effect":  "减速目标承伤+15%",
+        "build":  "时停连段",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "40",
+        "name":  "停滞印框",
+        "slot":  "印框",
+        "effect":  "召唤物攻击可延长控制0.3秒",
+        "build":  "时停连段",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "41",
+        "name":  "时缝线轴",
+        "slot":  "线轴",
+        "effect":  "施法被打断时返还60%消耗",
+        "build":  "时停连段",
+        "rarity":  "common"
+    },
+    {
+        "id":  "42",
+        "name":  "黄昏秒针",
+        "slot":  "秒针",
+        "effect":  "战斗越久，技能伤害上限+25%",
+        "build":  "时停连段",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "43",
+        "name":  "未来残页",
+        "slot":  "残页",
+        "effect":  "预读下一个技能，命中后减CD20%",
+        "build":  "时停连段",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "44",
+        "name":  "轮回校准器",
+        "slot":  "校准器",
+        "effect":  "每第7次命中触发一次时间脉冲",
+        "build":  "时停连段",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "45",
+        "name":  "统御号角",
+        "slot":  "号角",
+        "effect":  "召唤物伤害+20%",
+        "build":  "召唤军势",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "46",
+        "name":  "王兽饲印",
+        "slot":  "饲印",
+        "effect":  "召唤物生命+25%",
+        "build":  "召唤军势",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "47",
+        "name":  "群星粮袋",
+        "slot":  "粮袋",
+        "effect":  "召唤物击杀返还召唤能量",
+        "build":  "召唤军势",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "48",
+        "name":  "指挥白手套",
+        "slot":  "手套",
+        "effect":  "每存在1个召唤物，本体减伤+3%",
+        "build":  "召唤军势",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "49",
+        "name":  "回声军令",
+        "slot":  "军令",
+        "effect":  "召唤数量上限+1",
+        "build":  "召唤军势",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "50",
+        "name":  "驯灵铃铛",
+        "slot":  "铃铛",
+        "effect":  "召唤物首次攻击必暴击",
+        "build":  "召唤军势",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "51",
+        "name":  "共鸣肩章",
+        "slot":  "肩章",
+        "effect":  "召唤物造成异常时你回蓝1%",
+        "build":  "召唤军势",
+        "rarity":  "common"
+    },
+    {
+        "id":  "52",
+        "name":  "后勤药罐",
+        "slot":  "药罐",
+        "effect":  "召唤物每8秒自愈一次",
+        "build":  "召唤军势",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "53",
+        "name":  "先锋信号弹",
+        "slot":  "信号弹",
+        "effect":  "指定区域召唤物攻速+35%",
+        "build":  "召唤军势",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "54",
+        "name":  "驻军旗钉",
+        "slot":  "旗钉",
+        "effect":  "召唤物驻守时获得嘲讽",
+        "build":  "召唤军势",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "55",
+        "name":  "总督印章",
+        "slot":  "印章",
+        "effect":  "召唤物阵亡时爆炸造成范围伤害",
+        "build":  "召唤军势",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "56",
+        "name":  "反咒棱镜",
+        "slot":  "棱镜",
+        "effect":  "反弹20%所受诅咒伤害",
+        "build":  "诅咒反伤",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "57",
+        "name":  "赦令铜钟",
+        "slot":  "铜钟",
+        "effect":  "每移除1层负面，回复3%生命",
+        "build":  "诅咒反伤",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "58",
+        "name":  "痛觉转译器",
+        "slot":  "转译器",
+        "effect":  "受控期间攻击力不降反升10%",
+        "build":  "诅咒反伤",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "59",
+        "name":  "黑盐护符",
+        "slot":  "护符",
+        "effect":  "中毒时获得50%毒抗并增伤",
+        "build":  "诅咒反伤",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "60",
+        "name":  "逆罚手铐",
+        "slot":  "手铐",
+        "effect":  "被沉默后下次技能伤害+40%",
+        "build":  "诅咒反伤",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "61",
+        "name":  "幽疫琥珀",
+        "slot":  "琥珀",
+        "effect":  "承受异常时散播微弱诅咒到近敌",
+        "build":  "诅咒反伤",
+        "rarity":  "common"
+    },
+    {
+        "id":  "62",
+        "name":  "离厄圣签",
+        "slot":  "圣签",
+        "effect":  "每60秒自动净化1次",
+        "build":  "诅咒反伤",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "63",
+        "name":  "灾纹背章",
+        "slot":  "背章",
+        "effect":  "负面层数越高，减伤越高（上限20%）",
+        "build":  "诅咒反伤",
+        "rarity":  "common"
+    },
+    {
+        "id":  "64",
+        "name":  "厄运分流链",
+        "slot":  "链饰",
+        "effect":  "将15%异常时间转移给最近敌人",
+        "build":  "诅咒反伤",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "65",
+        "name":  "溯苦香灰",
+        "slot":  "香灰",
+        "effect":  "受击后3秒内异常命中率+25%",
+        "build":  "诅咒反伤",
+        "rarity":  "common"
+    },
+    {
+        "id":  "66",
+        "name":  "审判拒马钉",
+        "slot":  "拒马钉",
+        "effect":  "近战敌人触发反刺异常",
+        "build":  "诅咒反伤",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "67",
+        "name":  "赌徒金指环",
+        "slot":  "戒指",
+        "effect":  "暴击率+8%，暴伤+30%",
+        "build":  "暴击赌徒",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "68",
+        "name":  "连胜筹码",
+        "slot":  "筹码",
+        "effect":  "连续暴击可叠层增伤，断连清空",
+        "build":  "暴击赌徒",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "69",
+        "name":  "破产保险券",
+        "slot":  "券",
+        "effect":  "暴击失败时返还50%消耗",
+        "build":  "暴击赌徒",
+        "rarity":  "common"
+    },
+    {
+        "id":  "70",
+        "name":  "黑桃命牌",
+        "slot":  "命牌",
+        "effect":  "开场随机获得攻速或暴率增益",
+        "build":  "暴击赌徒",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "71",
+        "name":  "三七骰杯",
+        "slot":  "骰杯",
+        "effect":  "技能伤害在70%-130%间波动",
+        "build":  "暴击赌徒",
+        "rarity":  "common"
+    },
+    {
+        "id":  "72",
+        "name":  "幸运兔脚符",
+        "slot":  "符",
+        "effect":  "每30秒保证一次高额暴击",
+        "build":  "暴击赌徒",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "73",
+        "name":  "赔率目镜",
+        "slot":  "目镜",
+        "effect":  "识破弱点后暴击伤害额外+20%",
+        "build":  "暴击赌徒",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "74",
+        "name":  "胜率签筒",
+        "slot":  "签筒",
+        "effect":  "每次击杀提升1%暴率（可叠20）",
+        "build":  "暴击赌徒",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "75",
+        "name":  "灰筹怀表",
+        "slot":  "怀表",
+        "effect":  "暴击后技能冷却缩减1秒",
+        "build":  "暴击赌徒",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "76",
+        "name":  "赌桌绿布",
+        "slot":  "披饰",
+        "effect":  "残血时暴击率翻倍",
+        "build":  "暴击赌徒",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "77",
+        "name":  "终局梭哈章",
+        "slot":  "徽章",
+        "effect":  "生命\u003c25%时全伤+35%，承伤+15%",
+        "build":  "暴击赌徒",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "78",
+        "name":  "磐岩心核",
+        "slot":  "核心",
+        "effect":  "最大生命+18%",
+        "build":  "守护堡垒",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "79",
+        "name":  "堡垒门楔",
+        "slot":  "门楔",
+        "effect":  "站立不动2秒后护甲+30%",
+        "build":  "守护堡垒",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "80",
+        "name":  "禁卫肩甲扣",
+        "slot":  "扣件",
+        "effect":  "受击后反伤固定值",
+        "build":  "守护堡垒",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "81",
+        "name":  "守誓重盾徽",
+        "slot":  "徽",
+        "effect":  "护盾量提升25%",
+        "build":  "守护堡垒",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "82",
+        "name":  "铁卫膏药",
+        "slot":  "膏药",
+        "effect":  "每秒回复0.8%生命（脱战翻倍）",
+        "build":  "守护堡垒",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "83",
+        "name":  "稳压呼吸阀",
+        "slot":  "阀件",
+        "effect":  "被控制时减伤+20%",
+        "build":  "守护堡垒",
+        "rarity":  "common"
+    },
+    {
+        "id":  "84",
+        "name":  "城垛号令笛",
+        "slot":  "笛",
+        "effect":  "嘲讽持续时间+40%",
+        "build":  "守护堡垒",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "85",
+        "name":  "抗震足钉",
+        "slot":  "足钉",
+        "effect":  "击退/击飞抗性+50%",
+        "build":  "守护堡垒",
+        "rarity":  "common"
+    },
+    {
+        "id":  "86",
+        "name":  "冷锻胸针",
+        "slot":  "胸针",
+        "effect":  "首次破盾后立即回补30%护盾",
+        "build":  "守护堡垒",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "87",
+        "name":  "守夜军灯",
+        "slot":  "军灯",
+        "effect":  "夜战/地下场景全抗+12%",
+        "build":  "守护堡垒",
+        "rarity":  "common"
+    },
+    {
+        "id":  "88",
+        "name":  "永固铆钉",
+        "slot":  "铆钉",
+        "effect":  "生命高于80%时伤害减免+15%",
+        "build":  "守护堡垒",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "89",
+        "name":  "黄金币囊",
+        "slot":  "钱囊",
+        "effect":  "掉落金币+25%",
+        "build":  "财宝增益",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "90",
+        "name":  "商会账本",
+        "slot":  "账本",
+        "effect":  "商店刷新价格-10%",
+        "build":  "财宝增益",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "91",
+        "name":  "福运印蜡",
+        "slot":  "印蜡",
+        "effect":  "开箱稀有率+8%",
+        "build":  "财宝增益",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "92",
+        "name":  "讨价眼镜",
+        "slot":  "眼镜",
+        "effect":  "卖出道具价格+15%",
+        "build":  "财宝增益",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "93",
+        "name":  "远行储蓄罐",
+        "slot":  "储蓄罐",
+        "effect":  "每通关1房间给利息金币",
+        "build":  "财宝增益",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "94",
+        "name":  "契税减免令",
+        "slot":  "令状",
+        "effect":  "合成费用-12%",
+        "build":  "财宝增益",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "95",
+        "name":  "好运火柴",
+        "slot":  "火柴",
+        "effect":  "点燃环境物掉落率提升",
+        "build":  "财宝增益",
+        "rarity":  "common"
+    },
+    {
+        "id":  "96",
+        "name":  "行商香料包",
+        "slot":  "香料",
+        "effect":  "随机事件出现商人概率+20%",
+        "build":  "财宝增益",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "97",
+        "name":  "幸运四叶章",
+        "slot":  "徽章",
+        "effect":  "小概率复制拾取道具",
+        "build":  "财宝增益",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "98",
+        "name":  "典当回购券",
+        "slot":  "券",
+        "effect":  "可一次无损回购已卖出道具",
+        "build":  "财宝增益",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "99",
+        "name":  "王都税票",
+        "slot":  "税票",
+        "effect":  "Boss房额外掉落1件蓝品以上道具",
+        "build":  "财宝增益",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "100",
+        "name":  "破甲引线",
+        "slot":  "引线",
+        "effect":  "对护甲目标伤害+18%",
+        "build":  "破阵压制",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "101",
+        "name":  "迟滞铅片",
+        "slot":  "铅片",
+        "effect":  "你的减速效果持续+35%",
+        "build":  "破阵压制",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "102",
+        "name":  "连锁信标",
+        "slot":  "信标",
+        "effect":  "控制命中后可额外牵连1名敌人",
+        "build":  "破阵压制",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "103",
+        "name":  "硬化地契",
+        "slot":  "地契",
+        "effect":  "防御姿态下护盾收益+25%",
+        "build":  "破阵压制",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "104",
+        "name":  "风纪羽轮",
+        "slot":  "羽轮",
+        "effect":  "位移后3秒内技能范围+20%",
+        "build":  "破阵压制",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "105",
+        "name":  "节奏平衡环",
+        "slot":  "环",
+        "effect":  "普攻与技能交替命中可叠层增伤",
+        "build":  "破阵压制",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "106",
+        "name":  "回收导体",
+        "slot":  "导体",
+        "effect":  "触发异常状态时返还法力2%",
+        "build":  "破阵压制",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "107",
+        "name":  "弱点讲义",
+        "slot":  "讲义",
+        "effect":  "命中暴露弱点目标时伤害再+15%",
+        "build":  "破阵压制",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "108",
+        "name":  "过载保险丝",
+        "slot":  "保险丝",
+        "effect":  "释放终结技后获得0.6秒霸体",
+        "build":  "破阵压制",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "109",
+        "name":  "轮转罗盘",
+        "slot":  "罗盘",
+        "effect":  "每8秒在攻速/暴率/减伤中轮换1项增益",
+        "build":  "破阵压制",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "110",
+        "name":  "灾变试管",
+        "slot":  "试管",
+        "effect":  "同一目标叠加两种异常时触发爆发伤害",
+        "build":  "破阵压制",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "111",
+        "name":  "混沌签证",
+        "slot":  "签证",
+        "effect":  "每次战斗随机1条强力词缀",
+        "build":  "混沌终曲",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "112",
+        "name":  "无序棱核",
+        "slot":  "棱核",
+        "effect":  "技能附加随机元素",
+        "build":  "混沌终曲",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "113",
+        "name":  "分形命轮",
+        "slot":  "命轮",
+        "effect":  "每第9次攻击必触发异变",
+        "build":  "混沌终曲",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "114",
+        "name":  "狂喜面具",
+        "slot":  "面具",
+        "effect":  "伤害波动变大，峰值更高",
+        "build":  "混沌终曲",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "115",
+        "name":  "双生悖论环",
+        "slot":  "环",
+        "effect":  "增伤与减伤同时提升",
+        "build":  "混沌终曲",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "116",
+        "name":  "逆位塔罗页",
+        "slot":  "塔罗",
+        "effect":  "受击后随机获得增益或减益",
+        "build":  "混沌终曲",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "117",
+        "name":  "异想注射器",
+        "slot":  "注射器",
+        "effect":  "每40秒随机重置1个技能CD",
+        "build":  "混沌终曲",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "118",
+        "name":  "失真耳坠",
+        "slot":  "耳坠",
+        "effect":  "暴击时有概率触发幻象分身",
+        "build":  "混沌终曲",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "119",
+        "name":  "焚梦票根",
+        "slot":  "票根",
+        "effect":  "击杀后随机掉落临时增益球",
+        "build":  "混沌终曲",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "120",
+        "name":  "终曲导火帽",
+        "slot":  "导火帽",
+        "effect":  "Boss战中每90秒进入超载8秒",
+        "build":  "混沌终曲",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "121",
+        "name":  "零界遗嘱",
+        "slot":  "遗嘱",
+        "effect":  "阵亡时触发全屏爆发并复活1次",
+        "build":  "混沌终曲",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "122",
+        "name":  "斗志绑带",
+        "slot":  "饰带",
+        "effect":  "连续命中5次后攻击+10%（4秒）",
+        "build":  "连击压制",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "123",
+        "name":  "冷血护目镜",
+        "slot":  "目镜",
+        "effect":  "对生命高于80%的目标暴击率+12%",
+        "build":  "先手爆发",
+        "rarity":  "common"
+    },
+    {
+        "id":  "124",
+        "name":  "追猎脚扣",
+        "slot":  "足扣",
+        "effect":  "移动超过8米后下次普攻增伤30%",
+        "build":  "游走突袭",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "125",
+        "name":  "旧王齿币",
+        "slot":  "古币",
+        "effect":  "击杀后获得1层全伤+1%（上限15）",
+        "build":  "滚雪球",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "126",
+        "name":  "破势肩针",
+        "slot":  "肩针",
+        "effect":  "对霸体敌人伤害+20%",
+        "build":  "反硬直",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "127",
+        "name":  "近身封条",
+        "slot":  "封条",
+        "effect":  "3米内敌人每多1名，减伤+4%",
+        "build":  "近战生存",
+        "rarity":  "common"
+    },
+    {
+        "id":  "128",
+        "name":  "回气鼻烟壶",
+        "slot":  "壶",
+        "effect":  "10秒未受击后每秒回复1.2%生命",
+        "build":  "续航恢复",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "129",
+        "name":  "裂甲粉盒",
+        "slot":  "粉盒",
+        "effect":  "普攻第6击附加破甲（8秒）",
+        "build":  "破阵",
+        "rarity":  "epic"
+    },
+    {
+        "id":  "130",
+        "name":  "催征号牌",
+        "slot":  "号牌",
+        "effect":  "对被减速目标伤害+15%",
+        "build":  "控场追击",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "131",
+        "name":  "反扑腰扣",
+        "slot":  "腰扣",
+        "effect":  "受击后2秒内普攻吸血+12%",
+        "build":  "反打",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "132",
+        "name":  "旧誓铁片",
+        "slot":  "铁片",
+        "effect":  "护盾存在时暴击伤害+18%",
+        "build":  "护盾输出",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "133",
+        "name":  "夜巡铜灯",
+        "slot":  "铜灯",
+        "effect":  "视野边缘敌人对你伤害-10%",
+        "build":  "稳定防守",
+        "rarity":  "rare"
+    },
+    {
+        "id":  "134",
+        "name":  "余震脚钉",
+        "slot":  "脚钉",
+        "effect":  "被击退后3秒内韧性+40%",
+        "build":  "抗控",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "135",
+        "name":  "角斗士汗巾",
+        "slot":  "汗巾",
+        "effect":  "连续受击3次后获得15%减伤（5秒）",
+        "build":  "挨打成长",
+        "rarity":  "common"
+    },
+    {
+        "id":  "136",
+        "name":  "血路缝线",
+        "slot":  "缝线",
+        "effect":  "生命低于40%时移速+20%",
+        "build":  "残血拉扯",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "137",
+        "name":  "战地针管",
+        "slot":  "针管",
+        "effect":  "每90秒自动回复25%生命",
+        "build":  "长线续航",
+        "rarity":  "common"
+    },
+    {
+        "id":  "138",
+        "name":  "赦免木符",
+        "slot":  "木符",
+        "effect":  "每场战斗首次致命伤改为保留1点生命",
+        "build":  "保命",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "139",
+        "name":  "老兵奖章",
+        "slot":  "奖章",
+        "effect":  "战斗时间每过20秒，攻击+3%（上限18）",
+        "build":  "持久战",
+        "rarity":  "common"
+    },
+    {
+        "id":  "140",
+        "name":  "钢心护符",
+        "slot":  "护符",
+        "effect":  "生命高于85%时减伤+12%",
+        "build":  "高血坦",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "141",
+        "name":  "折冲甲扣",
+        "slot":  "甲扣",
+        "effect":  "护甲值每100点，普攻增伤+2%",
+        "build":  "防转攻",
+        "rarity":  "common"
+    },
+    {
+        "id":  "142",
+        "name":  "破限徽钉",
+        "slot":  "徽钉",
+        "effect":  "暴击后攻速+8%（可叠3层）",
+        "build":  "暴击连打",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "143",
+        "name":  "逆鳞项圈",
+        "slot":  "项圈",
+        "effect":  "受到暴击后6秒内减伤+20%",
+        "build":  "反爆发",
+        "rarity":  "common"
+    },
+    {
+        "id":  "144",
+        "name":  "监军墨章",
+        "slot":  "墨章",
+        "effect":  "对精英单位伤害+14%",
+        "build":  "精英猎手",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "145",
+        "name":  "断后绳结",
+        "slot":  "绳结",
+        "effect":  "背后受击伤害-18%",
+        "build":  "站位容错",
+        "rarity":  "common"
+    },
+    {
+        "id":  "146",
+        "name":  "残影布鞋",
+        "slot":  "布鞋",
+        "effect":  "闪避后2秒内无法被减速",
+        "build":  "机动",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "147",
+        "name":  "硬弓弦环",
+        "slot":  "弦环",
+        "effect":  "每隔4秒，下次普攻穿透1名敌人",
+        "build":  "线性清怪",
+        "rarity":  "common"
+    },
+    {
+        "id":  "148",
+        "name":  "索敌目印",
+        "slot":  "目印",
+        "effect":  "对同一目标连续命中时伤害递增（最高+20%）",
+        "build":  "单体压制",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "149",
+        "name":  "拦截令牌",
+        "slot":  "令牌",
+        "effect":  "对冲锋类敌人伤害+25%",
+        "build":  "反突进",
+        "rarity":  "common"
+    },
+    {
+        "id":  "150",
+        "name":  "石渠印鉴",
+        "slot":  "印鉴",
+        "effect":  "静止1.5秒后获得10%护盾",
+        "build":  "阵地战",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "151",
+        "name":  "疾行符夹",
+        "slot":  "符夹",
+        "effect":  "战斗中每移动20米，下一次受击减半",
+        "build":  "跑位坦度",
+        "rarity":  "common"
+    },
+    {
+        "id":  "152",
+        "name":  "旧币骰筒",
+        "slot":  "骰筒",
+        "effect":  "击杀有15%概率掉落临时攻速球",
+        "build":  "经济战斗",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "153",
+        "name":  "回购皮夹",
+        "slot":  "皮夹",
+        "effect":  "每场战斗首次购买价格-30%",
+        "build":  "资源运营",
+        "rarity":  "common"
+    },
+    {
+        "id":  "154",
+        "name":  "远征账绳",
+        "slot":  "账绳",
+        "effect":  "每通关1房间，最大生命+1%（上限20%）",
+        "build":  "发育",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "155",
+        "name":  "盈亏天平",
+        "slot":  "天平",
+        "effect":  "持有金币越少，伤害越高（最高+18%）",
+        "build":  "贫装反补",
+        "rarity":  "common"
+    },
+    {
+        "id":  "156",
+        "name":  "储备粮徽",
+        "slot":  "徽",
+        "effect":  "未使用消耗品每多1个，减伤+2%",
+        "build":  "囤积收益",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "157",
+        "name":  "抵押契纸",
+        "slot":  "契纸",
+        "effect":  "进入Boss房前金币清零并转为攻击（每100金+1%）",
+        "build":  "决战",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "158",
+        "name":  "巡回商签",
+        "slot":  "商签",
+        "effect":  "商店刷新免费1次/层",
+        "build":  "经济",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "159",
+        "name":  "货栈封蜡",
+        "slot":  "封蜡",
+        "effect":  "战斗结算额外+12%金币",
+        "build":  "经济",
+        "rarity":  "common"
+    },
+    {
+        "id":  "160",
+        "name":  "裂纹存钱罐",
+        "slot":  "存钱罐",
+        "effect":  "受击时掉少量金币并回复等量生命",
+        "build":  "金血互换",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "161",
+        "name":  "贪欲胸针",
+        "slot":  "胸针",
+        "effect":  "金币大于200时暴击率+10%",
+        "build":  "富装输出",
+        "rarity":  "common"
+    },
+    {
+        "id":  "162",
+        "name":  "讨债黑册",
+        "slot":  "黑册",
+        "effect":  "对欠血（生命低于50%）敌人伤害+16%",
+        "build":  "收割",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "163",
+        "name":  "铁律口哨",
+        "slot":  "口哨",
+        "effect":  "开战前8秒减伤+15%",
+        "build":  "开局稳态",
+        "rarity":  "common"
+    },
+    {
+        "id":  "164",
+        "name":  "祈安香包",
+        "slot":  "香包",
+        "effect":  "每20秒清除1层负面状态",
+        "build":  "净化",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "165",
+        "name":  "护航披结",
+        "slot":  "披结",
+        "effect":  "周围友军/召唤物每有1个，你减伤+3%",
+        "build":  "协同",
+        "rarity":  "common"
+    },
+    {
+        "id":  "166",
+        "name":  "统率袖章",
+        "slot":  "袖章",
+        "effect":  "你周围友军/召唤物伤害+6%",
+        "build":  "团队增益",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "167",
+        "name":  "余烬火漆",
+        "slot":  "火漆",
+        "effect":  "击杀后3秒内移速+25%",
+        "build":  "清图节奏",
+        "rarity":  "common"
+    },
+    {
+        "id":  "168",
+        "name":  "震慑铜哨",
+        "slot":  "铜哨",
+        "effect":  "近战命中有10%概率造成短暂僵直",
+        "build":  "控制",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "169",
+        "name":  "惩戒指节套",
+        "slot":  "指节套",
+        "effect":  "对被控制目标普攻增伤+22%",
+        "build":  "追控",
+        "rarity":  "common"
+    },
+    {
+        "id":  "170",
+        "name":  "破胆旗钉",
+        "slot":  "旗钉",
+        "effect":  "首次命中精英时使其伤害-12%（10秒）",
+        "build":  "压制精英",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "171",
+        "name":  "军团水壶",
+        "slot":  "水壶",
+        "effect":  "每击杀10个敌人回复8%生命",
+        "build":  "长图续航",
+        "rarity":  "common"
+    },
+    {
+        "id":  "172",
+        "name":  "抗压绑腿",
+        "slot":  "绑腿",
+        "effect":  "同时被3名以上敌人盯上时减伤+18%",
+        "build":  "反围殴",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "173",
+        "name":  "倒刺腕箍",
+        "slot":  "腕箍",
+        "effect":  "近战受击时反弹固定伤害",
+        "build":  "反伤",
+        "rarity":  "common"
+    },
+    {
+        "id":  "174",
+        "name":  "厚底战靴",
+        "slot":  "战靴",
+        "effect":  "击退抗性+60%",
+        "build":  "稳定站桩",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "175",
+        "name":  "断筋夹板",
+        "slot":  "夹板",
+        "effect":  "对移动中的敌人伤害+15%",
+        "build":  "追击",
+        "rarity":  "common"
+    },
+    {
+        "id":  "176",
+        "name":  "伏击面罩",
+        "slot":  "面罩",
+        "effect":  "脱离战斗后首次命中必暴击",
+        "build":  "先手",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "177",
+        "name":  "守门人挂锁",
+        "slot":  "挂锁",
+        "effect":  "受到来自正面的伤害-20%",
+        "build":  "站位防守",
+        "rarity":  "common"
+    },
+    {
+        "id":  "178",
+        "name":  "逆时沙囊",
+        "slot":  "沙囊",
+        "effect":  "生命每下降10%，攻速+3%",
+        "build":  "残血攻势",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "179",
+        "name":  "顽石吊坠",
+        "slot":  "吊坠",
+        "effect":  "控制持续时间减少25%",
+        "build":  "解控",
+        "rarity":  "common"
+    },
+    {
+        "id":  "180",
+        "name":  "鹰眼刻尺",
+        "slot":  "刻尺",
+        "effect":  "远距离命中伤害+18%",
+        "build":  "远程压制",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "181",
+        "name":  "止血绒布",
+        "slot":  "绒布",
+        "effect":  "受到持续伤害时，持续时间-30%",
+        "build":  "抗DOT",
+        "rarity":  "common"
+    },
+    {
+        "id":  "182",
+        "name":  "破军牌穗",
+        "slot":  "牌穗",
+        "effect":  "对满血敌人造成额外真实伤害",
+        "build":  "开局爆发",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "183",
+        "name":  "斩获封签",
+        "slot":  "封签",
+        "effect":  "击杀后5秒内全伤+8%",
+        "build":  "连杀",
+        "rarity":  "common"
+    },
+    {
+        "id":  "184",
+        "name":  "稳态压片",
+        "slot":  "压片",
+        "effect":  "生命保持在60%-90%区间时伤害+12%",
+        "build":  "中血运营",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "185",
+        "name":  "复仇黑带",
+        "slot":  "黑带",
+        "effect":  "死亡复活后20秒内攻击+25%",
+        "build":  "复活反扑",
+        "rarity":  "legendary"
+    },
+    {
+        "id":  "186",
+        "name":  "追命札记",
+        "slot":  "札记",
+        "effect":  "对同名敌人每次击杀永久+1%伤害（本局）",
+        "build":  "目标学习",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "187",
+        "name":  "堡墙铆圈",
+        "slot":  "铆圈",
+        "effect":  "每拥有1层护盾，受暴击概率-3%",
+        "build":  "护盾防爆",
+        "rarity":  "common"
+    },
+    {
+        "id":  "188",
+        "name":  "巡猎绳标",
+        "slot":  "绳标",
+        "effect":  "标记目标后，对其普攻伤害+20%（8秒）",
+        "build":  "单点",
+        "rarity":  "uncommon"
+    },
+    {
+        "id":  "189",
+        "name":  "疲劳药贴",
+        "slot":  "药贴",
+        "effect":  "连续战斗第二场起，减伤+10%",
+        "build":  "马拉松",
+        "rarity":  "common"
+    },
+    {
+        "id":  "190",
+        "name":  "终局签封",
+        "slot":  "签封",
+        "effect":  "Boss生命低于30%时你全伤+18%",
+        "build":  "斩杀期",
+        "rarity":  "legendary"
+    }
+]

@@ -1,4 +1,4 @@
-class_name SaveSlotPanel
+﻿class_name SaveSlotPanel
 extends PanelContainer
 
 signal slot_selected(slot_id: String)
@@ -25,11 +25,11 @@ func _ready() -> void :
 func setup(mode: String) -> void :
     _mode = mode
     if _mode == MODE_SAVE:
-        title_label.text = "保存存档"
-        hint_label.text = "选择一个槽位覆盖保存"
+        title_label.text = _tx("ui.save_slot.title_save", "Save Slot")
+        hint_label.text = _tx("ui.save_slot.hint_save", "Select a slot to overwrite")
     else:
-        title_label.text = "读取存档"
-        hint_label.text = "选择一个槽位继续进度"
+        title_label.text = _tx("ui.save_slot.title_load", "Load Slot")
+        hint_label.text = _tx("ui.save_slot.hint_load", "Select a slot to continue")
     refresh_slots()
 
 func get_mode() -> String:
@@ -52,11 +52,11 @@ func refresh_slots() -> void :
             var stage_id: String = str(slot.get("stage_id", "stage_001"))
             var wave: int = int(slot.get("wave", 1))
             var saved_at: String = str(slot.get("saved_at", ""))
-            button.text = "槽位 %d  %s  WAVE %d" % [idx, stage_id, wave]
+            button.text = _tf("ui.save_slot.slot_filled", [idx, stage_id, wave], "Slot %d  %s  WAVE %d")
             if not saved_at.is_empty():
                 button.text += "\n%s" % saved_at
         else:
-            button.text = "槽位 %d  <空>" % idx
+            button.text = _tf("ui.save_slot.slot_empty", [idx], "Slot %d  <Empty>")
         button.disabled = (_mode == MODE_LOAD and not has_data)
 
 func _on_slot_button_pressed(slot_id: String) -> void :
@@ -134,7 +134,7 @@ func _ensure_ui() -> void :
     close_button.name = "CloseButton"
     close_button.custom_minimum_size = Vector2(376, 44)
     close_button.add_theme_font_size_override("font_size", 20)
-    close_button.text = "返回"
+    close_button.text = _tx("ui.common.back", "Back")
     vbox.add_child(close_button)
 
 func _create_slot_button(node_name: String) -> Button:
@@ -143,3 +143,16 @@ func _create_slot_button(node_name: String) -> Button:
     button.custom_minimum_size = Vector2(376, 64)
     button.add_theme_font_size_override("font_size", 20)
     return button
+
+func _tx(key: String, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tx(key, fallback if not fallback.is_empty() else key)
+    if fallback.is_empty():
+        return key
+    return fallback
+
+func _tf(key: String, args: Array, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
+    var base: String = fallback if not fallback.is_empty() else key
+    return base % args

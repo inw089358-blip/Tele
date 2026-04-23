@@ -18,6 +18,7 @@ var _notice_base_alpha: float = 0.85
 var _continue_slot_panel: SaveSlotPanel
 
 func _ready() -> void :
+    _refresh_static_texts()
     start_button.pressed.connect(_on_start_button_pressed)
     boss_test_button.pressed.connect(_on_boss_test_button_pressed)
     continue_button.pressed.connect(_on_continue_button_pressed)
@@ -53,31 +54,31 @@ func _update_notice_glitch() -> void:
     notice_label.modulate = c
 
 func _on_start_button_pressed() -> void :
-    notice_label.text = "Start new run"
+    notice_label.text = _tx("msg.main.start_new_run", "Start new run")
     AudioManager.play_prepare_bgm()
     GameManager.go_to_character_select()
 
 func _on_boss_test_button_pressed() -> void :
-    notice_label.text = "Jump to stage_005 (Boss test)"
+    notice_label.text = _tx("msg.main.jump_stage_015", "Jump to stage_015 (Final boss test)")
     AudioManager.play_prepare_bgm()
     if GameManager.selected_character.is_empty():
         GameManager.selected_character = "the_fool"
     if GameManager.current_difficulty.is_empty():
         GameManager.current_difficulty = "normal"
-    GameManager.start_game("stage_005")
+    GameManager.start_game("stage_015")
 
 func _on_continue_button_pressed() -> void :
     if _continue_slot_panel == null:
-        notice_label.text = "Save panel unavailable"
+        notice_label.text = _tx("msg.main.save_panel_unavailable", "Save panel unavailable")
         return
-    notice_label.text = "Select save slot"
+    notice_label.text = _tx("msg.main.select_save_slot", "Select save slot")
     _set_menu_enabled(false)
     _continue_slot_panel.setup(SaveSlotPanel.MODE_LOAD)
-    _continue_slot_panel.show_hint("Select a slot to continue.")
+    _continue_slot_panel.show_hint(_tx("msg.main.select_slot_to_continue", "Select a slot to continue."))
     _continue_slot_panel.visible = true
 
 func _on_settings_button_pressed() -> void :
-    notice_label.text = "Open settings"
+    notice_label.text = _tx("msg.main.open_settings", "Open settings")
     GameManager.go_to_settings()
 
 func _on_quit_button_pressed() -> void :
@@ -85,6 +86,15 @@ func _on_quit_button_pressed() -> void :
     if CRTTransition != null and CRTTransition.has_method("play_shutdown"):
         await CRTTransition.play_shutdown()
     get_tree().quit()
+
+func _refresh_static_texts() -> void:
+    start_button.text = _tx("ui.main.start_button", "Start Game")
+    boss_test_button.text = _tx("ui.main.boss_test_button", "Boss Test (Stage 5)")
+    continue_button.text = _tx("ui.main.continue_button", "Continue")
+    settings_button.text = _tx("ui.main.settings_button", "Settings")
+    quit_button.text = _tx("ui.main.quit_button", "Quit")
+    if notice_label != null:
+        notice_label.text = _tx("ui.main.notice_default", "Flickering CRT screen with static noise")
 
 func _prepare_continue_slot_panel() -> void :
     var panel_node: Node = SAVE_SLOT_PANEL_SCENE.instantiate()
@@ -102,16 +112,16 @@ func _on_continue_slot_selected(slot_id: String) -> void :
         return
     var slot_data: Dictionary = SaveSystem.load_from_slot(slot_id)
     if slot_data.is_empty():
-        _continue_slot_panel.show_hint("This slot is empty.")
+        _continue_slot_panel.show_hint(_tx("msg.slot.empty", "This slot is empty."))
         return
-    notice_label.text = "Loading save..."
+    notice_label.text = _tx("msg.main.loading_save", "Loading save...")
     GameManager.start_game_from_slot(slot_data)
 
 func _on_continue_slot_closed() -> void :
     if _continue_slot_panel != null:
         _continue_slot_panel.visible = false
     _set_menu_enabled(true)
-    notice_label.text = "Ready"
+    notice_label.text = _tx("msg.common.ready", "Ready")
 
 func _set_menu_enabled(enabled: bool) -> void :
     start_button.disabled = not enabled
@@ -167,7 +177,7 @@ func _bind_menu_feedback_fx() -> void:
 func _on_menu_button_hovered(button: Button) -> void:
     if button == null:
         return
-    notice_label.text = ">> " + button.text
+    notice_label.text = "%s %s" % [_tx("msg.main.pointer_prefix", ">>"), button.text]
 
 func _on_menu_button_down(_button: Button) -> void:
     _trigger_ui_flash()
@@ -181,3 +191,10 @@ func _trigger_ui_flash() -> void:
     tween.set_ease(Tween.EASE_OUT)
     tween.tween_property(ui_feedback_flash, "color:a", 0.16, 0.05)
     tween.tween_property(ui_feedback_flash, "color:a", 0.0, 0.16)
+
+func _tx(key: String, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tx(key, fallback if not fallback.is_empty() else key)
+    if fallback.is_empty():
+        return key
+    return fallback

@@ -3,8 +3,9 @@ extends Node
 const LEGACY_SAVE_PATH: String = "user://save_data.json"
 const SAVE_SLOT_PATH: String = "user://save_slots.json"
 const SLOT_IDS: PackedStringArray = ["slot_1", "slot_2", "slot_3"]
-const XP_BASE_VALUE: float = 20.0
-const XP_GROWTH_FACTOR: float = 1.15
+const XP_CURVE_LEVEL_OFFSET_DEFAULT: int = 3
+const XP_CURVE_BASE_MULT_DEFAULT: float = 1.0
+const XP_REQUIRED_MIN_DEFAULT: int = 1
 const DEFAULT_SETTINGS: Dictionary = {
     "display": {
         "resolution": "1920x1080", 
@@ -212,7 +213,9 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
         normalized["reward_owned"] = {}
     normalized["auto_attack_interval_multiplier"] = float(input_data.get("auto_attack_interval_multiplier", 1.0))
     normalized["gold_gain_multiplier"] = float(input_data.get("gold_gain_multiplier", 1.0))
-    var xp_to_next_default: int = _xp_required_for_level(current_level)
+    var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
+    var xp_required_mult: float = _resolve_character_xp_required_multiplier(selected_character_id)
+    var xp_to_next_default: int = _xp_required_for_level(current_level, xp_required_mult)
     if input_data.has("xp_to_next_level"):
         var raw_xp_to_next: int = max(1, int(input_data.get("xp_to_next_level", xp_to_next_default)))
         if current_level == 1 and raw_xp_to_next == 10:
@@ -279,7 +282,7 @@ func _normalize_settings(settings_value: Variant) -> Dictionary:
     if system_value is Dictionary:
         system_input = system_value
     var system_root: Dictionary = normalized["system"]
-    system_root["language"] = str(system_input.get("language", system_root["language"]))
+    system_root["language"] = _normalize_language(str(system_input.get("language", system_root["language"])))
     system_root["show_boss_test_entry"] = bool(system_input.get("show_boss_test_entry", system_root["show_boss_test_entry"]))
 
     return normalized
@@ -312,11 +315,21 @@ func _build_timestamp() -> String:
 func _is_valid_slot_id(slot_id: String) -> bool:
     return SLOT_IDS.has(slot_id)
 
-func _xp_required_for_level(current_level: int) -> int:
-    var level_safe: int = max(1, current_level)
-    var exponent: float = float(max(level_safe - 1, 0))
-    var required: int = int(round(XP_BASE_VALUE * pow(XP_GROWTH_FACTOR, exponent)))
-    return max(1, required)
+func _xp_required_for_level(current_level: int, xp_required_mult: float = 1.0) -> int:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    var target_level: int = max(1, current_level)
+    var level_offset: int = int(combat_params.get("xp_curve_level_offset", XP_CURVE_LEVEL_OFFSET_DEFAULT))
+    var base_multiplier: float = max(0.01, float(combat_params.get("xp_curve_base_multiplier", XP_CURVE_BASE_MULT_DEFAULT)))
+    var min_required: int = max(1, int(combat_params.get("xp_required_min", XP_REQUIRED_MIN_DEFAULT)))
+    var curve_value: float = float(target_level + level_offset)
+    var required: int = int(round(curve_value * curve_value * base_multiplier * clampf(xp_required_mult, 0.2, 5.0)))
+    return max(min_required, required)
+
+func _resolve_character_xp_required_multiplier(character_id: String) -> float:
+    if character_id.is_empty():
+        return 1.0
+    var character_profile: Dictionary = BalanceService.get_character_profile(character_id)
+    return clampf(float(character_profile.get("xp_required_mult", 1.0)), 0.2, 5.0)
 
 func _default_save() -> Dictionary:
     return {
@@ -381,3 +394,8 @@ func _normalize_variant_array(value: Variant) -> Array:
         var raw: Array = value
         return raw.duplicate(true)
     return []
+
+func _normalize_language(raw_value: String) -> String:
+    if raw_value == "en_US":
+        return "en_US"
+    return "zh_CN"

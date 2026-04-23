@@ -30,6 +30,10 @@ func get_stage_profile(stage_id: String) -> Dictionary:
     var fallback: Dictionary = _extract_dict(all_profiles.get("stage_001", {}))
     return _extract_dict(all_profiles.get(stage_id, fallback)).duplicate(true)
 
+func has_stage_profile(stage_id: String) -> bool:
+    var all_profiles: Dictionary = _extract_dict(_combat_balance.get("stages", {}))
+    return all_profiles.has(stage_id)
+
 func get_enemy_profile(enemy_key: String) -> Dictionary:
     var all_profiles: Dictionary = _extract_dict(_combat_balance.get("enemies", {}))
     var fallback: Dictionary = _extract_dict(all_profiles.get("melee", {}))
