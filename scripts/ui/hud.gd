@@ -9,6 +9,7 @@ extends CanvasLayer
 @onready var hp_bar: ProgressBar = %HpBar
 @onready var exp_label: Label = %ExpLabel
 @onready var exp_bar: ProgressBar = %ExpBar
+@onready var gold_label: Label = %GoldLabel
 @onready var stamina_label: Label = %StaminaLabel
 @onready var stamina_bar: ProgressBar = %StaminaBar
 @onready var dash_hint_label: Label = %DashHintLabel
@@ -24,7 +25,7 @@ const PLAYER_HP_SMOOTH_SPEED: float = 11.0
 const BOSS_HP_SMOOTH_SPEED: float = 9.0
 
 func _ready() -> void :
-    set_player_stats(100.0, 100.0, 80.0, 100.0, 0.0, 20.0, 1)
+    set_player_stats(100.0, 100.0, 80.0, 100.0, 0.0, 20.0, 1, 0)
     set_status_entries(_build_preview_status_entries(GameManager.current_wave))
     EventBus.wave_started.connect(_on_wave_started)
 
@@ -89,7 +90,8 @@ func set_player_stats(
     stamina_max: float, 
     current_xp: float = 0.0, 
     xp_to_next_level: float = 1.0, 
-    current_level: int = 1
+    current_level: int = 1,
+    current_gold: int = 0
 ) -> void :
     var hp_max_safe: float = max(hp_max, 1.0)
     var stamina_max_safe: float = max(stamina_max, 1.0)
@@ -103,16 +105,22 @@ func set_player_stats(
     if absf(_player_hp_display - _player_hp_target) < 0.001 or hp_safe >= _player_hp_display:
         _player_hp_display = hp_safe
     hp_bar.value = _player_hp_display
-    hp_label.text = "HP %d/%d" % [int(round(hp_safe)), int(round(hp_max_safe))]
+    hp_label.text = _tf("ui.hud.hp_fmt", [int(round(hp_safe)), int(round(hp_max_safe))], "HP %d/%d")
 
     exp_bar.max_value = xp_max_safe
     exp_bar.value = xp_safe
-    exp_label.text = "EXP %d/%d  Lv.%d" % [int(round(xp_safe)), int(round(xp_max_safe)), max(1, current_level)]
+    exp_label.text = _tf(
+        "ui.hud.exp_fmt",
+        [int(round(xp_safe)), int(round(xp_max_safe)), max(1, current_level)],
+        "EXP %d/%d  Lv.%d"
+    )
+    if gold_label != null:
+        gold_label.text = _tf("ui.hud.gold_fmt", [max(0, current_gold)], "Gold %d")
 
     stamina_bar.max_value = stamina_max_safe
     stamina_bar.value = stamina_safe
-    stamina_label.text = "Stamina %d/%d" % [int(round(stamina_safe)), int(round(stamina_max_safe))]
-    dash_hint_label.text = "Dash: Ready" if stamina_safe > 0.0 else "Dash: Empty"
+    stamina_label.text = _tf("ui.hud.stamina_fmt", [int(round(stamina_safe)), int(round(stamina_max_safe))], "Stamina %d/%d")
+    dash_hint_label.text = _tx("ui.hud.dash_ready", "Dash: Ready") if stamina_safe > 0.0 else _tx("ui.hud.dash_empty", "Dash: Empty")
     dash_hint_label.modulate = Color(0.65, 1.0, 0.65, 1.0) if stamina_safe > 0.0 else Color(1.0, 0.48, 0.48, 1.0)
 
 func set_status_entries(entries: Array[Dictionary]) -> void :
@@ -132,10 +140,10 @@ func _update_boss_bar_value() -> void :
 
 func _build_preview_status_entries(wave_id: int) -> Array[Dictionary]:
     return [
-        {"label": "Wave", "value": "WAVE %d" % wave_id, "color": Color(0.36, 0.82, 1.0, 1.0)}, 
-        {"label": "State", "value": "Signal Hot", "color": Color(1.0, 0.78, 0.34, 1.0)}, 
-        {"label": "Buff", "value": "Crit +12%", "color": Color(0.58, 1.0, 0.58, 1.0)}, 
-        {"label": "Debuff", "value": "Burn 4s", "color": Color(1.0, 0.49, 0.42, 1.0)}, 
+        {"label": _tx("ui.hud.wave", "Wave"), "value": _tf("ui.common.wave_fmt", [wave_id], "WAVE %d"), "color": Color(0.36, 0.82, 1.0, 1.0)}, 
+        {"label": _tx("ui.hud.state", "State"), "value": _tx("ui.hud.signal_hot", "Signal Hot"), "color": Color(1.0, 0.78, 0.34, 1.0)}, 
+        {"label": _tx("ui.hud.buff", "Buff"), "value": _tx("ui.hud.buff_crit", "Crit +12%"), "color": Color(0.58, 1.0, 0.58, 1.0)}, 
+        {"label": _tx("ui.hud.debuff", "Debuff"), "value": _tx("ui.hud.debuff_burn", "Burn 4s"), "color": Color(1.0, 0.49, 0.42, 1.0)}, 
     ]
 
 func _build_status_chip(entry: Dictionary) -> PanelContainer:
@@ -173,3 +181,16 @@ func _build_status_chip(entry: Dictionary) -> PanelContainer:
     vbox.add_child(value_label)
 
     return panel
+
+func _tx(key: String, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tx(key, fallback if not fallback.is_empty() else key)
+    if fallback.is_empty():
+        return key
+    return fallback
+
+func _tf(key: String, args: Array, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
+    var base: String = fallback if not fallback.is_empty() else key
+    return base % args

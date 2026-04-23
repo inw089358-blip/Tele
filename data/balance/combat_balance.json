@@ -15,8 +15,9 @@
                                   "bullet_speed":  480.0,
                                   "contact_damage_default":  1,
                                   "contact_damage_interval":  0.42,
-                                  "xp_base_value":  12.0,
-                                  "xp_growth_factor":  1.12,
+                                  "xp_curve_level_offset":  3,
+                                  "xp_curve_base_multiplier":  6.0,
+                                  "xp_required_min":  1,
                                   "reward_target_range_bonus":  50.0,
                                   "reward_attack_damage_bonus":  1,
                                   "reward_move_speed_bonus":  8.0,
@@ -58,7 +59,8 @@
                                         "crit_multiplier":  1.5,
                                         "lifesteal":  0.0,
                                         "luck":  8.0,
-                                        "xp_gain_mult":  1.0
+                                        "xp_gain_mult":  1.0,
+                                        "xp_required_mult":  1.0
                                     },
                        "the_chariot":  {
                                            "move_speed":  195.0,
@@ -71,7 +73,8 @@
                                            "crit_multiplier":  1.55,
                                            "lifesteal":  0.0,
                                            "luck":  0.0,
-                                           "xp_gain_mult":  1.0
+                                           "xp_gain_mult":  1.0,
+                                           "xp_required_mult":  1.08
                                        },
                        "the_hanged_man":  {
                                               "move_speed":  205.0,
@@ -84,14 +87,42 @@
                                               "crit_multiplier":  1.5,
                                               "lifesteal":  0.04,
                                               "luck":  0.0,
-                                              "xp_gain_mult":  1.0
+                                              "xp_gain_mult":  1.0,
+                                              "xp_required_mult":  0.94
                                           }
                    },
     "enemies":  {
                     "melee":  {
                                   "move_speed":  98,
                                   "max_hp":  8,
-                                  "xp_drop":  3
+                                  "xp_drop":  3,
+                                  "body_radius":  11.0,
+                                  "visual":  {
+                                                 "sprite_sheet_path":  "res://sprite/enemies/pixel_snapper/pixel-snapper_chroma.png",
+                                                 "hframes":  4,
+                                                 "vframes":  4,
+                                                 "move_frames":  [
+                                                                     0,
+                                                                     1,
+                                                                     2,
+                                                                     3,
+                                                                     4,
+                                                                     5,
+                                                                     6,
+                                                                     7
+                                                                 ],
+                                                 "anim_fps":  10.0,
+                                                 "death_frames":  [
+                                                                      8,
+                                                                      9,
+                                                                      10,
+                                                                      11
+                                                                  ],
+                                                 "death_anim_fps":  10.0,
+                                                 "death_hold_seconds":  0.1,
+                                                 "flip_with_velocity":  true,
+                                                 "scale":  1.0
+                                             }
                               },
                     "ranged":  {
                                    "move_speed":  94,
@@ -181,7 +212,8 @@
                                                     "gold_reward":  40
                                                 },
                                      "enemy_hp_multiplier":  0.92,
-                                     "enemy_move_speed_multiplier":  0.96
+                                     "enemy_move_speed_multiplier":  0.96,
+                                     "next_stage_id":  "stage_002"
                                  },
                    "stage_002":  {
                                      "stage_id":  "stage_002",
@@ -229,7 +261,8 @@
                                                     "gold_reward":  55
                                                 },
                                      "enemy_hp_multiplier":  0.98,
-                                     "enemy_move_speed_multiplier":  0.99
+                                     "enemy_move_speed_multiplier":  0.99,
+                                     "next_stage_id":  "stage_003"
                                  },
                    "stage_003":  {
                                      "stage_id":  "stage_003",
@@ -278,7 +311,8 @@
                                                     "gold_reward":  75
                                                 },
                                      "enemy_hp_multiplier":  1,
-                                     "enemy_move_speed_multiplier":  1
+                                     "enemy_move_speed_multiplier":  1,
+                                     "next_stage_id":  "stage_004"
                                  },
                    "stage_004":  {
                                      "stage_id":  "stage_004",
@@ -327,60 +361,551 @@
                                                     "gold_reward":  95
                                                 },
                                      "enemy_hp_multiplier":  1,
-                                     "enemy_move_speed_multiplier":  1
+                                     "enemy_move_speed_multiplier":  1,
+                                     "next_stage_id":  "stage_005"
                                  },
                    "stage_005":  {
                                      "stage_id":  "stage_005",
-                                     "is_boss_stage":  true,
-                                     "background_key":  "boss",
-                                     "arena_half_extents":  {
-                                                                "x":  600.0,
-                                                                "y":  330.0
-                                                            },
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
                                      "spawn_profile":  {
-                                                           "target_duration":  480.0,
-                                                           "spawn_interval_start":  99.0,
-                                                           "spawn_interval_end":  99.0,
-                                                           "max_enemy_count":  18
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  1.1,
+                                                           "spawn_interval_end":  0.9,
+                                                           "max_enemy_count":  20
                                                        },
                                      "waves":  [
                                                    {
-                                                       "duration":  480.0,
-                                                       "reward_gold":  220,
-                                                       "reward_xp":  120,
+                                                       "duration":  30,
+                                                       "reward_gold":  38,
+                                                       "reward_xp":  28,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  48,
+                                                       "reward_xp":  36,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  60,
+                                                       "reward_xp":  46,
                                                        "shop_enabled":  false
                                                    }
                                                ],
                                      "enemy_mix":  {
-                                                       "melee_weight":  0.7,
-                                                       "ranged_weight":  0.3,
-                                                       "barrage_weight":  0.0
+                                                       "melee_weight":  0.62,
+                                                       "ranged_weight":  0.38,
+                                                       "barrage_weight":  0.16
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  58,
+                                                            "respawn_check_interval":  95,
+                                                            "max_alive":  1,
+                                                            "elite_hp_override":  36
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  68,
+                                                    "gold_reward":  118
+                                                },
+                                     "enemy_hp_multiplier":  1.04,
+                                     "enemy_move_speed_multiplier":  1.02
+                                 },
+                   "stage_006":  {
+                                     "stage_id":  "stage_006",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  1.06,
+                                                           "spawn_interval_end":  0.86,
+                                                           "max_enemy_count":  22
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  44,
+                                                       "reward_xp":  32,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  54,
+                                                       "reward_xp":  40,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  66,
+                                                       "reward_xp":  50,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.6,
+                                                       "ranged_weight":  0.4,
+                                                       "barrage_weight":  0.18
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  55,
+                                                            "respawn_check_interval":  91,
+                                                            "max_alive":  1,
+                                                            "elite_hp_override":  40
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  72,
+                                                    "gold_reward":  124
+                                                },
+                                     "enemy_hp_multiplier":  1.08,
+                                     "enemy_move_speed_multiplier":  1.04
+                                 },
+                   "stage_007":  {
+                                     "stage_id":  "stage_007",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  1.02,
+                                                           "spawn_interval_end":  0.82,
+                                                           "max_enemy_count":  24
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  50,
+                                                       "reward_xp":  36,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  60,
+                                                       "reward_xp":  44,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  72,
+                                                       "reward_xp":  54,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.58,
+                                                       "ranged_weight":  0.41,
+                                                       "barrage_weight":  0.2
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  52,
+                                                            "respawn_check_interval":  87,
+                                                            "max_alive":  1,
+                                                            "elite_hp_override":  44
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  76,
+                                                    "gold_reward":  130
+                                                },
+                                     "enemy_hp_multiplier":  1.12,
+                                     "enemy_move_speed_multiplier":  1.06
+                                 },
+                   "stage_008":  {
+                                     "stage_id":  "stage_008",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  0.98,
+                                                           "spawn_interval_end":  0.78,
+                                                           "max_enemy_count":  26
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  56,
+                                                       "reward_xp":  40,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  66,
+                                                       "reward_xp":  48,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  78,
+                                                       "reward_xp":  58,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.56,
+                                                       "ranged_weight":  0.42,
+                                                       "barrage_weight":  0.22
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  49,
+                                                            "respawn_check_interval":  83,
+                                                            "max_alive":  2,
+                                                            "elite_hp_override":  48
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  80,
+                                                    "gold_reward":  136
+                                                },
+                                     "enemy_hp_multiplier":  1.16,
+                                     "enemy_move_speed_multiplier":  1.08
+                                 },
+                   "stage_009":  {
+                                     "stage_id":  "stage_009",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  0.94,
+                                                           "spawn_interval_end":  0.74,
+                                                           "max_enemy_count":  28
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  62,
+                                                       "reward_xp":  44,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  72,
+                                                       "reward_xp":  52,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  84,
+                                                       "reward_xp":  62,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.54,
+                                                       "ranged_weight":  0.44,
+                                                       "barrage_weight":  0.24
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  46,
+                                                            "respawn_check_interval":  79,
+                                                            "max_alive":  2,
+                                                            "elite_hp_override":  52
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  84,
+                                                    "gold_reward":  142
+                                                },
+                                     "enemy_hp_multiplier":  1.2,
+                                     "enemy_move_speed_multiplier":  1.1
+                                 },
+                   "stage_010":  {
+                                     "stage_id":  "stage_010",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  0.9,
+                                                           "spawn_interval_end":  0.7,
+                                                           "max_enemy_count":  30
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  68,
+                                                       "reward_xp":  48,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  78,
+                                                       "reward_xp":  56,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  90,
+                                                       "reward_xp":  66,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.52,
+                                                       "ranged_weight":  0.46,
+                                                       "barrage_weight":  0.26
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  43,
+                                                            "respawn_check_interval":  75,
+                                                            "max_alive":  2,
+                                                            "elite_hp_override":  56
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  88,
+                                                    "gold_reward":  148
+                                                },
+                                     "enemy_hp_multiplier":  1.24,
+                                     "enemy_move_speed_multiplier":  1.12
+                                 },
+                   "stage_011":  {
+                                     "stage_id":  "stage_011",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  0.86,
+                                                           "spawn_interval_end":  0.66,
+                                                           "max_enemy_count":  32
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  74,
+                                                       "reward_xp":  52,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  84,
+                                                       "reward_xp":  60,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  96,
+                                                       "reward_xp":  70,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.5,
+                                                       "ranged_weight":  0.47,
+                                                       "barrage_weight":  0.28
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  40,
+                                                            "respawn_check_interval":  71,
+                                                            "max_alive":  2,
+                                                            "elite_hp_override":  60
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  92,
+                                                    "gold_reward":  154
+                                                },
+                                     "enemy_hp_multiplier":  1.28,
+                                     "enemy_move_speed_multiplier":  1.14
+                                 },
+                   "stage_012":  {
+                                     "stage_id":  "stage_012",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  0.82,
+                                                           "spawn_interval_end":  0.62,
+                                                           "max_enemy_count":  34
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  80,
+                                                       "reward_xp":  56,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  90,
+                                                       "reward_xp":  64,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  102,
+                                                       "reward_xp":  74,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.48,
+                                                       "ranged_weight":  0.48,
+                                                       "barrage_weight":  0.3
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  37,
+                                                            "respawn_check_interval":  67,
+                                                            "max_alive":  2,
+                                                            "elite_hp_override":  64
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  96,
+                                                    "gold_reward":  160
+                                                },
+                                     "enemy_hp_multiplier":  1.32,
+                                     "enemy_move_speed_multiplier":  1.16
+                                 },
+                   "stage_013":  {
+                                     "stage_id":  "stage_013",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  0.78,
+                                                           "spawn_interval_end":  0.58,
+                                                           "max_enemy_count":  36
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  86,
+                                                       "reward_xp":  60,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  96,
+                                                       "reward_xp":  68,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  108,
+                                                       "reward_xp":  78,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.46,
+                                                       "ranged_weight":  0.5,
+                                                       "barrage_weight":  0.32
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  34,
+                                                            "respawn_check_interval":  63,
+                                                            "max_alive":  2,
+                                                            "elite_hp_override":  68
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  100,
+                                                    "gold_reward":  166
+                                                },
+                                     "enemy_hp_multiplier":  1.36,
+                                     "enemy_move_speed_multiplier":  1.18
+                                 },
+                   "stage_014":  {
+                                     "stage_id":  "stage_014",
+                                     "is_boss_stage":  false,
+                                     "background_key":  "combat",
+                                     "spawn_profile":  {
+                                                           "target_duration":  30,
+                                                           "spawn_interval_start":  0.74,
+                                                           "spawn_interval_end":  0.55,
+                                                           "max_enemy_count":  38
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  92,
+                                                       "reward_xp":  64,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  102,
+                                                       "reward_xp":  72,
+                                                       "shop_enabled":  true
+                                                   },
+                                                   {
+                                                       "duration":  30,
+                                                       "reward_gold":  114,
+                                                       "reward_xp":  82,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.44,
+                                                       "ranged_weight":  0.5,
+                                                       "barrage_weight":  0.34
+                                                   },
+                                     "elite_schedule":  {
+                                                            "enabled":  true,
+                                                            "first_spawn_time":  31,
+                                                            "respawn_check_interval":  59,
+                                                            "max_alive":  2,
+                                                            "elite_hp_override":  72
+                                                        },
+                                     "reward":  {
+                                                    "xp_reward":  104,
+                                                    "gold_reward":  172
+                                                },
+                                     "enemy_hp_multiplier":  1.4,
+                                     "enemy_move_speed_multiplier":  1.2
+                                 },
+                   "stage_015":  {
+                                     "stage_id":  "stage_015",
+                                     "is_boss_stage":  true,
+                                     "background_key":  "boss",
+                                     "arena_half_extents":  {
+                                                                "x":  640,
+                                                                "y":  360
+                                                            },
+                                     "spawn_profile":  {
+                                                           "target_duration":  600,
+                                                           "spawn_interval_start":  99,
+                                                           "spawn_interval_end":  99,
+                                                           "max_enemy_count":  24
+                                                       },
+                                     "waves":  [
+                                                   {
+                                                       "duration":  600,
+                                                       "reward_gold":  560,
+                                                       "reward_xp":  360,
+                                                       "shop_enabled":  false
+                                                   }
+                                               ],
+                                     "enemy_mix":  {
+                                                       "melee_weight":  0.65,
+                                                       "ranged_weight":  0.35,
+                                                       "barrage_weight":  0
                                                    },
                                      "elite_schedule":  {
                                                             "enabled":  false
                                                         },
                                      "boss":  {
-                                                  "hp":  420,
-                                                  "contact_damage":  3,
-                                                  "p1_beam_cd":  2.4,
-                                                  "p1_summon_interval":  40.0,
-                                                  "p1_summon_count":  2,
-                                                  "p2_sweep_cd":  3.0,
-                                                  "p2_tracking_interval":  8.0,
-                                                  "p2_tracking_count":  3,
-                                                  "p2_summon_interval":  35.0,
-                                                  "p2_summon_count":  3,
-                                                  "p3_death_laser_interval":  10.0,
-                                                  "p3_storm_interval":  7.0,
-                                                  "p3_despair_interval":  12.0,
-                                                  "p3_despair_hp_ratio":  0.15
+                                                  "hp":  1200,
+                                                  "contact_damage":  4,
+                                                  "p1_beam_cd":  2.2,
+                                                  "p1_summon_interval":  32,
+                                                  "p1_summon_count":  3,
+                                                  "p2_sweep_cd":  2.7,
+                                                  "p2_tracking_interval":  6,
+                                                  "p2_tracking_count":  4,
+                                                  "p2_summon_interval":  28,
+                                                  "p2_summon_count":  4,
+                                                  "p3_death_laser_interval":  8,
+                                                  "p3_storm_interval":  5.8,
+                                                  "p3_despair_interval":  9.5,
+                                                  "p3_despair_hp_ratio":  0.2
                                               },
                                      "reward":  {
-                                                    "xp_reward":  120,
-                                                    "gold_reward":  220
+                                                    "xp_reward":  520,
+                                                    "gold_reward":  720
                                                 },
-                                     "enemy_hp_multiplier":  1,
-                                     "enemy_move_speed_multiplier":  1
+                                     "enemy_hp_multiplier":  1.6,
+                                     "enemy_move_speed_multiplier":  1.16
                                  }
                }
 }

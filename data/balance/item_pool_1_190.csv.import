@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dbq8hyvnvb1xo"
+
+[deps]
+
+files=["res://data/balance/item_pool_1_190.name.translation", "res://data/balance/item_pool_1_190.slot.translation", "res://data/balance/item_pool_1_190.effect.translation", "res://data/balance/item_pool_1_190.build.translation", "res://data/balance/item_pool_1_190.rarity.translation"]
+
+source_file="res://data/balance/item_pool_1_190.csv"
+dest_files=["res://data/balance/item_pool_1_190.name.translation", "res://data/balance/item_pool_1_190.slot.translation", "res://data/balance/item_pool_1_190.effect.translation", "res://data/balance/item_pool_1_190.build.translation", "res://data/balance/item_pool_1_190.rarity.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

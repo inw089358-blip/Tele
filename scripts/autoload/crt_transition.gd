@@ -1,7 +1,6 @@
 ﻿extends Node
 
 const TUBE_SHADER_PATH: String = "res://shaders/crt_tube_collapse.gdshader"
-const TUBE_HUM_SFX_PATH: String = "res://audio/myedit_ai_sfx_0413122540.mp3"
 const SHUTDOWN_DURATION: float = 0.75
 const STARTUP_DURATION: float = 0.85
 const LINE_HOLD_DURATION: float = 0.05
@@ -99,8 +98,7 @@ func _play_transition(
     _material.set_shader_parameter("progress", from_value)
     _material.set_shader_parameter("show_line", 1.0 if show_line else 0.0)
 
-    if play_hum and AudioManager != null and AudioManager.has_method("play_sfx_by_path"):
-        AudioManager.play_sfx_by_path(TUBE_HUM_SFX_PATH, -6.0)
+    # Disabled by request: CRT hum SFX was affecting UX.
 
     _transition_tween = create_tween()
     _transition_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)

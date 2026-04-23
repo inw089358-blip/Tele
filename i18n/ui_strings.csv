@@ -1,0 +1,274 @@
+key,zh_CN,en_US
+locale.label.zh_CN,简体中文,Chinese (Simplified)
+locale.label.en_US,English,English
+ui.settings.title,系统设置,SYSTEM SETTINGS
+ui.settings.advanced_visual_options,高级视觉选项,Advanced Visual Options
+ui.settings.option.windowed,窗口,Windowed
+ui.settings.option.borderless,无边框,Borderless
+ui.settings.option.fullscreen,全屏,Fullscreen
+ui.settings.option.30,30,30
+ui.settings.option.60,60,60
+ui.settings.option.120,120,120
+ui.settings.option.unlimited,无限制,Unlimited
+ui.settings.option.off,关闭,Off
+ui.settings.option.low,低,Low
+ui.settings.option.mid,中,Mid
+ui.settings.option.high,高,High
+ui.settings.option.protanopia,红色盲,Protanopia
+ui.settings.option.deuteranopia,绿色盲,Deuteranopia
+ui.settings.option.tritanopia,蓝色盲,Tritanopia
+ui.settings.option.small,小,Small
+ui.settings.option.medium,中,Medium
+ui.settings.option.large,大,Large
+msg.settings.applied,设置已应用,Settings applied
+msg.settings.canceled,已取消改动,Changes canceled
+msg.settings.defaults_restored,已恢复默认值（尚未应用）,Defaults restored (not yet applied)
+msg.common.ready,就绪,Ready
+msg.common.enabled,已启用,enabled
+msg.common.disabled,已禁用,disabled
+msg.common.on,开,ON
+msg.common.off,关,OFF
+msg.main.start_new_run,开始新的一局,Start new run
+msg.main.jump_stage_015,跳转至 stage_015（最终 Boss 测试）,Jump to stage_015 (Final boss test)
+msg.main.save_panel_unavailable,存档面板不可用,Save panel unavailable
+msg.main.select_save_slot,选择存档槽位,Select save slot
+msg.main.select_slot_to_continue,请选择一个槽位继续,Select a slot to continue.
+msg.main.open_settings,打开设置,Open settings
+msg.main.loading_save,正在读取存档...,Loading save...
+msg.main.pointer_prefix,>>,>>
+ui.main.start_button,开始游戏,Start Game
+ui.main.boss_test_button,Boss 测试（Stage 5）,Boss Test (Stage 5)
+ui.main.continue_button,继续游戏,Continue
+ui.main.settings_button,设置,Settings
+ui.main.quit_button,退出,Quit
+ui.main.notice_default,闪烁着雪花点的 CRT 屏幕,Flickering CRT screen with static noise
+msg.slot.empty,该槽位为空,This slot is empty.
+msg.slot.saved_to_fmt,已保存到 %s,Saved to %s
+ui.game_over.retry,再来一局,Retry
+ui.game_over.back_to_menu,返回主菜单,Back to Menu
+ui.game_over.victory_title,挑战完成,Victory
+ui.game_over.victory_subtitle,梦境通关，信号已稳定回路。,Dream cleared, signal route stabilized.
+ui.game_over.defeat_title,挑战失败,Defeat
+ui.game_over.defeat_subtitle,信号中断，可以立即重新接入。,Signal interrupted, reconnect and try again.
+ui.common.wave_fmt,WAVE %d,WAVE %d
+ui.common.level_fmt,Lv.%d,Lv.%d
+ui.common.rarity.common,普通,Common
+ui.common.rarity.uncommon,优秀,Uncommon
+ui.common.rarity.rare,稀有,Rare
+ui.common.rarity.epic,史诗,Epic
+ui.common.rarity.legendary,传说,Legendary
+ui.game_scene.death_subtitle,信号中断，已生成本次战斗复盘。,Signal interrupted, battle report generated.
+ui.pause.resume,继续战斗,Resume
+ui.pause.main_menu,返回主菜单,Main Menu
+ui.pause.save,保存进度,Save
+ui.pause.settings,系统设置,Settings
+ui.game_scene.stat_stage,梦阶,Stage
+ui.game_scene.stat_wave,波次,Wave
+ui.game_scene.stat_survival,生存时间,Survival
+ui.game_scene.stat_level,角色等级,Level
+ui.game_scene.stat_gold,金币,Gold
+ui.game_scene.stat_kills,击杀数,Kills
+ui.game_scene.retry_stage,再战本关,Retry Stage
+ui.game_scene.level_reward_title_fmt,等级 %d 奖励选择,Level %d Reward Choice
+ui.game_scene.no_weapon,无武器,No Weapon
+ui.save_slot.slot_1,槽位 1,Slot 1
+ui.save_slot.slot_2,槽位 2,Slot 2
+ui.save_slot.slot_3,槽位 3,Slot 3
+ui.hud.hp_fmt,生命 %d/%d,HP %d/%d
+ui.hud.exp_fmt,经验 %d/%d  等级.%d,EXP %d/%d  Lv.%d
+ui.hud.gold_fmt,金币 %d,Gold %d
+ui.hud.stamina_fmt,体力 %d/%d,Stamina %d/%d
+ui.hud.dash_ready,冲刺：可用,Dash: Ready
+ui.hud.dash_empty,冲刺：空,Dash: Empty
+ui.hud.wave,波次,Wave
+ui.hud.state,状态,State
+ui.hud.signal_hot,信号活跃,Signal Hot
+ui.hud.buff,增益,Buff
+ui.hud.buff_crit,暴击 +12%,Crit +12%
+ui.hud.debuff,减益,Debuff
+ui.hud.debuff_burn,灼烧 4秒,Burn 4s
+ui.save_slot.title_save,保存存档,Save Slot
+ui.save_slot.hint_save,选择一个槽位覆盖保存,Select a slot to overwrite
+ui.save_slot.title_load,读取存档,Load Slot
+ui.save_slot.hint_load,选择一个槽位继续进度,Select a slot to continue
+ui.save_slot.slot_filled,槽位 %d  %s  WAVE %d,Slot %d  %s  WAVE %d
+ui.save_slot.slot_empty,槽位 %d  <空>,Slot %d  <Empty>
+ui.common.back,返回,Back
+ui.reward.placeholder,奖励占位界面：后续接入三选一卡片。,Reward placeholder: integrate 3-choice cards later.
+ui.stage_select.stage_fmt,第 %02d 关,Stage %02d
+ui.weapon_select.title,选择初始武器,Select Starter Weapon
+ui.weapon_select.character_fmt,角色：%s,Character: %s
+ui.weapon_select.no_weapon,没有可用的初始武器。,No starter weapon available.
+ui.weapon_select.mode_fmt,模式：%s,Mode: %s
+ui.weapon_select.damage_fmt,伤害：%s,Damage: %s
+ui.weapon_select.interval_fmt,间隔：%s,Interval: %s
+ui.weapon_select.range_fmt,范围：%s,Range: %s
+ui.weapon_select.projectile_speed_fmt,弹速：%s,Projectile Speed: %s
+ui.weapon_select.projectile_radius_fmt,弹体半径：%s,Projectile Radius: %s
+msg.shop.offer_not_found,找不到该商品,Offer not found
+msg.shop.offer_sold,该商品已售出,Offer already sold
+msg.shop.not_enough_gold,金币不足,Not enough gold
+msg.shop.not_enough_gold_refresh,金币不足，无法刷新,Not enough gold for refresh.
+msg.shop.not_enough_gold_need_fmt,金币不足：还差 %d,Not enough gold: need %d more
+msg.shop.choose_slot_replace,请先选择要替换的槽位,Choose a slot to replace first.
+msg.shop.choose_weapon_slot,请先选择武器槽位,Choose a weapon slot first.
+msg.shop.weapon_slots_full,武器槽位已满,Weapon slots are full
+msg.shop.weapon_slots_full_click_replace,武器槽位已满，请点击下方槽位替换。,Weapon slots full. Click a slot below to replace.
+msg.shop.finish_replacement_first,请先完成武器替换,Please finish weapon replacement first.
+msg.shop.refreshed,商店已刷新,Shop refreshed.
+msg.shop.lock_state_fmt,商店锁定：%s,Shop lock %s.
+msg.shop.purchase_success,购买成功,Purchase success
+msg.shop.purchase_failed,购买失败,Purchase failed
+msg.shop.weapon_replaced,武器替换成功,Weapon replaced.
+msg.shop.replace_failed,替换失败,Replace failed
+msg.shop.invalid_weapon_data,武器数据无效,Invalid weapon data
+ui.shop.gold_fmt,金币：%d,Gold: %d
+ui.shop.wave_fmt,关卡 %s 商店,Stage %s Shop
+ui.shop.refresh_fmt,刷新（%dG）,Refresh (%dG)
+ui.shop.lock_fmt,锁定：%s,Lock: %s
+ui.shop.next_stage,开始下一关,Start Next Stage
+ui.shop.sold_out,已售罄,Sold Out
+ui.shop.buy_fmt,购买 - %dG,Buy - %dG
+ui.shop.offer_title_fmt,%s [%s],%s [%s]
+ui.shop.stats_title_bb,[b]属性[/b],[b]Stats[/b]
+ui.shop.stat_atk_bonus,攻击加成：%d,ATK Bonus: %d
+ui.shop.stat_range_bonus,射程加成：%.0f,Range Bonus: %.0f
+ui.shop.stat_move_speed,移速：%.0f,Move Speed: %.0f
+ui.shop.stat_armor,护甲：%.1f,Armor: %.1f
+ui.shop.stat_dodge,闪避：%.1f%%,Dodge: %.1f%%
+ui.shop.stat_atk_speed,攻速：%.2f,Atk Speed: %.2f
+ui.shop.stat_crit,暴击：%.1f%%,Crit: %.1f%%
+ui.shop.stat_crit_mult,暴伤：%.2f,Crit Mult: %.2f
+ui.shop.stat_lifesteal,吸血：%.1f%%,Lifesteal: %.1f%%
+ui.shop.weapon_slot_filled,%d: %s\n%s,%d: %s\n%s
+ui.shop.weapon_slot_empty,%d: 空,%d: Empty
+ui.hub.vendor.witch,女巫 - 恢复与强化,WITCH - Recover & Upgrade
+ui.hub.vendor.traveler,裂隙旅者 - 商店,TRAVELER - Shop
+ui.hub.vendor.seer,先知 - 构筑偏置,SEER - Build Bias
+ui.hub.vendor.broker,经纪人 - 契约,BROKER - Contracts
+ui.hub.vendor.default,商人,VENDOR
+ui.hub.vendor_short.witch,女巫,Witch
+ui.hub.vendor_short.traveler,旅者,Traveler
+ui.hub.vendor_short.seer,先知,Seer
+ui.hub.vendor_short.broker,经纪人,Broker
+ui.hub.vendor_short.default,商人,Vendor
+ui.hub.refresh_fmt,刷新商店（%d/%d）- %dG,Refresh Shop (%d/%d) - %dG
+ui.hub.gold_gain_fmt,金币收益：x%.2f（%s）,Gold Gain: x%.2f (%s)
+ui.hub.world_hint_witch,[E] 女巫,[E] Witch
+ui.hub.world_hint_traveler,[E] 旅者,[E] Traveler
+ui.hub.world_hint_seer,[E] 先知,[E] Seer
+ui.hub.world_hint_broker,[E] 经纪人,[E] Broker
+msg.hub.ready,补给站已就绪,Supply Hub ready
+msg.hub.move_closer_short,靠近商人并按 E,Move closer to a vendor and press E
+msg.hub.browsing_fmt,正在浏览 %s,Browsing %s
+msg.hub.browsing_action_fmt,正在浏览 %s。可购买或关闭面板。,Browsing %s. Purchase or close panel.
+msg.hub.vendor_exhausted,该商人本轮已售罄,This vendor is exhausted for this hub
+msg.hub.refresh_only_traveler,仅旅者商店支持刷新,Traveler refresh is only available in Traveler shop
+msg.hub.refresh_limit,刷新次数已达上限,Refresh limit reached
+msg.hub.traveler_refreshed,旅者库存已刷新,Traveler stock refreshed
+msg.hub.leave_confirm,离开补给站？离开后无法返回。,Leave Supply Hub? You cannot return to this hub.
+msg.hub.press_e_witch,按 E 与女巫交易,Press E to trade with Witch
+msg.hub.press_e_traveler,按 E 与裂隙旅者交易,Press E to trade with Rift Traveler
+msg.hub.press_e_seer,按 E 咨询先知,Press E to consult Seer
+msg.hub.press_e_broker,按 E 与经纪人议价,Press E to negotiate Broker
+msg.hub.move_closer_distance_fmt,靠近商人并按 E（%.0f）,Move closer to a vendor and press E (%.0f)
+msg.hub.move_to_vendor,移动到商人附近并按 E 交互,Move to a vendor and press E to interact
+msg.hub.near_witch,靠近女巫,Near Witch
+msg.hub.left_witch,离开女巫范围,Left Witch
+msg.hub.near_traveler,靠近旅者,Near Traveler
+msg.hub.left_traveler,离开旅者范围,Left Traveler
+msg.hub.near_seer,靠近先知,Near Seer
+msg.hub.left_seer,离开先知范围,Left Seer
+msg.hub.near_broker,靠近经纪人,Near Broker
+msg.hub.left_broker,离开经纪人范围,Left Broker
+msg.hub.purchased_fmt,已购买 %s,Purchased %s
+ui.difficulty.easy,简单,Easy
+ui.difficulty.normal,普通,Normal
+ui.difficulty.hard,困难,Hard
+ui.weapon_select.mode.ranged_homing,追踪远程,Ranged Homing
+ui.weapon_select.mode.ranged_heavy,重型远程,Ranged Heavy
+ui.weapon_select.mode.melee_arc,近战弧击,Melee Arc
+"Select Difficulty",选择难度,Select Difficulty
+"Character selected. Choose run challenge.",角色已选择。请选择挑战难度。,Character selected. Choose run challenge.
+"Easy - low pressure",简单 - 低压力,Easy - low pressure
+"Normal - standard",普通 - 标准,Normal - standard
+"Hard - challenge",困难 - 挑战,Hard - challenge
+"Back",返回,Back
+"Language",语言,Language
+"Gameplay",玩法,Gameplay
+"GRAPHICS",图形,GRAPHICS
+"AUDIO",音频,AUDIO
+"CONTROLS",控制,CONTROLS
+"Graphics",图形,Graphics
+"Resolution",分辨率,Resolution
+"Window Mode",窗口模式,Window Mode
+"VSync",垂直同步,VSync
+"Enable VSync",启用垂直同步,Enable VSync
+"FPS Cap",帧率上限,FPS Cap
+"CRT Intensity",CRT 强度,CRT Intensity
+"UI Scale",界面缩放,UI Scale
+"Audio",音频,Audio
+"Master Volume",主音量,Master Volume
+"Music Volume",音乐音量,Music Volume
+"SFX Volume",音效音量,SFX Volume
+"UI Volume",界面音量,UI Volume
+"Controls",控制,Controls
+"Enable Right Click Skill",启用右键技能,Enable Right Click Skill
+"Accessibility",无障碍,Accessibility
+"Colorblind Mode",色盲模式,Colorblind Mode
+"High Contrast UI",高对比 UI,High Contrast UI
+"Enable",启用,Enable
+"Font Size",字体大小,Font Size
+"Glitch Intensity",故障强度,Glitch Intensity
+"Simple UI",简化界面,Simple UI
+"Boss Test Entry",Boss 测试入口,Boss Test Entry
+"Show on Main Menu",在主菜单显示,Show on Main Menu
+"APPLY",应用,APPLY
+"CANCEL",取消,CANCEL
+"DEFAULTS",默认值,DEFAULTS
+"Gold: 0",金币：0,Gold: 0
+"Wave 1 Shop",第 1 关商店,Wave 1 Shop
+"Refresh (20G)",刷新（20G）,Refresh (20G)
+"Lock: OFF",锁定：关,Lock: OFF
+"Shop ready.",商店已就绪。,Shop ready.
+"Start Next Wave",开始下一波,Start Next Wave
+"Select Starter Weapon",选择初始武器,Select Starter Weapon
+"Character: the_fool",角色：the_fool,Character: the_fool
+"Confirm Weapon",确认武器,Confirm Weapon
+"BOSS",首领,BOSS
+"Dash: Ready",冲刺：可用,Dash: Ready
+"Gold 0",金币 0,Gold 0
+"Stamina 100/100",体力 100/100,Stamina 100/100
+"存档",存档,Save Slots
+"请选择槽位",请选择槽位,Please select a slot
+"槽位 1",槽位 1,Slot 1
+"槽位 2",槽位 2,Slot 2
+"槽位 3",槽位 3,Slot 3
+"选择角色",选择角色,Choose Character
+"愚者",愚者,The Fool
+"高机动，容错较低",高机动，容错较低,High mobility, lower fault tolerance
+"确认选择",确认选择,Confirm
+"继续游戏",继续游戏,Continue
+"主界面",主界面,Main Menu
+"保存",保存,Save
+"设置",设置,Settings
+"开始游戏",开始游戏,Start Game
+"退出",退出,Quit
+"⚙ 设置",⚙ 设置,⚙ Settings
+"闪烁着雪花点的CRT屏幕",闪烁着雪花点的CRT屏幕,Flickering CRT screen with static noise
+"奖励选择",奖励选择,Reward Choice
+"继续",继续,Continue
+"选择关卡",选择关卡,Select Stage
+"第1关 虚幻前庭",第1关 虚幻前庭,Stage 1: Illusory Vestibule
+"WITCH",女巫,WITCH
+"RIFT TRAVELER",裂隙旅者,RIFT TRAVELER
+"SEER",先知,SEER
+"BROKER",经纪人,BROKER
+"Gold Gain: x1.00 (+0%)",金币收益：x1.00（+0%）,Gold Gain: x1.00 (+0%)
+"Move to a vendor and press E to interact",移动到商人附近并按 E 交互,Move to a vendor and press E to interact
+"Supply Hub ready",补给站已就绪,Supply Hub ready
+"VENDOR",商人,VENDOR
+"Close",关闭,Close
+"Refresh Shop (0/2) - 30G",刷新商店（0/2）- 30G,Refresh Shop (0/2) - 30G
+"Leave Supply Hub",离开补给站,Leave Supply Hub
+"[E] Interact",[E] 交互,[E] Interact

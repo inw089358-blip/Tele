@@ -49,14 +49,14 @@ func purchase_offer(offer_id: String, state: Dictionary) -> Dictionary:
 			selected_offer = offer
 			break
 	if selected_offer.is_empty() or offer_index < 0:
-		return {"ok": false, "message": "Offer not found", "state": runtime}
+		return {"ok": false, "message": "msg.shop.offer_not_found", "state": runtime}
 	if bool(selected_offer.get("sold", false)):
-		return {"ok": false, "message": "Offer already sold", "state": runtime}
+		return {"ok": false, "message": "msg.shop.offer_sold", "state": runtime}
 
 	var current_gold: int = max(0, int(runtime.get("current_gold", 0)))
 	var price: int = max(0, int(selected_offer.get("price", 0)))
 	if current_gold < price:
-		return {"ok": false, "message": "Not enough gold", "state": runtime}
+		return {"ok": false, "message": "msg.shop.not_enough_gold", "state": runtime}
 
 	runtime["current_gold"] = current_gold - price
 	var shop_state: Dictionary = _normalize_shop_state(runtime.get("shop_runtime_state", {}))
@@ -71,7 +71,7 @@ func purchase_offer(offer_id: String, state: Dictionary) -> Dictionary:
 			return {
 				"ok": false,
 				"needs_replace": true,
-				"message": str(weapon_result.get("message", "Choose a slot to replace")),
+				"message": str(weapon_result.get("message", "msg.shop.choose_slot_replace")),
 				"replace_candidates": weapon_result.get("replace_candidates", []),
 				"state": runtime,
 			}
@@ -88,7 +88,7 @@ func purchase_offer(offer_id: String, state: Dictionary) -> Dictionary:
 	var locked: Array = runtime.get("shop_runtime_state", {}).get("locked_shop_offers", [])
 	if not locked.is_empty():
 		runtime["shop_runtime_state"]["locked_shop_offers"] = final_offers.duplicate(true)
-	return {"ok": true, "state": runtime, "message": "Purchase success"}
+	return {"ok": true, "state": runtime, "message": "msg.shop.purchase_success"}
 
 func merge_weapons_if_possible(state: Dictionary) -> Dictionary:
 	var runtime: Dictionary = state.duplicate(true)
@@ -134,6 +134,7 @@ func _roll_item_offer(wave_index: int) -> Dictionary:
 	if item_pool.is_empty():
 		return {
 			"kind": "item",
+			"item_id": "item_damage_upgrade",
 			"name": "Damage Upgrade",
 			"price": 35 + wave_index * 2,
 			"rarity": "common",
@@ -146,6 +147,7 @@ func _roll_item_offer(wave_index: int) -> Dictionary:
 	var final_price: int = max(1, int(round(base_price * pow(price_scale, max(0, wave_index - 1)))))
 	return {
 		"kind": "item",
+		"item_id": str(template.get("item_id", "")),
 		"name": str(template.get("name", "Item")),
 		"price": final_price,
 		"rarity": str(template.get("rarity", "common")),
@@ -158,6 +160,7 @@ func _roll_weapon_offer(wave_index: int) -> Dictionary:
 	if weapon_pool.is_empty():
 		return {
 			"kind": "weapon",
+			"weapon_id": "starter_blade",
 			"name": "Starter Blade",
 			"price": 45 + wave_index * 3,
 			"rarity": "common",
@@ -188,6 +191,7 @@ func _roll_weapon_offer(wave_index: int) -> Dictionary:
 	}
 	return {
 		"kind": "weapon",
+		"weapon_id": str(template.get("weapon_id", "weapon_unknown")),
 		"name": str(template.get("name", "Weapon")),
 		"price": final_price,
 		"rarity": rarity,
@@ -197,7 +201,7 @@ func _roll_weapon_offer(wave_index: int) -> Dictionary:
 
 func _add_weapon_to_slots(weapon_payload: Variant, shop_state: Dictionary, replace_slot_index: int = -1) -> Dictionary:
 	if not (weapon_payload is Dictionary):
-		return {"shop_state": shop_state, "needs_replace": false, "message": "Invalid weapon data"}
+		return {"shop_state": shop_state, "needs_replace": false, "message": "msg.shop.invalid_weapon_data"}
 	var weapon: Dictionary = (weapon_payload as Dictionary).duplicate(true)
 	var equipped: Array = _normalize_weapon_slots(shop_state.get("equipped_weapons", []))
 	var empty_slot: int = _find_empty_slot(equipped)
@@ -227,7 +231,7 @@ func _add_weapon_to_slots(weapon_payload: Variant, shop_state: Dictionary, repla
 	return {
 		"shop_state": shop_state,
 		"needs_replace": true,
-		"message": "Weapon slots are full",
+		"message": "msg.shop.weapon_slots_full",
 		"replace_candidates": candidates,
 	}
 

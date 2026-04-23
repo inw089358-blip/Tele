@@ -130,6 +130,12 @@ unique_name_in_owner = true
 layout_mode = 2
 show_percentage = false
 
+[node name="GoldLabel" type="Label" parent="PlayerPanel/PlayerMargin/PlayerHBox/StatsVBox" unique_id=211889114]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Gold 0"
+
 [node name="StaminaLabel" type="Label" parent="PlayerPanel/PlayerMargin/PlayerHBox/StatsVBox" unique_id=108097341]
 unique_name_in_owner = true
 layout_mode = 2

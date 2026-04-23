@@ -19,16 +19,25 @@ const PLAYER_SCRIPT_MAP: Dictionary[String, Script] = {
 }
 const SAVE_SLOT_PANEL_SCENE_PATH: String = "res://scenes/ui/save_slot_panel.tscn"
 const SETTINGS_SCENE_PATH: String = "res://scenes/settings.tscn"
+const NEON_OPTION_BUTTON_SCRIPT: Script = preload("res://scripts/ui/neon_option_button.gd")
 const BG_TUTORIAL_TEXTURE: Texture2D = preload("res://sprite/maps/map_tutorial_dream_entrance.png")
 const BG_COMBAT_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_combat_default.png")
 const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_arena.png")
 const MELEE_ARC_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_arc_effect.gd")
+const WEAPON_ORBIT_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/"
+const WEAPON_ORBIT_ANGULAR_SPEED: float = 1.65
+const WEAPON_ORBIT_ICON_TARGET_WIDTH: float = 38.0
+const WEAPON_ORBIT_MIN_RADIUS: float = 30.0
+const WEAPON_ORBIT_MAX_RADIUS: float = 40.0
+const WEAPON_ORBIT_FLASH_DURATION: float = 0.11
+const WEAPON_ORBIT_FLASH_SCALE_MAX: float = 1.22
+const WEAPON_ORBIT_BASE_TINT: Color = Color(0.86, 0.95, 1.0, 0.9)
+const WEAPON_ORBIT_FLASH_TINT: Color = Color(1.0, 1.0, 1.0, 1.0)
 
 var _player: Player
 var _player_camera: Camera2D
 var _current_player_id: String = "the_fool"
 var _enemy_spawn_timer: float = 0.0
-var _auto_attack_timer: float = 0.0
 var _contact_damage_timer: float = 0.0
 var _battle_elapsed: float = 0.0
 var _next_elite_spawn_time: float = 60.0
@@ -47,8 +56,13 @@ var _settings_panel: Control
 var _settings_scene_resource: PackedScene
 var _level_reward_panel: PanelContainer
 var _level_reward_title: Label
-var _level_reward_hint_label: Label
 var _level_reward_buttons: Array[Button] = []
+var _death_settlement_panel: PanelContainer
+var _death_settlement_title: Label
+var _death_settlement_subtitle: Label
+var _death_settlement_value_labels: Dictionary = {}
+var _death_retry_button: Button
+var _death_menu_button: Button
 var _level_reward_choices: Array[Dictionary] = []
 var _owned_weapon_rewards: Dictionary = {}
 var _reward_history_runtime: Array[String] = []
@@ -56,9 +70,12 @@ var _recent_categories_runtime: Array[String] = []
 var _build_tags_runtime: Array[String] = []
 var _reward_pity_state_runtime: Dictionary = {"no_output_streak": 0}
 var _pending_level_up_rewards: int = 0
+var _wave_end_reward_gate_active: bool = false
+var _pending_wave_shop_snapshot: Dictionary = {}
 var _current_level: int = 1
 var _current_xp: int = 0
 var _xp_to_next_level: int = 20
+var _xp_required_multiplier_runtime: float = 1.0
 var _stage_target_duration: float = 0.0
 var _wave_elapsed: float = 0.0
 var _wave_duration_runtime: float = 30.0
@@ -72,10 +89,13 @@ var _enemy_damage_multiplier: float = 1.0
 var _spawn_interval_multiplier: float = 1.0
 var _xp_multiplier: float = 1.0
 var _gold_multiplier: float = 1.0
+var _run_kill_count: int = 0
 var _arena_half_extents: Vector2 = Vector2(620.0, 340.0)
 var _enemy_ranged_weight_runtime: float = ENEMY_RANGED_WEIGHT
 var _enemy_barrage_weight_runtime: float = ENEMY_BARRAGE_WEIGHT
 var _auto_attack_interval_multiplier_runtime: float = 1.0
+var _weapon_cooldowns: Dictionary = {}
+var _weapon_cooldown_signatures: Dictionary = {}
 var _current_gold_runtime: int = 0
 var _selected_starter_weapon_id_runtime: String = ""
 var _shop_runtime_state: Dictionary = {
@@ -85,7 +105,17 @@ var _shop_runtime_state: Dictionary = {
     "refresh_count": 0,
 }
 var _stage_background_key: String = ""
+var _weapon_orbit_root: Node2D
+var _weapon_orbit_nodes: Dictionary = {}
+var _weapon_orbit_signatures: Dictionary = {}
+var _weapon_orbit_flash_timers: Dictionary = {}
+var _weapon_orbit_angle: float = 0.0
+var _weapon_orbit_icon_cache: Dictionary = {}
+var _weapon_orbit_placeholder_texture: Texture2D
 var _pause_transition_tween: Tween
+var _death_fx_layer: CanvasLayer
+var _death_fx_overlay: ColorRect
+var _death_fx_tween: Tween
 
 const INITIAL_ENEMY_COUNT: int = 10
 const MAX_ENEMY_COUNT: int = 24
@@ -107,7 +137,7 @@ const DEFAULT_WEAPON_ATTACK_PROFILES: Dictionary = {
     "arc_blade": {
         "mode": "melee_arc",
         "base_damage": 10,
-        "interval": 0.30,
+        "interval": 0.38,
         "range": 95.0,
     },
     "storm_wand": {
@@ -129,16 +159,22 @@ const DEFAULT_WEAPON_ATTACK_PROFILES: Dictionary = {
 }
 const CONTACT_DAMAGE: int = 8
 const CONTACT_DAMAGE_INTERVAL: float = 0.34
-const XP_BASE_VALUE: float = 20.0
-const XP_GROWTH_FACTOR: float = 1.15
+const XP_CURVE_LEVEL_OFFSET_DEFAULT: int = 3
+const XP_CURVE_BASE_MULT_DEFAULT: float = 1.0
+const XP_REQUIRED_MIN_DEFAULT: int = 1
 const REWARD_TARGET_RANGE_BONUS: float = 80.0
 const REWARD_ATTACK_DAMAGE_BONUS: int = 3
 const REWARD_MOVE_SPEED_BONUS: float = 15.0
 const LEVEL_REWARD_CHOICES_COUNT: int = 3
 const STAGE_TIMER_DANGER_SECONDS: int = 10
+const STAGE_TIMER_BASE_SECONDS: float = 30.0
+const STAGE_TIMER_GROWTH_SECONDS: float = 5.0
+const STAGE_TIMER_MAX_SECONDS: float = 120.0
 const PAUSE_OPEN_DURATION: float = 0.18
 const PAUSE_CLOSE_DURATION: float = 0.13
 const PAUSE_PANEL_POP_SCALE: float = 0.94
+const DEATH_FLASH_DURATION: float = 0.12
+const DEATH_FADE_DURATION: float = 0.46
 
 func _resolve_state_label() -> Label:
     var direct_label: Label = get_node_or_null(^"HUD#StateLabel") as Label
@@ -161,6 +197,7 @@ func _ready() -> void :
     if not pending_slot_data.is_empty():
         _apply_loaded_slot_data(pending_slot_data, false)
     _ensure_starter_weapon_equipped()
+    _sync_weapon_orbit_visuals(true)
     _spawn_initial_enemies()
     wave_manager.start_stage()
     _sync_wave_runtime_from_manager()
@@ -174,14 +211,19 @@ func _ready() -> void :
     _prepare_pause_sub_scenes()
     _create_pause_sub_panels()
     _set_pause_overlay_visible(false)
+    _set_combat_simulation_active(true)
 
 func _reset_progress_state() -> void :
     _current_level = 1
     _current_xp = 0
+    _xp_required_multiplier_runtime = _resolve_character_xp_required_multiplier(_current_player_id)
     _xp_to_next_level = _xp_required_for_level(_current_level)
     _pending_level_up_rewards = 0
     _reward_opened = false
+    _wave_end_reward_gate_active = false
+    _pending_wave_shop_snapshot = {}
     _battle_elapsed = 0.0
+    _run_kill_count = 0
     _wave_elapsed = 0.0
     _wave_duration_runtime = 30.0
     _wave_progress_index = 0
@@ -196,6 +238,9 @@ func _reset_progress_state() -> void :
     _reward_pity_state_runtime = {"no_output_streak": 0}
     _level_reward_choices = []
     _auto_attack_interval_multiplier_runtime = 1.0
+    _weapon_cooldowns.clear()
+    _weapon_cooldown_signatures.clear()
+    _clear_weapon_orbit_runtime()
     _current_gold_runtime = 0
     _selected_starter_weapon_id_runtime = GameManager.selected_starter_weapon_id
     _shop_runtime_state = {
@@ -208,6 +253,8 @@ func _reset_progress_state() -> void :
         hud.call("hide_boss_bar")
 
 func _process(delta: float) -> void :
+    if _is_game_over:
+        return
     if _reward_opened:
         return
     if GameManager.current_state != GameManager.GameState.PLAYING:
@@ -218,7 +265,6 @@ func _process(delta: float) -> void :
     if _stage_clear_triggered:
         return
     _enemy_spawn_timer += delta
-    _auto_attack_timer += delta
     _contact_damage_timer = max(0.0, _contact_damage_timer - delta)
     _elite_spawn_relief_timer = max(0.0, _elite_spawn_relief_timer - delta)
 
@@ -232,10 +278,8 @@ func _process(delta: float) -> void :
         _try_spawn_enemy()
 
     _try_spawn_elite_by_schedule()
-
-    if _auto_attack_timer >= _get_auto_attack_interval_runtime():
-        _auto_attack_timer = 0.0
-        _auto_attack_nearest_enemy()
+    _tick_equipped_weapon_attacks(delta)
+    _tick_weapon_orbit_visuals(delta)
     _handle_projectile_hits()
     _handle_enemy_projectile_hits()
     _handle_enemy_contact_damage()
@@ -251,6 +295,11 @@ func _unhandled_input(event: InputEvent) -> void :
     if not event.is_action_pressed("pause"):
         return
     if _is_game_over:
+        return
+    if _wave_end_reward_gate_active:
+        if _pending_level_up_rewards > 0:
+            if _level_reward_panel != null and not _level_reward_panel.visible:
+                _show_level_reward_panel()
         return
     if _reward_opened:
         if _level_reward_panel != null and not _level_reward_panel.visible:
@@ -271,8 +320,11 @@ func _on_player_died() -> void :
     if _is_game_over:
         return
     _is_game_over = true
+    _set_combat_simulation_active(false)
     _reward_opened = false
     _pending_level_up_rewards = 0
+    _wave_end_reward_gate_active = false
+    _pending_wave_shop_snapshot = {}
     get_tree().paused = false
     _pause_opened = false
     _set_pause_overlay_visible(false)
@@ -285,7 +337,8 @@ func _on_player_died() -> void :
             _player.stamina_max, 
             float(_current_xp), 
             float(_xp_to_next_level), 
-            _current_level
+            _current_level,
+            _current_gold_runtime
         )
     _clear_experience_orbs()
     _clear_enemy_projectiles()
@@ -293,7 +346,124 @@ func _on_player_died() -> void :
         hud.call("set_stage_timer", false)
     if hud.has_method("hide_boss_bar"):
         hud.call("hide_boss_bar")
-    GameManager.end_game(false)
+    await _play_player_death_transition()
+    _show_death_settlement_panel()
+
+func _play_player_death_transition() -> void:
+    _ensure_death_overlay()
+    if _death_fx_overlay == null:
+        return
+    _stop_death_fx_tween()
+
+    _death_fx_overlay.visible = true
+    _death_fx_overlay.color = Color(0.45, 0.07, 0.07, 0.0)
+
+    _death_fx_tween = create_tween()
+    _death_fx_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+    _death_fx_tween.set_trans(Tween.TRANS_QUAD)
+    _death_fx_tween.set_ease(Tween.EASE_OUT)
+    _death_fx_tween.tween_property(_death_fx_overlay, "color", Color(0.55, 0.08, 0.08, 0.38), DEATH_FLASH_DURATION)
+    _death_fx_tween.set_ease(Tween.EASE_IN)
+    _death_fx_tween.tween_property(_death_fx_overlay, "color", Color(0.0, 0.0, 0.0, 0.96), DEATH_FADE_DURATION)
+    await _death_fx_tween.finished
+    _death_fx_tween = null
+
+func _ensure_death_overlay() -> void:
+    if _death_fx_layer != null and is_instance_valid(_death_fx_layer):
+        return
+
+    _death_fx_layer = CanvasLayer.new()
+    _death_fx_layer.layer = 190
+    _death_fx_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+    add_child(_death_fx_layer)
+
+    _death_fx_overlay = ColorRect.new()
+    _death_fx_overlay.name = "DeathFxOverlay"
+    _death_fx_overlay.anchors_preset = Control.PRESET_FULL_RECT
+    _death_fx_overlay.anchor_right = 1.0
+    _death_fx_overlay.anchor_bottom = 1.0
+    _death_fx_overlay.grow_horizontal = Control.GROW_DIRECTION_BOTH
+    _death_fx_overlay.grow_vertical = Control.GROW_DIRECTION_BOTH
+    _death_fx_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _death_fx_overlay.visible = false
+    _death_fx_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+    _death_fx_layer.add_child(_death_fx_overlay)
+
+func _stop_death_fx_tween() -> void:
+    if _death_fx_tween != null and is_instance_valid(_death_fx_tween):
+        _death_fx_tween.kill()
+    _death_fx_tween = null
+
+func _show_death_settlement_panel() -> void:
+    if _death_settlement_panel == null:
+        return
+
+    _pause_opened = true
+    _reward_opened = false
+    _set_pause_overlay_visible(true)
+    _set_crt_effects_enabled(true)
+
+    if _death_fx_overlay != null:
+        _death_fx_overlay.visible = false
+        _death_fx_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
+
+    pause_panel.visible = false
+    if _slot_panel != null:
+        _slot_panel.visible = false
+    if _settings_panel != null:
+        _settings_panel.visible = false
+    if _level_reward_panel != null:
+        _level_reward_panel.visible = false
+    _death_settlement_panel.visible = true
+
+    var stage_text: String = GameManager.current_stage_id
+    var wave_text: String = _tf("ui.common.wave_fmt", [max(1, int(wave_manager.current_wave))], "WAVE %d")
+    var survive_text: String = _format_elapsed_time(_battle_elapsed)
+    if _death_settlement_title != null:
+        _death_settlement_title.text = _tx("ui.game_over.defeat_title", "Defeat")
+    if _death_settlement_subtitle != null:
+        _death_settlement_subtitle.text = _tx("ui.game_scene.death_subtitle", "Signal interrupted, battle report generated.")
+    _set_death_settlement_value("stage", stage_text)
+    _set_death_settlement_value("wave", wave_text)
+    _set_death_settlement_value("survival", survive_text)
+    _set_death_settlement_value("level", _tf("ui.common.level_fmt", [_current_level], "Lv.%d"))
+    _set_death_settlement_value("gold", str(_current_gold_runtime))
+    _set_death_settlement_value("kills", str(_run_kill_count))
+
+    get_tree().paused = true
+    GameManager.change_state(GameManager.GameState.GAME_OVER)
+    EventBus.game_over.emit(false)
+
+func _set_combat_simulation_active(active: bool) -> void:
+    if _player != null and is_instance_valid(_player):
+        _player.set_process(active)
+        _player.set_physics_process(active)
+    for enemy: Enemy in _enemies:
+        if enemy == null or not is_instance_valid(enemy):
+            continue
+        enemy.set_process(active)
+        enemy.set_physics_process(active)
+    for projectile: Projectile in _projectiles:
+        if projectile == null or not is_instance_valid(projectile):
+            continue
+        projectile.set_process(active)
+        projectile.set_physics_process(active)
+    for projectile: EnemyProjectile in _enemy_projectiles:
+        if projectile == null or not is_instance_valid(projectile):
+            continue
+        projectile.set_process(active)
+        projectile.set_physics_process(active)
+    for orb: ExperienceOrb in _experience_orbs:
+        if orb == null or not is_instance_valid(orb):
+            continue
+        orb.set_process(active)
+        orb.set_physics_process(active)
+
+func _format_elapsed_time(seconds_raw: float) -> String:
+    var total_seconds: int = max(0, int(floor(seconds_raw)))
+    var minutes: int = total_seconds / 60
+    var seconds: int = total_seconds % 60
+    return "%02d:%02d" % [minutes, seconds]
 
 func _update_stage_timer(_delta: float) -> void:
     if hud == null or not hud.has_method("set_stage_timer"):
@@ -327,7 +497,8 @@ func _on_wave_time_up() -> void:
     _stage_clear_triggered = true
     _pause_opened = false
     _reward_opened = false
-    _pending_level_up_rewards = 0
+    _wave_end_reward_gate_active = false
+    _pending_wave_shop_snapshot = {}
     get_tree().paused = false
     _set_pause_overlay_visible(false)
     _clear_enemy_projectiles()
@@ -345,6 +516,27 @@ func _on_wave_time_up() -> void:
     shop_snapshot["stage_id"] = next_stage_id
     shop_snapshot["wave"] = 1
     shop_snapshot["wave_progress_index"] = 0
+    _begin_wave_end_reward_then_shop(shop_snapshot)
+
+func _begin_wave_end_reward_then_shop(shop_snapshot: Dictionary) -> void:
+    _wave_end_reward_gate_active = true
+    _pending_wave_shop_snapshot = shop_snapshot.duplicate(true)
+    if _pending_level_up_rewards > 0:
+        _try_open_next_level_reward()
+        if _reward_opened:
+            return
+    _open_shop_after_wave_reward()
+
+func _open_shop_after_wave_reward() -> void:
+    if not _wave_end_reward_gate_active:
+        return
+    if _pending_level_up_rewards > 0 or _reward_opened:
+        return
+    var shop_snapshot: Dictionary = _pending_wave_shop_snapshot.duplicate(true)
+    _wave_end_reward_gate_active = false
+    _pending_wave_shop_snapshot = {}
+    if shop_snapshot.is_empty():
+        return
     GameManager.open_wave_shop(shop_snapshot)
 
 func _complete_stage_by_timer() -> void:
@@ -354,6 +546,8 @@ func _complete_stage_by_timer() -> void:
     _pause_opened = false
     _reward_opened = false
     _pending_level_up_rewards = 0
+    _wave_end_reward_gate_active = false
+    _pending_wave_shop_snapshot = {}
     get_tree().paused = false
     _set_pause_overlay_visible(false)
     _clear_enemy_projectiles()
@@ -384,17 +578,21 @@ func _spawn_player(force_character_id: String = "") -> void :
         selected_id = "the_fool"
     GameManager.selected_character = selected_id
     _current_player_id = selected_id
+    _xp_required_multiplier_runtime = _resolve_character_xp_required_multiplier(_current_player_id)
+    _xp_to_next_level = _xp_required_for_level(_current_level)
 
     var script_resource: Script = PLAYER_SCRIPT_MAP["the_fool"]
     if PLAYER_SCRIPT_MAP.has(selected_id):
         script_resource = PLAYER_SCRIPT_MAP[selected_id]
 
+    _clear_weapon_orbit_runtime()
     if _player != null and is_instance_valid(_player):
         _player.queue_free()
 
     _player = script_resource.new()
     _player.global_position = Vector2.ZERO
     add_child(_player)
+    _ensure_weapon_orbit_root()
 
     var camera: Camera2D = Camera2D.new()
     camera.enabled = true
@@ -415,11 +613,30 @@ func _spawn_initial_enemies() -> void :
     for i: int in range(INITIAL_ENEMY_COUNT):
         _try_spawn_enemy()
 
+func _is_enemy_combat_active(enemy: Variant) -> bool:
+    if enemy == null:
+        return false
+    if not (enemy is Object):
+        return false
+    var enemy_object: Object = enemy
+    if not is_instance_valid(enemy_object):
+        return false
+    if enemy_object.has_method("is_combat_active"):
+        return bool(enemy_object.call("is_combat_active"))
+    return true
+
+func _count_active_enemies() -> int:
+    var total: int = 0
+    for enemy: Enemy in _enemies:
+        if _is_enemy_combat_active(enemy):
+            total += 1
+    return total
+
 func _try_spawn_enemy() -> void :
     if _player == null or not is_instance_valid(_player):
         return
     _cleanup_dead_enemies()
-    if _enemies.size() >= MAX_ENEMY_COUNT:
+    if _count_active_enemies() >= MAX_ENEMY_COUNT:
         return
     var spawn_roll: float = randf()
     var spawn_type: Enemy.EnemyType = Enemy.EnemyType.MELEE
@@ -464,10 +681,10 @@ func _try_spawn_elite_by_schedule() -> void :
     _spawn_elite()
 
 func _has_alive_elite() -> bool:
-    if _active_elite != null and is_instance_valid(_active_elite):
+    if _is_enemy_combat_active(_active_elite):
         return true
     for enemy: Enemy in _enemies:
-        if enemy == null or not is_instance_valid(enemy):
+        if not _is_enemy_combat_active(enemy):
             continue
         if enemy.is_elite:
             _active_elite = enemy
@@ -539,23 +756,53 @@ func _constrain_actor_positions_to_arena() -> void:
             continue
         enemy.global_position = _clamp_position_to_arena(enemy.global_position, enemy.body_radius)
 
-func _auto_attack_nearest_enemy() -> void :
+func _tick_equipped_weapon_attacks(delta: float) -> void:
     if _player == null or not is_instance_valid(_player):
         return
-    var primary_weapon: Dictionary = _get_primary_weapon_runtime()
-    var attack_profile: Dictionary = _resolve_attack_profile(primary_weapon)
-    var target_range: float = _resolve_weapon_attack_range(attack_profile)
-    var nearest_enemy: Enemy = _find_nearest_enemy_in_range(target_range)
-    if nearest_enemy == null:
+    _sync_weapon_cooldowns_with_equipped_slots()
+    var equipped_slots: Array = _normalize_equipped_weapon_slots(_shop_runtime_state.get("equipped_weapons", []))
+    var player_speed_mult: float = 1.0
+    if _player != null and is_instance_valid(_player):
+        player_speed_mult = _player.get_attack_speed_multiplier()
+    var safe_speed_mult: float = max(0.01, player_speed_mult)
+
+    for slot_index: int in range(equipped_slots.size()):
+        var slot_weapon_value: Variant = equipped_slots[slot_index]
+        if not _is_valid_weapon_slot(slot_weapon_value):
+            continue
+        var slot_weapon: Dictionary = slot_weapon_value
+        var attack_profile: Dictionary = _resolve_attack_profile(slot_weapon)
+        var base_interval: float = max(0.08, float(attack_profile.get("interval", AUTO_ATTACK_INTERVAL)))
+        var effective_interval: float = clampf(
+            base_interval * _auto_attack_interval_multiplier_runtime / safe_speed_mult,
+            0.08,
+            1.2
+        )
+        var cooldown_remaining: float = max(0.0, float(_weapon_cooldowns.get(slot_index, 0.0)) - delta)
+        if cooldown_remaining > 0.0:
+            _weapon_cooldowns[slot_index] = cooldown_remaining
+            continue
+
+        var target_range: float = _resolve_weapon_attack_range(attack_profile)
+        var nearest_enemy: Enemy = _find_nearest_enemy_in_range(target_range)
+        if nearest_enemy == null:
+            _weapon_cooldowns[slot_index] = 0.0
+            continue
+        _attack_with_profile(nearest_enemy, attack_profile)
+        _trigger_weapon_orbit_flash(slot_index)
+        _weapon_cooldowns[slot_index] = effective_interval
+
+func _attack_with_profile(target_enemy: Enemy, attack_profile: Dictionary) -> void:
+    if target_enemy == null or not is_instance_valid(target_enemy):
         return
     var mode: String = str(attack_profile.get("mode", "ranged_homing"))
     match mode:
         "melee_arc":
-            _perform_melee_arc_attack(nearest_enemy, attack_profile)
+            _perform_melee_arc_attack(target_enemy, attack_profile)
         "ranged_heavy":
-            _spawn_weapon_projectile(nearest_enemy, attack_profile, false)
+            _spawn_weapon_projectile(target_enemy, attack_profile, false)
         _:
-            _spawn_weapon_projectile(nearest_enemy, attack_profile, true)
+            _spawn_weapon_projectile(target_enemy, attack_profile, true)
 
 func _find_nearest_enemy_in_range(max_distance: float) -> Enemy:
     if _player == null:
@@ -563,7 +810,7 @@ func _find_nearest_enemy_in_range(max_distance: float) -> Enemy:
     var best_enemy: Enemy = null
     var best_dist_sq: float = max_distance * max_distance
     for enemy: Enemy in _enemies:
-        if enemy == null or not is_instance_valid(enemy):
+        if not _is_enemy_combat_active(enemy):
             continue
         var dist_sq: float = _player.global_position.distance_squared_to(enemy.global_position)
         if dist_sq < best_dist_sq:
@@ -590,18 +837,41 @@ func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, h
     _projectiles.append(projectile)
 
 func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary) -> void:
-    if target_enemy == null or not is_instance_valid(target_enemy):
+    if not _is_enemy_combat_active(target_enemy):
         return
-    _spawn_melee_arc_effect(target_enemy.global_position, attack_profile)
+    var impact_position: Vector2 = target_enemy.global_position
+    _spawn_melee_arc_effect(impact_position, attack_profile)
     var base_damage: int = _resolve_weapon_damage(attack_profile)
-    var outgoing_damage: int = _player.roll_outgoing_damage(base_damage, _player.crit_chance, _player.crit_multiplier)
-    var dealt_damage: int = target_enemy.take_damage(outgoing_damage)
-    _player.heal_from_lifesteal(dealt_damage, _player.lifesteal)
+    var splash_radius: float = _resolve_melee_splash_radius(attack_profile)
+    var total_dealt_damage: int = 0
+    for enemy: Enemy in _enemies:
+        if not _is_enemy_combat_active(enemy):
+            continue
+        var hit_distance: float = splash_radius + enemy.body_radius
+        if impact_position.distance_squared_to(enemy.global_position) > hit_distance * hit_distance:
+            continue
+        var outgoing_damage: int = _player.roll_outgoing_damage(base_damage, _player.crit_chance, _player.crit_multiplier)
+        total_dealt_damage += enemy.take_damage(outgoing_damage)
+    if total_dealt_damage > 0:
+        _player.heal_from_lifesteal(total_dealt_damage, _player.lifesteal)
     _cleanup_dead_enemies()
 
 func _resolve_weapon_damage(attack_profile: Dictionary) -> int:
     var base_damage: int = int(attack_profile.get("base_damage", AUTO_ATTACK_BASE_DAMAGE))
-    return max(1, base_damage + _player.get_attack_damage_bonus())
+    var mode: String = str(attack_profile.get("mode", "ranged_homing"))
+    var total_bonus: int = _player.get_attack_damage_bonus() + _resolve_mode_damage_bonus(mode)
+    return max(1, base_damage + total_bonus)
+
+func _resolve_mode_damage_bonus(mode: String) -> int:
+    if _player == null or not is_instance_valid(_player):
+        return 0
+    match mode:
+        "melee_arc":
+            return _player.get_melee_attack_damage_bonus()
+        "ranged_homing", "ranged_heavy":
+            return _player.get_ranged_attack_damage_bonus()
+        _:
+            return 0
 
 func _resolve_weapon_attack_range(attack_profile: Dictionary) -> float:
     var mode: String = str(attack_profile.get("mode", "ranged_homing"))
@@ -610,6 +880,235 @@ func _resolve_weapon_attack_range(attack_profile: Dictionary) -> float:
         return clampf(profile_range, 55.0, 130.0)
     var safe_range: float = max(60.0, profile_range)
     return max(60.0, safe_range + _player.bonus_target_range)
+
+func _resolve_melee_splash_radius(attack_profile: Dictionary) -> float:
+    var melee_range: float = clampf(float(attack_profile.get("range", 95.0)), 55.0, 130.0)
+    var default_radius: float = melee_range * 0.58
+    var raw_radius: float = float(attack_profile.get("splash_radius", default_radius))
+    return clampf(raw_radius, 48.0, 110.0)
+
+func _normalize_equipped_weapon_slots(raw_slots: Variant) -> Array:
+    var slots: Array = []
+    if raw_slots is Array:
+        var raw_array: Array = raw_slots
+        for i: int in range(min(raw_array.size(), 6)):
+            var item: Variant = raw_array[i]
+            slots.append(item.duplicate(true) if item is Dictionary else {})
+    while slots.size() < 6:
+        slots.append({})
+    return slots
+
+func _is_valid_weapon_slot(slot_value: Variant) -> bool:
+    return slot_value is Dictionary and not str((slot_value as Dictionary).get("weapon_id", "")).is_empty()
+
+func _build_weapon_cooldown_signature(weapon: Dictionary) -> String:
+    return "%s|%s|%s" % [
+        str(weapon.get("weapon_id", "")),
+        str(weapon.get("rarity", "common")),
+        str(weapon.get("level", 1)),
+    ]
+
+func _sync_weapon_cooldowns_with_equipped_slots() -> void:
+    var equipped_slots: Array = _normalize_equipped_weapon_slots(_shop_runtime_state.get("equipped_weapons", []))
+    var synced_cooldowns: Dictionary = {}
+    var synced_signatures: Dictionary = {}
+    for slot_index: int in range(equipped_slots.size()):
+        var slot_value: Variant = equipped_slots[slot_index]
+        if not _is_valid_weapon_slot(slot_value):
+            continue
+        var weapon: Dictionary = slot_value
+        var signature: String = _build_weapon_cooldown_signature(weapon)
+        synced_signatures[slot_index] = signature
+        if str(_weapon_cooldown_signatures.get(slot_index, "")) == signature:
+            synced_cooldowns[slot_index] = max(0.0, float(_weapon_cooldowns.get(slot_index, 0.0)))
+        else:
+            synced_cooldowns[slot_index] = 0.0
+    _weapon_cooldowns = synced_cooldowns
+    _weapon_cooldown_signatures = synced_signatures
+
+func _tick_weapon_orbit_visuals(delta: float) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    _sync_weapon_orbit_visuals()
+    if _weapon_orbit_nodes.is_empty():
+        return
+    _weapon_orbit_angle = wrapf(_weapon_orbit_angle + delta * WEAPON_ORBIT_ANGULAR_SPEED, 0.0, TAU)
+    var active_slots: Array[int] = []
+    for key in _weapon_orbit_nodes.keys():
+        active_slots.append(int(key))
+    active_slots.sort()
+    if active_slots.is_empty():
+        return
+
+    var radius: float = _resolve_weapon_orbit_radius(active_slots.size())
+    for i: int in range(active_slots.size()):
+        var slot_index: int = active_slots[i]
+        var sprite_value: Variant = _weapon_orbit_nodes.get(slot_index, null)
+        if not (sprite_value is Sprite2D):
+            continue
+        var sprite: Sprite2D = sprite_value
+        if not is_instance_valid(sprite):
+            continue
+        var angle: float = _weapon_orbit_angle + (TAU * float(i) / float(active_slots.size()))
+        sprite.position = Vector2.RIGHT.rotated(angle) * radius
+        sprite.rotation = angle + PI * 0.5
+
+        var flash_left: float = max(0.0, float(_weapon_orbit_flash_timers.get(slot_index, 0.0)) - delta)
+        if flash_left <= 0.0:
+            _weapon_orbit_flash_timers.erase(slot_index)
+            sprite.scale = _resolve_weapon_orbit_base_scale(sprite)
+            sprite.modulate = WEAPON_ORBIT_BASE_TINT
+            continue
+        _weapon_orbit_flash_timers[slot_index] = flash_left
+        var flash_t: float = clampf(flash_left / WEAPON_ORBIT_FLASH_DURATION, 0.0, 1.0)
+        var flash_scale: float = lerpf(1.0, WEAPON_ORBIT_FLASH_SCALE_MAX, flash_t)
+        sprite.scale = _resolve_weapon_orbit_base_scale(sprite) * flash_scale
+        sprite.modulate = WEAPON_ORBIT_BASE_TINT.lerp(WEAPON_ORBIT_FLASH_TINT, flash_t)
+
+func _sync_weapon_orbit_visuals(force_rebuild: bool = false) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    _ensure_weapon_orbit_root()
+    var equipped_slots: Array = _normalize_equipped_weapon_slots(_shop_runtime_state.get("equipped_weapons", []))
+    var next_signatures: Dictionary = {}
+    for slot_index: int in range(equipped_slots.size()):
+        var slot_value: Variant = equipped_slots[slot_index]
+        if not _is_valid_weapon_slot(slot_value):
+            continue
+        var weapon: Dictionary = slot_value
+        var signature: String = _build_weapon_cooldown_signature(weapon)
+        next_signatures[slot_index] = signature
+        var has_sprite: bool = _weapon_orbit_nodes.has(slot_index)
+        var sprite_valid: bool = false
+        if has_sprite:
+            var sprite_value: Variant = _weapon_orbit_nodes.get(slot_index, null)
+            sprite_valid = sprite_value is Sprite2D and is_instance_valid(sprite_value as Sprite2D)
+        var signature_same: bool = str(_weapon_orbit_signatures.get(slot_index, "")) == signature
+        if force_rebuild or not has_sprite or not sprite_valid or not signature_same:
+            _rebuild_weapon_orbit_slot_sprite(slot_index, weapon)
+
+    var existing_slots: Array = _weapon_orbit_nodes.keys().duplicate()
+    for key in existing_slots:
+        var slot_index: int = int(key)
+        if not next_signatures.has(slot_index):
+            _remove_weapon_orbit_slot(slot_index)
+    _weapon_orbit_signatures = next_signatures
+
+func _ensure_weapon_orbit_root() -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    if _weapon_orbit_root != null and is_instance_valid(_weapon_orbit_root):
+        if _weapon_orbit_root.get_parent() == _player:
+            return
+        _weapon_orbit_root.queue_free()
+    _weapon_orbit_root = Node2D.new()
+    _weapon_orbit_root.name = "WeaponOrbitRoot"
+    _weapon_orbit_root.z_index = 16
+    _player.add_child(_weapon_orbit_root)
+
+func _clear_weapon_orbit_runtime() -> void:
+    var existing_slots: Array = _weapon_orbit_nodes.keys().duplicate()
+    for key in existing_slots:
+        _remove_weapon_orbit_slot(int(key))
+    _weapon_orbit_nodes.clear()
+    _weapon_orbit_signatures.clear()
+    _weapon_orbit_flash_timers.clear()
+    _weapon_orbit_angle = 0.0
+    if _weapon_orbit_root != null and is_instance_valid(_weapon_orbit_root):
+        _weapon_orbit_root.queue_free()
+    _weapon_orbit_root = null
+
+func _rebuild_weapon_orbit_slot_sprite(slot_index: int, weapon: Dictionary) -> void:
+    _remove_weapon_orbit_slot(slot_index)
+    if _weapon_orbit_root == null or not is_instance_valid(_weapon_orbit_root):
+        return
+    var weapon_id: String = str(weapon.get("weapon_id", ""))
+    var texture: Texture2D = _get_weapon_orbit_texture(weapon_id)
+    if texture == null:
+        texture = _get_weapon_orbit_placeholder_texture()
+    var sprite: Sprite2D = Sprite2D.new()
+    sprite.texture = texture
+    sprite.centered = true
+    sprite.z_index = 2
+    sprite.modulate = WEAPON_ORBIT_BASE_TINT
+    var base_scale: Vector2 = _compute_weapon_orbit_base_scale(texture)
+    sprite.scale = base_scale
+    sprite.set_meta("base_scale", base_scale)
+    _weapon_orbit_root.add_child(sprite)
+    _weapon_orbit_nodes[slot_index] = sprite
+
+func _remove_weapon_orbit_slot(slot_index: int) -> void:
+    var sprite_value: Variant = _weapon_orbit_nodes.get(slot_index, null)
+    if sprite_value is Sprite2D:
+        var sprite: Sprite2D = sprite_value
+        if is_instance_valid(sprite):
+            sprite.queue_free()
+    _weapon_orbit_nodes.erase(slot_index)
+    _weapon_orbit_signatures.erase(slot_index)
+    _weapon_orbit_flash_timers.erase(slot_index)
+
+func _get_weapon_orbit_texture(weapon_id: String) -> Texture2D:
+    if weapon_id.is_empty():
+        return null
+    if _weapon_orbit_icon_cache.has(weapon_id):
+        return _weapon_orbit_icon_cache[weapon_id] as Texture2D
+    var icon_path: String = "%s%s.png" % [WEAPON_ORBIT_ICON_DIR, weapon_id]
+    if not ResourceLoader.exists(icon_path):
+        _weapon_orbit_icon_cache[weapon_id] = null
+        return null
+    var icon: Texture2D = load(icon_path) as Texture2D
+    _weapon_orbit_icon_cache[weapon_id] = icon
+    return icon
+
+func _get_weapon_orbit_placeholder_texture() -> Texture2D:
+    if _weapon_orbit_placeholder_texture != null:
+        return _weapon_orbit_placeholder_texture
+    var size: int = 24
+    var image: Image = Image.create(size, size, false, Image.FORMAT_RGBA8)
+    image.fill(Color(0.0, 0.0, 0.0, 0.0))
+    var center: Vector2 = Vector2(float(size) * 0.5, float(size) * 0.5)
+    var inner_radius: float = 4.0
+    var outer_radius: float = 10.0
+    for y: int in range(size):
+        for x: int in range(size):
+            var pixel_pos: Vector2 = Vector2(float(x) + 0.5, float(y) + 0.5)
+            var distance: float = pixel_pos.distance_to(center)
+            if distance <= inner_radius:
+                image.set_pixel(x, y, Color(0.92, 0.98, 1.0, 0.96))
+                continue
+            if distance > outer_radius:
+                continue
+            var fade: float = 1.0 - ((distance - inner_radius) / max(0.01, outer_radius - inner_radius))
+            image.set_pixel(x, y, Color(0.28, 0.88, 1.0, 0.6 * fade))
+    _weapon_orbit_placeholder_texture = ImageTexture.create_from_image(image)
+    return _weapon_orbit_placeholder_texture
+
+func _compute_weapon_orbit_base_scale(texture: Texture2D) -> Vector2:
+    if texture == null:
+        return Vector2.ONE
+    var raw_size: Vector2 = texture.get_size()
+    if raw_size.x <= 0.0:
+        return Vector2.ONE
+    var factor: float = clampf(WEAPON_ORBIT_ICON_TARGET_WIDTH / raw_size.x, 0.32, 1.35)
+    return Vector2.ONE * factor
+
+func _resolve_weapon_orbit_base_scale(sprite: Sprite2D) -> Vector2:
+    if sprite == null:
+        return Vector2.ONE
+    var base_scale_value: Variant = sprite.get_meta("base_scale", Vector2.ONE)
+    if base_scale_value is Vector2:
+        return base_scale_value
+    return Vector2.ONE
+
+func _resolve_weapon_orbit_radius(active_weapon_count: int) -> float:
+    var clamped_count: int = clampi(active_weapon_count, 1, 6)
+    var ratio: float = float(clamped_count - 1) / 5.0
+    return lerpf(WEAPON_ORBIT_MIN_RADIUS, WEAPON_ORBIT_MAX_RADIUS, ratio)
+
+func _trigger_weapon_orbit_flash(slot_index: int) -> void:
+    if not _weapon_orbit_nodes.has(slot_index):
+        return
+    _weapon_orbit_flash_timers[slot_index] = WEAPON_ORBIT_FLASH_DURATION
 
 func _spawn_melee_arc_effect(target_position: Vector2, attack_profile: Dictionary) -> void:
     if _player == null or not is_instance_valid(_player):
@@ -649,7 +1148,7 @@ func _handle_projectile_hits() -> void :
         if projectile == null or not is_instance_valid(projectile):
             continue
         for enemy: Enemy in _enemies:
-            if enemy == null or not is_instance_valid(enemy):
+            if not _is_enemy_combat_active(enemy):
                 continue
             var hit_distance: float = projectile.hit_radius + enemy.body_radius
             if projectile.global_position.distance_squared_to(enemy.global_position) <= hit_distance * hit_distance:
@@ -709,7 +1208,7 @@ func _handle_enemy_contact_damage() -> void :
         return
     var touched: bool = false
     for enemy: Enemy in _enemies:
-        if enemy == null or not is_instance_valid(enemy):
+        if not _is_enemy_combat_active(enemy):
             continue
         var contact_distance: float = enemy.body_radius + _player.body_radius + 2.0
         if enemy.global_position.distance_squared_to(_player.global_position) <= contact_distance * contact_distance:
@@ -789,7 +1288,8 @@ func _refresh_player_hud() -> void :
             _player.stamina_max, 
             float(_current_xp), 
             float(_xp_to_next_level), 
-            _current_level
+            _current_level,
+            _current_gold_runtime
         )
 
 func _update_elite_boss_bar() -> void :
@@ -825,7 +1325,10 @@ func _draw() -> void :
     draw_rect(arena_rect, Color(0.23, 0.36, 0.4, 0.35), false, 2.0)
 
 func _bind_pause_menu() -> void :
-    resume_button.text = "Resume"
+    resume_button.text = _tx("ui.pause.resume", "Resume")
+    main_menu_button.text = _tx("ui.pause.main_menu", "Main Menu")
+    save_button.text = _tx("ui.pause.save", "Save")
+    settings_button.text = _tx("ui.pause.settings", "Settings")
     resume_button.pressed.connect(_on_resume_button_pressed)
     main_menu_button.pressed.connect(_on_main_menu_button_pressed)
     save_button.pressed.connect(_on_save_button_pressed)
@@ -858,6 +1361,7 @@ func _create_pause_sub_panels() -> void :
                 _settings_panel.connect("request_close", Callable(self, "_on_settings_panel_close_requested"))
 
     _create_level_reward_panel()
+    _create_death_settlement_panel()
 
 func _prepare_pause_sub_scenes() -> void :
     var loaded_scene: Resource = ResourceLoader.load(SAVE_SLOT_PANEL_SCENE_PATH)
@@ -913,12 +1417,6 @@ func _create_level_reward_panel() -> void :
     _level_reward_title.add_theme_font_size_override("font_size", 28)
     vbox.add_child(_level_reward_title)
 
-    _level_reward_hint_label = Label.new()
-    _level_reward_hint_label.text = "Level Up Reward: Choose one weapon"
-    _level_reward_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _level_reward_hint_label.add_theme_font_size_override("font_size", 18)
-    vbox.add_child(_level_reward_hint_label)
-
     vbox.add_spacer(false)
 
     _level_reward_buttons.clear()
@@ -929,6 +1427,182 @@ func _create_level_reward_panel() -> void :
 
     _level_reward_panel = panel
     _add_pause_sub_panel(_level_reward_panel)
+
+func _create_death_settlement_panel() -> void:
+    var panel: PanelContainer = PanelContainer.new()
+    panel.visible = false
+    panel.custom_minimum_size = Vector2(720.0, 430.0)
+    panel.anchors_preset = Control.PRESET_CENTER
+    panel.anchor_left = 0.5
+    panel.anchor_top = 0.5
+    panel.anchor_right = 0.5
+    panel.anchor_bottom = 0.5
+    panel.offset_left = -360.0
+    panel.offset_top = -215.0
+    panel.offset_right = 360.0
+    panel.offset_bottom = 215.0
+    panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+    panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+    panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
+        Color(0.015, 0.05, 0.075, 0.95),
+        Color(0.11, 0.78, 0.8, 0.92),
+        3,
+        28
+    ))
+
+    var margin: MarginContainer = MarginContainer.new()
+    margin.add_theme_constant_override("margin_left", 20)
+    margin.add_theme_constant_override("margin_top", 18)
+    margin.add_theme_constant_override("margin_right", 20)
+    margin.add_theme_constant_override("margin_bottom", 18)
+    panel.add_child(margin)
+
+    var vbox: VBoxContainer = VBoxContainer.new()
+    vbox.add_theme_constant_override("separation", 12)
+    margin.add_child(vbox)
+
+    _death_settlement_title = Label.new()
+    _death_settlement_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _death_settlement_title.add_theme_font_size_override("font_size", 44)
+    _death_settlement_title.add_theme_color_override("font_color", Color(0.56, 1.0, 0.88, 1.0))
+    _death_settlement_title.text = _tx("ui.game_over.defeat_title", "Defeat")
+    vbox.add_child(_death_settlement_title)
+
+    _death_settlement_subtitle = Label.new()
+    _death_settlement_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _death_settlement_subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _death_settlement_subtitle.add_theme_font_size_override("font_size", 20)
+    _death_settlement_subtitle.add_theme_color_override("font_color", Color(0.76, 0.9, 0.96, 0.92))
+    _death_settlement_subtitle.text = _tx("ui.game_scene.death_subtitle", "Signal interrupted, battle report generated.")
+    vbox.add_child(_death_settlement_subtitle)
+
+    var separator: HSeparator = HSeparator.new()
+    vbox.add_child(separator)
+
+    var stat_card: PanelContainer = PanelContainer.new()
+    stat_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    stat_card.add_theme_stylebox_override("panel", _build_neon_panel_style(
+        Color(0.018, 0.075, 0.11, 0.88),
+        Color(0.12, 0.63, 0.72, 0.84),
+        2,
+        14
+    ))
+    vbox.add_child(stat_card)
+
+    var stat_margin: MarginContainer = MarginContainer.new()
+    stat_margin.add_theme_constant_override("margin_left", 14)
+    stat_margin.add_theme_constant_override("margin_top", 12)
+    stat_margin.add_theme_constant_override("margin_right", 14)
+    stat_margin.add_theme_constant_override("margin_bottom", 12)
+    stat_card.add_child(stat_margin)
+
+    var stat_grid: GridContainer = GridContainer.new()
+    stat_grid.columns = 2
+    stat_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    stat_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    stat_grid.add_theme_constant_override("h_separation", 10)
+    stat_grid.add_theme_constant_override("v_separation", 8)
+    stat_margin.add_child(stat_grid)
+
+    _death_settlement_value_labels.clear()
+    _create_death_stat_cell(stat_grid, "stage", _tx("ui.game_scene.stat_stage", "Stage"))
+    _create_death_stat_cell(stat_grid, "wave", _tx("ui.game_scene.stat_wave", "Wave"))
+    _create_death_stat_cell(stat_grid, "survival", _tx("ui.game_scene.stat_survival", "Survival"))
+    _create_death_stat_cell(stat_grid, "level", _tx("ui.game_scene.stat_level", "Level"))
+    _create_death_stat_cell(stat_grid, "gold", _tx("ui.game_scene.stat_gold", "Gold"))
+    _create_death_stat_cell(stat_grid, "kills", _tx("ui.game_scene.stat_kills", "Kills"))
+
+    var button_row: HBoxContainer = HBoxContainer.new()
+    button_row.add_theme_constant_override("separation", 12)
+    button_row.alignment = BoxContainer.ALIGNMENT_CENTER
+    vbox.add_child(button_row)
+
+    _death_retry_button = Button.new()
+    _style_neon_action_button(_death_retry_button, _tx("ui.game_scene.retry_stage", "Retry Stage"))
+    _death_retry_button.pressed.connect(_on_death_retry_pressed)
+    button_row.add_child(_death_retry_button)
+
+    _death_menu_button = Button.new()
+    _style_neon_action_button(_death_menu_button, _tx("ui.game_over.back_to_menu", "Back to Menu"))
+    _death_menu_button.pressed.connect(_on_death_menu_pressed)
+    button_row.add_child(_death_menu_button)
+
+    _death_settlement_panel = panel
+    _add_pause_sub_panel(_death_settlement_panel)
+
+func _build_neon_panel_style(
+    bg_color: Color,
+    border_color: Color,
+    border_width: int = 2,
+    shadow_size: int = 12
+) -> StyleBoxFlat:
+    var style: StyleBoxFlat = StyleBoxFlat.new()
+    style.bg_color = bg_color
+    style.border_color = border_color
+    style.border_width_left = border_width
+    style.border_width_top = border_width
+    style.border_width_right = border_width
+    style.border_width_bottom = border_width
+    style.corner_radius_top_left = 8
+    style.corner_radius_top_right = 8
+    style.corner_radius_bottom_left = 8
+    style.corner_radius_bottom_right = 8
+    style.shadow_color = Color(0.0, 0.82, 0.86, 0.24)
+    style.shadow_size = shadow_size
+    return style
+
+func _create_death_stat_cell(parent: GridContainer, key: String, title_text: String) -> void:
+    var cell_panel: PanelContainer = PanelContainer.new()
+    cell_panel.custom_minimum_size = Vector2(0.0, 78.0)
+    cell_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    cell_panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
+        Color(0.012, 0.055, 0.085, 0.86),
+        Color(0.1, 0.52, 0.62, 0.75),
+        1,
+        6
+    ))
+    parent.add_child(cell_panel)
+
+    var cell_margin: MarginContainer = MarginContainer.new()
+    cell_margin.add_theme_constant_override("margin_left", 10)
+    cell_margin.add_theme_constant_override("margin_top", 8)
+    cell_margin.add_theme_constant_override("margin_right", 10)
+    cell_margin.add_theme_constant_override("margin_bottom", 8)
+    cell_panel.add_child(cell_margin)
+
+    var cell_vbox: VBoxContainer = VBoxContainer.new()
+    cell_vbox.add_theme_constant_override("separation", 4)
+    cell_margin.add_child(cell_vbox)
+
+    var title: Label = Label.new()
+    title.text = title_text
+    title.add_theme_font_size_override("font_size", 16)
+    title.add_theme_color_override("font_color", Color(0.53, 0.94, 0.95, 0.95))
+    cell_vbox.add_child(title)
+
+    var value: Label = Label.new()
+    value.text = "--"
+    value.add_theme_font_size_override("font_size", 24)
+    value.add_theme_color_override("font_color", Color(0.92, 0.98, 1.0, 1.0))
+    value.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    cell_vbox.add_child(value)
+
+    _death_settlement_value_labels[key] = value
+
+func _set_death_settlement_value(key: String, value: String) -> void:
+    var entry: Variant = _death_settlement_value_labels.get(key, null)
+    if entry is Label:
+        var target_label: Label = entry
+        target_label.text = value
+
+func _style_neon_action_button(button: Button, text: String) -> void:
+    if button == null:
+        return
+    button.custom_minimum_size = Vector2(220.0, 56.0)
+    button.add_theme_font_size_override("font_size", 26)
+    button.text = text
+    if NEON_OPTION_BUTTON_SCRIPT != null:
+        button.set_script(NEON_OPTION_BUTTON_SCRIPT)
 
 func _build_reward_button(text: String, reward_id: String) -> Button:
     var button: Button = Button.new()
@@ -948,6 +1622,8 @@ func _on_level_reward_button_pressed(button: Button) -> void:
     _on_level_reward_selected(reward_id)
 
 func _open_pause_menu() -> void :
+    if _wave_end_reward_gate_active:
+        return
     _pause_opened = true
     _hide_pause_sub_panels()
     GameManager.pause_game()
@@ -1094,6 +1770,8 @@ func _hide_pause_sub_panels() -> void :
             _slot_panel.visible = false
         if _settings_panel != null:
             _settings_panel.visible = false
+        if _death_settlement_panel != null:
+            _death_settlement_panel.visible = false
         pause_panel.visible = false
         if _level_reward_panel != null:
             _level_reward_panel.visible = true
@@ -1105,13 +1783,28 @@ func _hide_pause_sub_panels() -> void :
         _settings_panel.visible = false
     if _level_reward_panel != null:
         _level_reward_panel.visible = false
+    if _death_settlement_panel != null:
+        _death_settlement_panel.visible = false
     pause_panel.visible = true
 
 func _is_pause_sub_panel_open() -> bool:
     var slot_open: bool = _slot_panel != null and _slot_panel.visible
     var settings_open: bool = _settings_panel != null and _settings_panel.visible
     var reward_open: bool = _level_reward_panel != null and _level_reward_panel.visible
-    return slot_open or settings_open or reward_open
+    var death_summary_open: bool = _death_settlement_panel != null and _death_settlement_panel.visible
+    return slot_open or settings_open or reward_open or death_summary_open
+
+func _on_death_retry_pressed() -> void:
+    get_tree().paused = false
+    _pause_opened = false
+    _set_pause_overlay_visible(false)
+    GameManager.start_game(GameManager.current_stage_id)
+
+func _on_death_menu_pressed() -> void:
+    get_tree().paused = false
+    _pause_opened = false
+    _set_pause_overlay_visible(false)
+    GameManager.go_to_menu()
 
 func _on_settings_panel_close_requested() -> void :
     _hide_pause_sub_panels()
@@ -1125,6 +1818,7 @@ func _on_enemy_died(enemy: Enemy) -> void :
         return
     if enemy == null:
         return
+    _run_kill_count += 1
     if enemy == _active_elite:
         _active_elite = null
         if hud.has_method("hide_boss_bar"):
@@ -1146,6 +1840,7 @@ func _add_gold(amount: int) -> void:
         return
     var scaled_amount: int = max(0, int(round(float(amount) * _gold_multiplier)))
     _current_gold_runtime = max(0, _current_gold_runtime + scaled_amount)
+    _refresh_player_hud()
 
 func _spawn_experience_orb(spawn_position: Vector2, xp_value: int) -> void :
     var orb: ExperienceOrb = ExperienceOrb.new()
@@ -1172,15 +1867,27 @@ func _add_experience(amount: int) -> void :
     _try_open_next_level_reward()
 
 func _xp_required_for_level(current_level: int) -> int:
-    var level_safe: int = max(1, current_level)
-    var exponent: float = float(max(level_safe - 1, 0))
-    var required: int = int(round(XP_BASE_VALUE * pow(XP_GROWTH_FACTOR, exponent)))
-    return max(1, required)
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    var target_level: int = max(1, current_level)
+    var level_offset: int = int(combat_params.get("xp_curve_level_offset", XP_CURVE_LEVEL_OFFSET_DEFAULT))
+    var base_multiplier: float = max(0.01, float(combat_params.get("xp_curve_base_multiplier", XP_CURVE_BASE_MULT_DEFAULT)))
+    var min_required: int = max(1, int(combat_params.get("xp_required_min", XP_REQUIRED_MIN_DEFAULT)))
+    var curve_value: float = float(target_level + level_offset)
+    var required: int = int(round(curve_value * curve_value * base_multiplier * _xp_required_multiplier_runtime))
+    return max(min_required, required)
+
+func _resolve_character_xp_required_multiplier(character_id: String) -> float:
+    if character_id.is_empty():
+        return 1.0
+    var character_profile: Dictionary = BalanceService.get_character_profile(character_id)
+    return clampf(float(character_profile.get("xp_required_mult", 1.0)), 0.2, 5.0)
 
 func _try_open_next_level_reward() -> void :
     if _pending_level_up_rewards <= 0:
         return
-    if _reward_opened or _pause_opened or _is_game_over:
+    if not _wave_end_reward_gate_active:
+        return
+    if _reward_opened or _is_game_over:
         return
     _show_level_reward_panel()
 
@@ -1198,7 +1905,7 @@ func _show_level_reward_panel() -> void :
     _refresh_level_reward_choices()
     _level_reward_panel.visible = true
     if _level_reward_title != null:
-        _level_reward_title.text = "Level %d Reward Choice" % _current_level
+        _level_reward_title.text = _tf("ui.game_scene.level_reward_title_fmt", [_current_level], "Level %d Reward Choice")
 
 func _on_level_reward_selected(reward_id: String) -> void :
     if _player == null or not is_instance_valid(_player):
@@ -1212,10 +1919,11 @@ func _on_level_reward_selected(reward_id: String) -> void :
     _pending_level_up_rewards = max(0, _pending_level_up_rewards - 1)
     if _pending_level_up_rewards > 0:
         if _level_reward_title != null:
-            _level_reward_title.text = "Level %d Reward Choice" % _current_level
+            _level_reward_title.text = _tf("ui.game_scene.level_reward_title_fmt", [_current_level], "Level %d Reward Choice")
         _refresh_level_reward_choices()
         return
     _close_level_reward_panel()
+    _open_shop_after_wave_reward()
 
 func _close_level_reward_panel() -> void :
     _reward_opened = false
@@ -1234,7 +1942,7 @@ func _refresh_level_reward_choices() -> void:
             continue
         if i >= _level_reward_choices.size():
             button.disabled = true
-            button.text = "No Weapon"
+            button.text = _tx("ui.game_scene.no_weapon", "No Weapon")
             button.set_meta("reward_id", "none")
             button.tooltip_text = ""
             continue
@@ -1243,10 +1951,6 @@ func _refresh_level_reward_choices() -> void:
         button.text = str(reward.get("name", "Unknown Weapon"))
         button.set_meta("reward_id", str(reward.get("id", "")))
         button.tooltip_text = str(reward.get("desc", ""))
-
-    if _level_reward_hint_label != null and not _level_reward_choices.is_empty():
-        var preview_desc: String = str(_level_reward_choices[0].get("desc", ""))
-        _level_reward_hint_label.text = preview_desc if not preview_desc.is_empty() else "Choose one weapon upgrade."
 
 func _build_reward_run_state() -> Dictionary:
     return {
@@ -1309,13 +2013,13 @@ func _on_slot_button_pressed(slot_id: String) -> void :
     if _slot_panel.get_mode() == SaveSlotPanel.MODE_SAVE:
         var save_payload: Dictionary = _build_runtime_save_payload()
         SaveSystem.save_to_slot(slot_id, save_payload)
-        _slot_panel.show_hint("Saved to %s" % _slot_title(slot_id))
+        _slot_panel.show_hint(_tf("msg.slot.saved_to_fmt", [_slot_title(slot_id)], "Saved to %s"))
         _slot_panel.refresh_slots()
         return
 
     var loaded_data: Dictionary = SaveSystem.load_from_slot(slot_id)
     if loaded_data.is_empty():
-        _slot_panel.show_hint("This slot is empty.")
+        _slot_panel.show_hint(_tx("msg.slot.empty", "This slot is empty."))
         return
 
     _apply_loaded_slot_data(loaded_data)
@@ -1324,11 +2028,11 @@ func _on_slot_button_pressed(slot_id: String) -> void :
 func _slot_title(slot_id: String) -> String:
     match slot_id:
         "slot_1":
-            return "Slot 1"
+            return _tx("ui.save_slot.slot_1", "Slot 1")
         "slot_2":
-            return "Slot 2"
+            return _tx("ui.save_slot.slot_2", "Slot 2")
         "slot_3":
-            return "Slot 3"
+            return _tx("ui.save_slot.slot_3", "Slot 3")
         _:
             return slot_id
 
@@ -1467,6 +2171,8 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
         _xp_to_next_level = _xp_required_for_level(_current_level)
     _pending_level_up_rewards = 0
     _reward_opened = false
+    _wave_end_reward_gate_active = false
+    _pending_wave_shop_snapshot = {}
     _wave_progress_index = max(0, int(slot_data.get("wave_progress_index", wave_id - 1)))
     _current_gold_runtime = max(0, int(slot_data.get("current_gold", _current_gold_runtime)))
     _shop_runtime_state = _normalize_shop_runtime_state(slot_data.get("shop_runtime_state", {}))
@@ -1606,11 +2312,11 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
         0.1,
         3.0
     )
-    var spawn_profile: Dictionary = stage_profile.get("spawn_profile", {})
-    _stage_target_duration = max(0.0, float(spawn_profile.get("target_duration", 0.0)))
+    var wave_profile: Dictionary = {}
     if wave_manager != null and wave_manager.has_method("get_current_wave_definition"):
-        var wave_profile: Dictionary = wave_manager.get_current_wave_definition()
-        _wave_duration_runtime = max(1.0, float(wave_profile.get("duration", _stage_target_duration)))
+        wave_profile = wave_manager.get_current_wave_definition()
+    _stage_target_duration = _resolve_stage_duration_runtime(stage_id, stage_profile, wave_profile)
+    _wave_duration_runtime = _stage_target_duration
     _apply_arena_size_from_background_texture()
     queue_redraw()
 
@@ -1619,11 +2325,53 @@ func _sync_wave_runtime_from_manager() -> void:
         return
     _wave_progress_index = max(0, int(wave_manager.current_wave) - 1)
     var wave_profile: Dictionary = wave_manager.get_current_wave_definition()
-    var fallback_duration: float = _stage_target_duration if _stage_target_duration > 0.0 else 30.0
-    _wave_duration_runtime = max(1.0, float(wave_profile.get("duration", fallback_duration)))
+    var stage_profile: Dictionary = BalanceService.get_stage_profile(GameManager.current_stage_id)
+    _wave_duration_runtime = _resolve_stage_duration_runtime(GameManager.current_stage_id, stage_profile, wave_profile)
+    _stage_target_duration = _wave_duration_runtime
     _wave_elapsed = 0.0
     _stage_clear_triggered = false
     GameManager.current_wave = max(1, int(wave_manager.current_wave))
+
+func _resolve_stage_duration_runtime(stage_id: String, stage_profile: Dictionary, wave_profile: Dictionary) -> float:
+    if _stage_is_boss_stage:
+        var boss_duration: float = max(1.0, float(wave_profile.get("duration", 0.0)))
+        if boss_duration > 0.0:
+            return boss_duration
+        var boss_spawn_profile: Dictionary = stage_profile.get("spawn_profile", {})
+        return max(1.0, float(boss_spawn_profile.get("target_duration", STAGE_TIMER_MAX_SECONDS)))
+
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    var timer_profile: Dictionary = {}
+    var timer_profile_value: Variant = combat_params.get("stage_timer", {})
+    if timer_profile_value is Dictionary:
+        timer_profile = timer_profile_value
+
+    var base_duration: float = max(1.0, float(timer_profile.get("base_duration", STAGE_TIMER_BASE_SECONDS)))
+    var growth_per_stage: float = max(0.0, float(timer_profile.get("duration_per_stage", STAGE_TIMER_GROWTH_SECONDS)))
+    var duration_cap: float = max(base_duration, float(timer_profile.get("max_duration", STAGE_TIMER_MAX_SECONDS)))
+    var stage_no: int = _extract_stage_number(stage_id)
+    var computed_duration: float = base_duration + float(max(0, stage_no - 1)) * growth_per_stage
+    computed_duration = clampf(computed_duration, base_duration, duration_cap)
+
+    var stage_override: float = max(0.0, float(stage_profile.get("duration_override", 0.0)))
+    if stage_override > 0.0:
+        computed_duration = min(duration_cap, stage_override)
+
+    var wave_duration: float = max(0.0, float(wave_profile.get("duration", 0.0)))
+    if wave_duration > 0.0:
+        computed_duration = max(computed_duration, min(duration_cap, wave_duration))
+    return max(1.0, computed_duration)
+
+func _extract_stage_number(stage_id: String) -> int:
+    if not stage_id.begins_with("stage_"):
+        return 1
+    var suffix: String = stage_id.substr(6)
+    if suffix.is_empty():
+        return 1
+    var stage_no: int = int(suffix)
+    if stage_no <= 0:
+        return 1
+    return stage_no
 
 func _build_wave_runtime_snapshot() -> Dictionary:
     var snapshot: Dictionary = _build_runtime_save_payload()
@@ -1678,27 +2426,24 @@ func _ensure_starter_weapon_equipped() -> void:
         return
     GameManager.selected_starter_weapon_id = _selected_starter_weapon_id_runtime
 
-    var equipped_value: Variant = _shop_runtime_state.get("equipped_weapons", [])
-    var equipped: Array = []
-    if equipped_value is Array:
-        equipped = (equipped_value as Array).duplicate(true)
-    while equipped.size() < 6:
-        equipped.append({})
+    var equipped: Array = _normalize_equipped_weapon_slots(_shop_runtime_state.get("equipped_weapons", []))
     var slot0: Variant = equipped[0] if not equipped.is_empty() else {}
     var slot0_has_weapon: bool = slot0 is Dictionary and not str((slot0 as Dictionary).get("weapon_id", "")).is_empty()
     if slot0_has_weapon:
+        _shop_runtime_state["equipped_weapons"] = equipped
+        _sync_weapon_cooldowns_with_equipped_slots()
         return
     var starter_weapon: Dictionary = _build_weapon_instance_by_id(_selected_starter_weapon_id_runtime)
     if starter_weapon.is_empty():
+        _shop_runtime_state["equipped_weapons"] = equipped
+        _sync_weapon_cooldowns_with_equipped_slots()
         return
     equipped[0] = starter_weapon
     _shop_runtime_state["equipped_weapons"] = equipped
+    _sync_weapon_cooldowns_with_equipped_slots()
 
 func _get_primary_weapon_runtime() -> Dictionary:
-    var equipped_value: Variant = _shop_runtime_state.get("equipped_weapons", [])
-    if not (equipped_value is Array):
-        return _build_weapon_instance_by_id(_selected_starter_weapon_id_runtime)
-    var equipped: Array = equipped_value
+    var equipped: Array = _normalize_equipped_weapon_slots(_shop_runtime_state.get("equipped_weapons", []))
     for slot_value: Variant in equipped:
         if not (slot_value is Dictionary):
             continue
@@ -1816,7 +2561,7 @@ func _resolve_next_stage_id(current_stage_id: String) -> String:
         return ""
     var stage_profile: Dictionary = BalanceService.get_stage_profile(current_stage_id)
     var config_next_stage: String = str(stage_profile.get("next_stage_id", ""))
-    if not config_next_stage.is_empty():
+    if not config_next_stage.is_empty() and BalanceService.has_stage_profile(config_next_stage):
         return config_next_stage
 
     if not current_stage_id.begins_with("stage_"):
@@ -1827,7 +2572,10 @@ func _resolve_next_stage_id(current_stage_id: String) -> String:
     var stage_no: int = int(suffix)
     if stage_no <= 0:
         return ""
-    return "stage_%03d" % (stage_no + 1)
+    var inferred_next_stage_id: String = "stage_%03d" % (stage_no + 1)
+    if BalanceService.has_stage_profile(inferred_next_stage_id):
+        return inferred_next_stage_id
+    return ""
 
 func _read_half_extents(raw_value: Variant, fallback: Vector2) -> Vector2:
     if raw_value is Dictionary:
@@ -1836,3 +2584,16 @@ func _read_half_extents(raw_value: Variant, fallback: Vector2) -> Vector2:
         var y: float = float(raw_dict.get("y", fallback.y))
         return Vector2(x, y)
     return fallback
+
+func _tx(key: String, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tx(key, fallback if not fallback.is_empty() else key)
+    if fallback.is_empty():
+        return key
+    return fallback
+
+func _tf(key: String, args: Array, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
+    var base: String = fallback if not fallback.is_empty() else key
+    return base % args

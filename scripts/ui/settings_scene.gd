@@ -12,26 +12,39 @@ const WINDOW_MODE_KEYS: PackedStringArray = [
     "borderless", 
     "fullscreen", 
 ]
-const WINDOW_MODE_LABELS: PackedStringArray = [
-    "Windowed", 
-    "Borderless", 
-    "Fullscreen", 
+const WINDOW_MODE_LABEL_KEYS: PackedStringArray = [
+    "ui.settings.option.windowed", 
+    "ui.settings.option.borderless", 
+    "ui.settings.option.fullscreen", 
 ]
 const FPS_CAP_KEYS: PackedInt32Array = [30, 60, 120, 0]
-const FPS_CAP_LABELS: PackedStringArray = [
-    "30", 
-    "60", 
-    "120", 
-    "Unlimited", 
+const FPS_CAP_LABEL_KEYS: PackedStringArray = [
+    "ui.settings.option.30", 
+    "ui.settings.option.60", 
+    "ui.settings.option.120", 
+    "ui.settings.option.unlimited", 
 ]
 const CRT_KEYS: PackedStringArray = ["off", "low", "mid", "high"]
-const CRT_LABELS: PackedStringArray = ["Off", "Low", "Mid", "High"]
+const CRT_LABEL_KEYS: PackedStringArray = [
+    "ui.settings.option.off",
+    "ui.settings.option.low",
+    "ui.settings.option.mid",
+    "ui.settings.option.high",
+]
 const COLORBLIND_KEYS: PackedStringArray = ["off", "protanopia", "deuteranopia", "tritanopia"]
-const COLORBLIND_LABELS: PackedStringArray = ["Off", "Protanopia", "Deuteranopia", "Tritanopia"]
+const COLORBLIND_LABEL_KEYS: PackedStringArray = [
+    "ui.settings.option.off",
+    "ui.settings.option.protanopia",
+    "ui.settings.option.deuteranopia",
+    "ui.settings.option.tritanopia",
+]
 const FONT_SIZE_KEYS: PackedStringArray = ["small", "medium", "large"]
-const FONT_SIZE_LABELS: PackedStringArray = ["Small", "Medium", "Large"]
+const FONT_SIZE_LABEL_KEYS: PackedStringArray = [
+    "ui.settings.option.small",
+    "ui.settings.option.medium",
+    "ui.settings.option.large",
+]
 const LANGUAGE_KEYS: PackedStringArray = ["zh_CN", "en_US"]
-const LANGUAGE_LABELS: PackedStringArray = ["Chinese (Simplified)", "English"]
 
 @onready var display_tab_button: Button = %DisplayTabButton
 @onready var audio_tab_button: Button = %AudioTabButton
@@ -86,6 +99,10 @@ const LANGUAGE_LABELS: PackedStringArray = ["Chinese (Simplified)", "English"]
 var _saved_settings: Dictionary = {}
 var _active_category: String = "graphics"
 var _embedded_mode: bool = false
+var _graphics_extra_label: Label
+var _status_message_key: String = ""
+var _status_message_args: Array = []
+var _suppress_locale_preview: bool = false
 
 func _ready() -> void :
     _setup_options()
@@ -95,7 +112,8 @@ func _ready() -> void :
     _load_settings()
     _show_category(_active_category)
     _refresh_live_labels()
-    status_label.text = ""
+    _set_status("")
+    _refresh_i18n_texts()
 
 func _unhandled_input(event: InputEvent) -> void :
     if event.is_action_pressed("cancel"):
@@ -103,13 +121,13 @@ func _unhandled_input(event: InputEvent) -> void :
 
 func _setup_options() -> void :
     _fill_option_from_values(resolution_option, RESOLUTION_OPTIONS)
-    _fill_option_from_key_label(window_mode_option, WINDOW_MODE_KEYS, WINDOW_MODE_LABELS)
-    _fill_option_from_int_label(fps_cap_option, FPS_CAP_KEYS, FPS_CAP_LABELS)
-    _fill_option_from_key_label(crt_option, CRT_KEYS, CRT_LABELS)
-    _fill_option_from_key_label(colorblind_option, COLORBLIND_KEYS, COLORBLIND_LABELS)
-    _fill_option_from_key_label(font_size_option, FONT_SIZE_KEYS, FONT_SIZE_LABELS)
-    _fill_option_from_key_label(glitch_intensity_option, CRT_KEYS, CRT_LABELS)
-    _fill_option_from_key_label(language_option, LANGUAGE_KEYS, LANGUAGE_LABELS)
+    _fill_option_from_key_label_keys(window_mode_option, WINDOW_MODE_KEYS, WINDOW_MODE_LABEL_KEYS)
+    _fill_option_from_int_label_keys(fps_cap_option, FPS_CAP_KEYS, FPS_CAP_LABEL_KEYS)
+    _fill_option_from_key_label_keys(crt_option, CRT_KEYS, CRT_LABEL_KEYS)
+    _fill_option_from_key_label_keys(colorblind_option, COLORBLIND_KEYS, COLORBLIND_LABEL_KEYS)
+    _fill_option_from_key_label_keys(font_size_option, FONT_SIZE_KEYS, FONT_SIZE_LABEL_KEYS)
+    _fill_option_from_key_label_keys(glitch_intensity_option, CRT_KEYS, CRT_LABEL_KEYS)
+    _fill_language_option()
 
 func _connect_signals() -> void :
     display_tab_button.pressed.connect(_on_display_tab_pressed)
@@ -122,6 +140,7 @@ func _connect_signals() -> void :
     music_volume_slider.value_changed.connect(_on_music_volume_changed)
     sfx_volume_slider.value_changed.connect(_on_sfx_volume_changed)
     ui_volume_slider.value_changed.connect(_on_ui_volume_changed)
+    language_option.item_selected.connect(_on_language_option_selected)
 
     apply_button.pressed.connect(_on_apply_button_pressed)
     cancel_button.pressed.connect(_on_cancel_button_pressed)
@@ -130,6 +149,9 @@ func _connect_signals() -> void :
 
     unsaved_confirm_dialog.confirmed.connect(_on_unsaved_leave_confirmed)
     restore_confirm_dialog.confirmed.connect(_on_restore_confirmed)
+
+    if LocaleService != null and not LocaleService.locale_changed.is_connected(_on_locale_changed):
+        LocaleService.locale_changed.connect(_on_locale_changed)
 
 func _load_settings() -> void :
     var save_data: Dictionary = SaveSystem.load_save()
@@ -166,11 +188,11 @@ func _merge_graphics_sections() -> void:
 
     var separator: HSeparator = HSeparator.new()
     display_panel.add_child(separator)
-    var section_label: Label = Label.new()
-    section_label.text = "Advanced Visual Options"
-    section_label.add_theme_font_size_override("font_size", 22)
-    section_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.86, 1.0))
-    display_panel.add_child(section_label)
+    _graphics_extra_label = Label.new()
+    _graphics_extra_label.text = _tx("ui.settings.advanced_visual_options", "Advanced Visual Options")
+    _graphics_extra_label.add_theme_font_size_override("font_size", 22)
+    _graphics_extra_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.86, 1.0))
+    display_panel.add_child(_graphics_extra_label)
 
     var children_to_move: Array[Node] = []
     for child: Node in accessibility_panel.get_children():
@@ -214,6 +236,7 @@ func _enable_graphics_scrolling() -> void:
         content_vbox.add_child(child)
 
 func _apply_settings_to_controls(settings: Dictionary) -> void :
+    _suppress_locale_preview = true
     var display_settings: Dictionary = settings.get("display", {})
     var audio_settings: Dictionary = settings.get("audio", {})
     var input_settings: Dictionary = settings.get("input", {})
@@ -243,6 +266,7 @@ func _apply_settings_to_controls(settings: Dictionary) -> void :
     _select_option_by_metadata(language_option, str(system_settings.get("language", "zh_CN")))
     show_boss_test_checkbox.button_pressed = bool(system_settings.get("show_boss_test_entry", true))
     _refresh_live_labels()
+    _suppress_locale_preview = false
 
 func _collect_settings_from_controls() -> Dictionary:
     var settings: Dictionary = SaveSystem.DEFAULT_SETTINGS.duplicate(true)
@@ -318,21 +342,25 @@ func _on_apply_button_pressed() -> void :
     SaveSystem.write_save(save_data)
     _saved_settings = settings.duplicate(true)
     GameManager.apply_runtime_settings(_saved_settings)
-    status_label.text = "Settings applied"
+    _set_status("msg.settings.applied")
 
 func _on_cancel_button_pressed() -> void :
     if _embedded_mode:
         _request_close_embedded()
         return
     _apply_settings_to_controls(_saved_settings)
-    status_label.text = "Changes canceled"
+    GameManager.apply_runtime_settings(_saved_settings)
+    _set_status("msg.settings.canceled")
 
 func _on_restore_defaults_button_pressed() -> void :
     restore_confirm_dialog.popup_centered()
 
 func _on_restore_confirmed() -> void :
     _apply_settings_to_controls(SaveSystem.DEFAULT_SETTINGS.duplicate(true))
-    status_label.text = "Defaults restored (not yet applied)"
+    if LocaleService != null:
+        LocaleService.apply_locale(_selected_option_metadata_as_string(language_option, "zh_CN"))
+    _refresh_i18n_texts()
+    _set_status("msg.settings.defaults_restored")
 
 func _on_back_button_pressed() -> void :
     if _has_unsaved_changes():
@@ -359,19 +387,29 @@ func _fill_option_from_values(option: OptionButton, values: PackedStringArray) -
         option.add_item(values[i])
         option.set_item_metadata(i, values[i])
 
-func _fill_option_from_key_label(option: OptionButton, keys: PackedStringArray, labels: PackedStringArray) -> void :
+func _fill_option_from_key_label_keys(option: OptionButton, keys: PackedStringArray, label_keys: PackedStringArray) -> void :
     option.clear()
-    var total: int = min(keys.size(), labels.size())
+    var total: int = min(keys.size(), label_keys.size())
     for i in total:
-        option.add_item(labels[i])
+        option.add_item(_tx(label_keys[i], label_keys[i]))
         option.set_item_metadata(i, keys[i])
 
-func _fill_option_from_int_label(option: OptionButton, keys: PackedInt32Array, labels: PackedStringArray) -> void :
+func _fill_option_from_int_label_keys(option: OptionButton, keys: PackedInt32Array, label_keys: PackedStringArray) -> void :
     option.clear()
-    var total: int = min(keys.size(), labels.size())
+    var total: int = min(keys.size(), label_keys.size())
     for i in total:
-        option.add_item(labels[i])
+        option.add_item(_tx(label_keys[i], label_keys[i]))
         option.set_item_metadata(i, keys[i])
+
+func _fill_language_option() -> void:
+    language_option.clear()
+    for i: int in range(LANGUAGE_KEYS.size()):
+        var locale_key: String = LANGUAGE_KEYS[i]
+        var label: String = locale_key
+        if LocaleService != null:
+            label = LocaleService.get_locale_label(locale_key)
+        language_option.add_item(label)
+        language_option.set_item_metadata(i, locale_key)
 
 func _select_option_by_metadata(option: OptionButton, target: Variant) -> void :
     for i in option.item_count:
@@ -416,7 +454,7 @@ func set_embedded_mode(enabled: bool) -> void :
             crt_frame.anchor_right = 0.92
             crt_frame.anchor_bottom = 0.94
     if title_label != null:
-        title_label.text = "SYSTEM SETTINGS"
+        title_label.text = _tx("ui.settings.title", "SYSTEM SETTINGS")
         title_label.add_theme_font_size_override("font_size", 34 if enabled else 42)
 
 func _refresh_nav_visuals() -> void:
@@ -429,6 +467,78 @@ func _set_tab_active(button: Button, is_active: bool) -> void:
     if button == null:
         return
     button.modulate = Color(0.5, 1.0, 0.86, 1.0) if is_active else Color(0.62, 0.86, 0.92, 0.92)
+
+func _on_language_option_selected(_index: int) -> void:
+    if _suppress_locale_preview:
+        return
+    if LocaleService == null:
+        return
+    LocaleService.apply_locale(_selected_option_metadata_as_string(language_option, "zh_CN"))
+    _refresh_i18n_texts()
+
+func _on_locale_changed(_locale: String) -> void:
+    _refresh_i18n_texts()
+
+func _refresh_i18n_texts() -> void:
+    _refresh_option_labels()
+    if _graphics_extra_label != null:
+        _graphics_extra_label.text = _tx("ui.settings.advanced_visual_options", "Advanced Visual Options")
+    if title_label != null:
+        title_label.text = _tx("ui.settings.title", "SYSTEM SETTINGS")
+    _apply_status_text()
+
+func _refresh_option_labels() -> void:
+    var window_mode_selection: String = _selected_option_metadata_as_string(window_mode_option, "fullscreen")
+    var fps_selection: int = _selected_option_metadata_as_int(fps_cap_option, 60)
+    var crt_selection: String = _selected_option_metadata_as_string(crt_option, "mid")
+    var colorblind_selection: String = _selected_option_metadata_as_string(colorblind_option, "off")
+    var font_size_selection: String = _selected_option_metadata_as_string(font_size_option, "medium")
+    var glitch_selection: String = _selected_option_metadata_as_string(glitch_intensity_option, "mid")
+    var language_selection: String = _selected_option_metadata_as_string(language_option, "zh_CN")
+
+    _suppress_locale_preview = true
+    _fill_option_from_key_label_keys(window_mode_option, WINDOW_MODE_KEYS, WINDOW_MODE_LABEL_KEYS)
+    _fill_option_from_int_label_keys(fps_cap_option, FPS_CAP_KEYS, FPS_CAP_LABEL_KEYS)
+    _fill_option_from_key_label_keys(crt_option, CRT_KEYS, CRT_LABEL_KEYS)
+    _fill_option_from_key_label_keys(colorblind_option, COLORBLIND_KEYS, COLORBLIND_LABEL_KEYS)
+    _fill_option_from_key_label_keys(font_size_option, FONT_SIZE_KEYS, FONT_SIZE_LABEL_KEYS)
+    _fill_option_from_key_label_keys(glitch_intensity_option, CRT_KEYS, CRT_LABEL_KEYS)
+    _fill_language_option()
+    _suppress_locale_preview = false
+
+    _select_option_by_metadata(window_mode_option, window_mode_selection)
+    _select_option_by_metadata(fps_cap_option, fps_selection)
+    _select_option_by_metadata(crt_option, crt_selection)
+    _select_option_by_metadata(colorblind_option, colorblind_selection)
+    _select_option_by_metadata(font_size_option, font_size_selection)
+    _select_option_by_metadata(glitch_intensity_option, glitch_selection)
+    _select_option_by_metadata(language_option, language_selection)
+
+func _set_status(message_key: String, args: Array = []) -> void:
+    _status_message_key = message_key
+    _status_message_args = args.duplicate()
+    _apply_status_text()
+
+func _apply_status_text() -> void:
+    if status_label == null:
+        return
+    if _status_message_key.is_empty():
+        status_label.text = ""
+        return
+    if LocaleService != null:
+        status_label.text = LocaleService.tf(_status_message_key, _status_message_args, _status_message_key)
+        return
+    if _status_message_args.is_empty():
+        status_label.text = _status_message_key
+    else:
+        status_label.text = _status_message_key % _status_message_args
+
+func _tx(key: String, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tx(key, fallback if not fallback.is_empty() else key)
+    if fallback.is_empty():
+        return key
+    return fallback
 
 func _request_close_embedded() -> void :
     request_close.emit()

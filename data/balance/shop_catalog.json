@@ -23,7 +23,7 @@
                           "rarity":  "common",
                           "base_price":  24,
                           "price_wave_scale":  1.04,
-                          "weight":  0.75,
+                          "weight":  1.05,
                           "effects":  {
                                           "bonus_attack_damage":  1
                                       }
@@ -35,7 +35,7 @@
                           "rarity":  "uncommon",
                           "base_price":  38,
                           "price_wave_scale":  1.05,
-                          "weight":  0.9,
+                          "weight":  0.78,
                           "effects":  {
                                           "attack_speed_mult":  1.08
                                       }
@@ -47,7 +47,7 @@
                           "rarity":  "common",
                           "base_price":  30,
                           "price_wave_scale":  1.04,
-                          "weight":  0.95,
+                          "weight":  1.12,
                           "effects":  {
                                           "armor":  1.5
                                       }
@@ -59,7 +59,7 @@
                           "rarity":  "uncommon",
                           "base_price":  36,
                           "price_wave_scale":  1.05,
-                          "weight":  0.85,
+                          "weight":  0.74,
                           "effects":  {
                                           "crit_chance":  0.03
                                       }
@@ -71,7 +71,7 @@
                           "rarity":  "rare",
                           "base_price":  46,
                           "price_wave_scale":  1.06,
-                          "weight":  0.55,
+                          "weight":  0.42,
                           "effects":  {
                                           "lifesteal":  0.02
                                       }
@@ -79,9 +79,9 @@
                   ],
     "weapon_pool":  [
                         {
-                            "weapon_id":  "arc_blade",
-                            "name":  "Arc Blade",
-                            "description":  "Fast melee arc weapon.",
+                            "weapon_id":  "kunai",
+                            "name":  "Kunai",
+                            "description":  "High-speed throw weapon with precise chaining.",
                             "starter":  true,
                             "tags":  [
                                          "melee",
@@ -89,13 +89,13 @@
                                      ],
                             "base_price":  44,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "arc_blade",
+                            "weight":  1,
+                            "stack_key":  "kunai",
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "melee_arc",
                                                    "base_damage":  10,
-                                                   "interval":  0.3,
+                                                   "interval":  0.36,
                                                    "range":  95
                                                },
                             "effects":  {
@@ -108,30 +108,60 @@
                                                }
                         },
                         {
-                            "weapon_id":  "storm_wand",
-                            "name":  "Storm Wand",
-                            "description":  "Ranged electric focus.",
+                            "weapon_id":  "road_sign",
+                            "name":  "Road Sign",
+                            "description":  "Slow heavy swing weapon with strong control.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "heavy"
+                                     ],
+                            "base_price":  58,
+                            "price_wave_scale":  1.07,
+                            "weight":  0.9,
+                            "stack_key":  "road_sign",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  14,
+                                                   "interval":  0.74,
+                                                   "range":  105
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  1
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  60,
+                                                   "uncommon":  28,
+                                                   "rare":  10,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "nail_gun",
+                            "name":  "Nail Gun",
+                            "description":  "Mid-range rapid-fire weapon.",
                             "starter":  true,
                             "tags":  [
                                          "ranged",
-                                         "magic"
+                                         "rapid"
                                      ],
                             "base_price":  50,
                             "price_wave_scale":  1.06,
-                            "weight":  0.9,
-                            "stack_key":  "storm_wand",
+                            "weight":  0.95,
+                            "stack_key":  "nail_gun",
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "ranged_homing",
                                                    "base_damage":  9,
-                                                   "interval":  0.39,
+                                                   "interval":  0.36,
                                                    "range":  340,
                                                    "projectile_speed":  560,
                                                    "projectile_radius":  4
                                                },
                             "effects":  {
                                             "bonus_attack_damage":  0,
-                                            "bonus_target_range":  12
+                                            "bonus_target_range":  8
                                         },
                             "rarity_weights":  {
                                                    "common":  62,
@@ -141,25 +171,54 @@
                                                }
                         },
                         {
-                            "weapon_id":  "void_gun",
-                            "name":  "Void Gun",
-                            "description":  "High-impact slow weapon.",
+                            "weapon_id":  "chain_whip",
+                            "name":  "Chain Whip",
+                            "description":  "Sweeping attacks for crowd control.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "control"
+                                     ],
+                            "base_price":  46,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "chain_whip",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  11,
+                                                   "interval":  0.48,
+                                                   "range":  115
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  66,
+                                                   "uncommon":  26,
+                                                   "rare":  8
+                                               }
+                        },
+                        {
+                            "weapon_id":  "circular_saw",
+                            "name":  "Circular Saw",
+                            "description":  "Heavy projectile with high pierce.",
                             "starter":  true,
                             "tags":  [
                                          "ranged",
                                          "heavy"
                                      ],
-                            "base_price":  58,
+                            "base_price":  60,
                             "price_wave_scale":  1.07,
-                            "weight":  0.65,
-                            "stack_key":  "void_gun",
+                            "weight":  0,
+                            "stack_key":  "circular_saw",
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "ranged_heavy",
-                                                   "base_damage":  16,
-                                                   "interval":  0.68,
+                                                   "base_damage":  17,
+                                                   "interval":  0.72,
                                                    "range":  420,
-                                                   "projectile_speed":  680,
+                                                   "projectile_speed":  700,
                                                    "projectile_radius":  6
                                                },
                             "effects":  {
@@ -170,6 +229,315 @@
                                                    "uncommon":  30,
                                                    "rare":  12,
                                                    "epic":  3
+                                               }
+                        },
+                        {
+                            "weapon_id":  "flare_launcher",
+                            "name":  "Flare Launcher",
+                            "description":  "Burst launcher that ignites the battlefield.",
+                            "starter":  true,
+                            "tags":  [
+                                         "ranged",
+                                         "burst"
+                                     ],
+                            "base_price":  52,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "flare_launcher",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "ranged_homing",
+                                                   "base_damage":  10,
+                                                   "interval":  0.44,
+                                                   "range":  350,
+                                                   "projectile_speed":  540,
+                                                   "projectile_radius":  5
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  60,
+                                                   "uncommon":  30,
+                                                   "rare":  8,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "traffic_cone",
+                            "name":  "Traffic Cone",
+                            "description":  "Heavy projectile with stable suppression.",
+                            "starter":  true,
+                            "tags":  [
+                                         "ranged",
+                                         "heavy"
+                                     ],
+                            "base_price":  56,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "traffic_cone",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "ranged_heavy",
+                                                   "base_damage":  15,
+                                                   "interval":  0.66,
+                                                   "range":  390,
+                                                   "projectile_speed":  660,
+                                                   "projectile_radius":  6
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  1
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  58,
+                                                   "uncommon":  30,
+                                                   "rare":  10,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "heavy_wrench",
+                            "name":  "Heavy Wrench",
+                            "description":  "Reliable close-range heavy strikes.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "heavy"
+                                     ],
+                            "base_price":  55,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "heavy_wrench",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  13,
+                                                   "interval":  0.7,
+                                                   "range":  102
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  1
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  60,
+                                                   "uncommon":  28,
+                                                   "rare":  10,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "molotov",
+                            "name":  "Molotov",
+                            "description":  "Sustained burn damage over area.",
+                            "starter":  true,
+                            "tags":  [
+                                         "ranged",
+                                         "dot"
+                                     ],
+                            "base_price":  51,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "molotov",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "ranged_homing",
+                                                   "base_damage":  10,
+                                                   "interval":  0.46,
+                                                   "range":  340,
+                                                   "projectile_speed":  520,
+                                                   "projectile_radius":  5
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  62,
+                                                   "uncommon":  28,
+                                                   "rare":  8,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "shuriken_ring",
+                            "name":  "Shuriken Ring",
+                            "description":  "Multi-hit weapon for mid-range pressure.",
+                            "starter":  true,
+                            "tags":  [
+                                         "ranged",
+                                         "multi_hit"
+                                     ],
+                            "base_price":  49,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "shuriken_ring",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "ranged_homing",
+                                                   "base_damage":  9,
+                                                   "interval":  0.34,
+                                                   "range":  330,
+                                                   "projectile_speed":  590,
+                                                   "projectile_radius":  4
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  64,
+                                                   "uncommon":  26,
+                                                   "rare":  8,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "steel_pipe",
+                            "name":  "Steel Pipe",
+                            "description":  "Simple melee weapon for early game stability.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "basic"
+                                     ],
+                            "base_price":  42,
+                            "price_wave_scale":  1.05,
+                            "weight":  0,
+                            "stack_key":  "steel_pipe",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  11,
+                                                   "interval":  0.58,
+                                                   "range":  100
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  70,
+                                                   "uncommon":  22,
+                                                   "rare":  8
+                                               }
+                        },
+                        {
+                            "weapon_id":  "rebar_spear",
+                            "name":  "Rebar Spear",
+                            "description":  "Piercing melee thrust with strong linear reach.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "pierce"
+                                     ],
+                            "base_price":  54,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "rebar_spear",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  12,
+                                                   "interval":  0.52,
+                                                   "range":  118
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  1
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  62,
+                                                   "uncommon":  28,
+                                                   "rare":  8,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "mechanical_crossbow",
+                            "name":  "Mechanical Crossbow",
+                            "description":  "Stable ranged output with good tempo.",
+                            "starter":  true,
+                            "tags":  [
+                                         "ranged",
+                                         "balanced"
+                                     ],
+                            "base_price":  53,
+                            "price_wave_scale":  1.06,
+                            "weight":  0,
+                            "stack_key":  "mechanical_crossbow",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "ranged_homing",
+                                                   "base_damage":  11,
+                                                   "interval":  0.42,
+                                                   "range":  360,
+                                                   "projectile_speed":  620,
+                                                   "projectile_radius":  4
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0,
+                                            "bonus_target_range":  10
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  60,
+                                                   "uncommon":  30,
+                                                   "rare":  8,
+                                                   "epic":  2
+                                               }
+                        },
+                        {
+                            "weapon_id":  "drum_mallet",
+                            "name":  "Drum Mallet",
+                            "description":  "Rhythmic melee strikes with consistent chains.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "tempo"
+                                     ],
+                            "base_price":  47,
+                            "price_wave_scale":  1.05,
+                            "weight":  0,
+                            "stack_key":  "drum_mallet",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  10,
+                                                   "interval":  0.4,
+                                                   "range":  98
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  68,
+                                                   "uncommon":  24,
+                                                   "rare":  8
+                                               }
+                        },
+                        {
+                            "weapon_id":  "meteor_hammer",
+                            "name":  "Meteor Hammer",
+                            "description":  "High-risk high-reward heavy melee weapon.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "heavy"
+                                     ],
+                            "base_price":  59,
+                            "price_wave_scale":  1.07,
+                            "weight":  0,
+                            "stack_key":  "meteor_hammer",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  15,
+                                                   "interval":  0.79,
+                                                   "range":  112
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  1
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  56,
+                                                   "uncommon":  30,
+                                                   "rare":  10,
+                                                   "epic":  4
                                                }
                         }
                     ]

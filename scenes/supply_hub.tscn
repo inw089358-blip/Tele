@@ -254,7 +254,7 @@ anchor_right = 1.0
 offset_left = 24.0
 offset_top = 20.0
 offset_right = -24.0
-offset_bottom = 100.0
+offset_bottom = 128.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_vendor_panel")
 
@@ -264,6 +264,9 @@ theme_override_constants/separation = 4
 
 [node name="GoldLabel" type="Label" parent="HubUI/Root/TopBar/TopBarVBox" unique_name_in_owner=true]
 text = "Gold: 0"
+
+[node name="GoldGainLabel" type="Label" parent="HubUI/Root/TopBar/TopBarVBox" unique_name_in_owner=true]
+text = "Gold Gain: x1.00 (+0%)"
 
 [node name="HintLabel" type="Label" parent="HubUI/Root/TopBar/TopBarVBox" unique_name_in_owner=true]
 text = "Move to a vendor and press E to interact"
@@ -343,4 +346,3 @@ horizontal_alignment = 1
 [node name="LeaveConfirmDialog" type="ConfirmationDialog" parent="HubUI/Root" unique_name_in_owner=true]
 initial_position = 1
 title = "Confirm"
-

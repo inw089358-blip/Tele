@@ -16,6 +16,8 @@ var current_hp: int = max_hp
 var current_stamina: float = stamina_max
 var bonus_target_range: float = 0.0
 var bonus_attack_damage: int = 0
+var bonus_melee_attack_damage: int = 0
+var bonus_ranged_attack_damage: int = 0
 var armor: float = 0.0
 var dodge_chance: float = 0.0
 var attack_speed_mult: float = 1.0
@@ -28,6 +30,7 @@ var xp_gain_mult: float = 1.0
 var _dash_timer: float = 0.0
 var _last_move_direction: Vector2 = Vector2.RIGHT
 var _attribute_rules: Dictionary = {}
+var _is_dead: bool = false
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -39,6 +42,9 @@ func _ready() -> void :
     queue_redraw()
 
 func _physics_process(delta: float) -> void :
+    if _is_dead:
+        velocity = Vector2.ZERO
+        return
     _try_start_dash()
     _dash_timer = max(0.0, _dash_timer - delta)
     if _dash_timer <= 0.0:
@@ -62,14 +68,24 @@ func _physics_process(delta: float) -> void :
 func take_damage(amount: int) -> int:
     if amount <= 0:
         return 0
+    if _is_dead:
+        return 0
     if _roll_dodge():
         return 0
     var final_damage: int = _calculate_damage_after_armor(amount)
     current_hp = max(0, current_hp - final_damage)
     if current_hp <= 0:
+        _is_dead = true
+        velocity = Vector2.ZERO
+        _set_collision_enabled(false)
         EventBus.player_died.emit()
-        queue_free()
     return final_damage
+
+func _set_collision_enabled(enabled: bool) -> void:
+    for child: Node in get_children():
+        if child is CollisionShape2D:
+            var shape_node: CollisionShape2D = child
+            shape_node.disabled = not enabled
 
 func _try_start_dash() -> void :
     if _dash_timer > 0.0:
@@ -96,8 +112,20 @@ func add_target_range(amount: float) -> void :
 func add_attack_damage(amount: int) -> void :
     bonus_attack_damage += amount
 
+func add_melee_attack_damage(amount: int) -> void:
+    bonus_melee_attack_damage += amount
+
+func add_ranged_attack_damage(amount: int) -> void:
+    bonus_ranged_attack_damage += amount
+
 func get_attack_damage_bonus() -> int:
     return bonus_attack_damage
+
+func get_melee_attack_damage_bonus() -> int:
+    return bonus_melee_attack_damage
+
+func get_ranged_attack_damage_bonus() -> int:
+    return bonus_ranged_attack_damage
 
 func add_move_speed(amount: float) -> void :
     move_speed += amount
@@ -120,6 +148,10 @@ func apply_effect(effect_type: String, value: Variant) -> bool:
     match effect_type:
         "attack_damage_flat":
             add_attack_damage(int(value))
+        "melee_damage_flat":
+            add_melee_attack_damage(int(value))
+        "ranged_damage_flat":
+            add_ranged_attack_damage(int(value))
         "target_range_flat":
             add_target_range(float(value))
         "move_speed_flat":
@@ -188,6 +220,8 @@ func export_runtime_stats() -> Dictionary:
         "armor": armor,
         "dodge_chance": dodge_chance,
         "attack_speed_mult": attack_speed_mult,
+        "bonus_melee_attack_damage": bonus_melee_attack_damage,
+        "bonus_ranged_attack_damage": bonus_ranged_attack_damage,
         "crit_chance": crit_chance,
         "crit_multiplier": crit_multiplier,
         "lifesteal": lifesteal,
@@ -199,6 +233,8 @@ func import_runtime_stats(raw_stats: Dictionary) -> void:
     armor = float(raw_stats.get("armor", armor))
     dodge_chance = float(raw_stats.get("dodge_chance", dodge_chance))
     attack_speed_mult = float(raw_stats.get("attack_speed_mult", attack_speed_mult))
+    bonus_melee_attack_damage = int(raw_stats.get("bonus_melee_attack_damage", bonus_melee_attack_damage))
+    bonus_ranged_attack_damage = int(raw_stats.get("bonus_ranged_attack_damage", bonus_ranged_attack_damage))
     crit_chance = float(raw_stats.get("crit_chance", crit_chance))
     crit_multiplier = float(raw_stats.get("crit_multiplier", crit_multiplier))
     lifesteal = float(raw_stats.get("lifesteal", lifesteal))

@@ -1,6 +1,8 @@
 ﻿class_name Enemy
 extends CharacterBody2D
 
+static var _runtime_texture_cache: Dictionary = {}
+
 enum EnemyType {
     MELEE,
     RANGED,
@@ -30,9 +32,24 @@ var current_hp: int = max_hp
 var damage_reduction_ratio: float = 0.0
 var _target: Node2D
 var _is_dead: bool = false
+var _visual_sprite: Sprite2D
+var _visual_move_frames: Array[int] = []
+var _visual_anim_fps: float = 0.0
+var _visual_flip_with_velocity: bool = true
+var _visual_anim_time: float = 0.0
+var _visual_anim_frame_index: int = 0
+var _visual_has_sprite: bool = false
+var _death_anim_active: bool = false
+var _death_frames: Array[int] = []
+var _death_anim_fps: float = 10.0
+var _death_hold_seconds: float = 0.1
+var _death_elapsed: float = 0.0
+var _death_playback_finished: bool = false
 
 func _ready() -> void :
     _apply_profile_from_balance()
+    if enemy_type == EnemyType.MELEE:
+        _configure_melee_visual_from_balance()
     process_mode = Node.PROCESS_MODE_PAUSABLE
     current_hp = max_hp
     add_to_group("enemies")
@@ -42,14 +59,20 @@ func _apply_profile_from_balance() -> void:
     var profile: Dictionary = BalanceService.get_enemy_profile("melee")
     move_speed = float(profile.get("move_speed", move_speed))
     max_hp = int(profile.get("max_hp", max_hp))
+    body_radius = float(profile.get("body_radius", body_radius))
     xp_drop_amount = int(profile.get("xp_drop", xp_drop_amount))
 
 func _physics_process(delta: float) -> void :
     if GameManager.current_state != GameManager.GameState.PLAYING:
         return
+    if _is_dead:
+        _tick_death_animation(delta)
+        return
     if _target == null:
+        _tick_visual_animation(delta)
         return
     tick_ai(delta)
+    _tick_visual_animation(delta)
     move_and_slide()
 
 func tick_ai(_delta: float) -> void :
@@ -90,12 +113,16 @@ func take_damage(amount: int) -> int:
     if current_hp <= 0:
         _is_dead = true
         died.emit(self)
-        queue_free()
+        _enter_death_state_or_free()
     return final_damage
 
+func is_combat_active() -> bool:
+    return not _is_dead
+
 func _draw() -> void :
-    draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.18, 0.04, 0.05, 0.9))
-    draw_circle(Vector2.ZERO, body_radius, Color(0.92, 0.28, 0.26, 1.0))
+    if not _visual_has_sprite:
+        draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.18, 0.04, 0.05, 0.9))
+        draw_circle(Vector2.ZERO, body_radius, Color(0.92, 0.28, 0.26, 1.0))
     if not _should_draw_health_bar():
         return
     var hp_ratio: float = float(current_hp) / float(max(max_hp, 1))
@@ -107,3 +134,198 @@ func _draw() -> void :
 
 func _should_draw_health_bar() -> bool:
     return is_elite or enemy_type == EnemyType.ELITE_WARDEN
+
+func _configure_melee_visual_from_balance() -> void:
+    var profile: Dictionary = BalanceService.get_enemy_profile("melee")
+    var visual_value: Variant = profile.get("visual", {})
+    if not (visual_value is Dictionary):
+        _clear_visual_sprite()
+        return
+    var visual_config: Dictionary = visual_value
+    _setup_visual_from_config(visual_config)
+
+func _setup_visual_from_config(config: Dictionary) -> void:
+    _clear_visual_sprite()
+    var sprite_sheet_path: String = str(config.get("sprite_sheet_path", ""))
+    if sprite_sheet_path.is_empty():
+        return
+    var sprite_texture: Texture2D = _load_texture_with_runtime_fallback(sprite_sheet_path)
+    if sprite_texture == null:
+        return
+
+    var sprite: Sprite2D = Sprite2D.new()
+    sprite.name = "VisualSprite"
+    sprite.texture = sprite_texture
+    sprite.centered = true
+    sprite.hframes = max(1, int(config.get("hframes", 1)))
+    sprite.vframes = max(1, int(config.get("vframes", 1)))
+    sprite.scale = Vector2.ONE * max(0.01, float(config.get("scale", 1.0)))
+    sprite.z_index = 1
+    add_child(sprite)
+
+    var total_frames: int = max(1, sprite.hframes * sprite.vframes)
+    _visual_move_frames = _sanitize_visual_frames(config.get("move_frames", []), total_frames)
+    if _visual_move_frames.is_empty():
+        _visual_move_frames = [0]
+    _visual_anim_fps = max(0.0, float(config.get("anim_fps", 0.0)))
+    _visual_flip_with_velocity = bool(config.get("flip_with_velocity", true))
+    _death_frames = _sanitize_visual_frames(config.get("death_frames", [8, 9, 10, 11]), total_frames)
+    _death_anim_fps = max(0.01, float(config.get("death_anim_fps", 10.0)))
+    _death_hold_seconds = max(0.0, float(config.get("death_hold_seconds", 0.1)))
+    _visual_anim_time = 0.0
+    _visual_anim_frame_index = 0
+    _death_anim_active = false
+    _death_elapsed = 0.0
+    _death_playback_finished = false
+    _visual_sprite = sprite
+    _visual_has_sprite = true
+    _apply_visual_frame()
+
+func _sanitize_visual_frames(raw_frames: Variant, total_frames: int) -> Array[int]:
+    var result: Array[int] = []
+    if raw_frames is Array:
+        var source_frames: Array = raw_frames
+        for frame_value: Variant in source_frames:
+            var frame_index: int = int(frame_value)
+            if frame_index < 0 or frame_index >= total_frames:
+                continue
+            result.append(frame_index)
+    return result
+
+func _tick_visual_animation(delta: float) -> void:
+    if _is_dead or _death_anim_active:
+        return
+    if not _visual_has_sprite or _visual_sprite == null:
+        return
+    if _visual_flip_with_velocity and absf(velocity.x) > 0.01:
+        _visual_sprite.flip_h = velocity.x < 0.0
+    if _visual_move_frames.is_empty():
+        return
+    if _visual_anim_fps <= 0.0:
+        _apply_visual_frame()
+        return
+
+    var frame_step: float = 1.0 / _visual_anim_fps
+    _visual_anim_time += delta
+    while _visual_anim_time >= frame_step:
+        _visual_anim_time -= frame_step
+        _visual_anim_frame_index = (_visual_anim_frame_index + 1) % _visual_move_frames.size()
+    _apply_visual_frame()
+
+func _apply_visual_frame() -> void:
+    if _visual_sprite == null or _visual_move_frames.is_empty():
+        return
+    var safe_index: int = clampi(_visual_anim_frame_index, 0, _visual_move_frames.size() - 1)
+    _visual_sprite.frame = _visual_move_frames[safe_index]
+
+func _enter_death_state_or_free() -> void:
+    velocity = Vector2.ZERO
+    _target = null
+    if not _can_play_death_animation():
+        queue_free()
+        return
+    _death_anim_active = true
+    _death_playback_finished = false
+    _death_elapsed = 0.0
+    _visual_anim_time = 0.0
+    _visual_anim_frame_index = 0
+    _apply_death_visual_frame()
+
+func _can_play_death_animation() -> bool:
+    return _visual_has_sprite and _visual_sprite != null and not _death_frames.is_empty()
+
+func _tick_death_animation(delta: float) -> void:
+    if not _death_anim_active:
+        return
+    if _visual_sprite == null or _death_frames.is_empty():
+        _death_anim_active = false
+        queue_free()
+        return
+
+    if _death_playback_finished:
+        _death_elapsed += delta
+        if _death_elapsed >= _death_hold_seconds:
+            _death_anim_active = false
+            queue_free()
+        return
+
+    var frame_step: float = 1.0 / max(0.01, _death_anim_fps)
+    _visual_anim_time += delta
+    while _visual_anim_time >= frame_step and not _death_playback_finished:
+        _visual_anim_time -= frame_step
+        if _visual_anim_frame_index < _death_frames.size() - 1:
+            _visual_anim_frame_index += 1
+            _apply_death_visual_frame()
+        else:
+            _death_playback_finished = true
+            _death_elapsed = 0.0
+            _visual_anim_time = 0.0
+            break
+    if not _death_playback_finished:
+        _apply_death_visual_frame()
+
+func _apply_death_visual_frame() -> void:
+    if _visual_sprite == null or _death_frames.is_empty():
+        return
+    var safe_index: int = clampi(_visual_anim_frame_index, 0, _death_frames.size() - 1)
+    _visual_sprite.frame = _death_frames[safe_index]
+
+func _clear_visual_sprite() -> void:
+    if _visual_sprite != null and is_instance_valid(_visual_sprite):
+        _visual_sprite.queue_free()
+    _visual_sprite = null
+    _visual_move_frames.clear()
+    _visual_anim_fps = 0.0
+    _visual_flip_with_velocity = true
+    _visual_anim_time = 0.0
+    _visual_anim_frame_index = 0
+    _visual_has_sprite = false
+    _death_anim_active = false
+    _death_frames.clear()
+    _death_anim_fps = 10.0
+    _death_hold_seconds = 0.1
+    _death_elapsed = 0.0
+    _death_playback_finished = false
+
+func _load_texture_with_runtime_fallback(path: String) -> Texture2D:
+    if path.is_empty():
+        return null
+    if _runtime_texture_cache.has(path):
+        var cached: Variant = _runtime_texture_cache[path]
+        if cached is Texture2D:
+            return cached as Texture2D
+
+    var import_sidecar_path: String = "%s.import" % path
+    if FileAccess.file_exists(import_sidecar_path):
+        var imported_texture: Texture2D = load(path) as Texture2D
+        if imported_texture != null:
+            _runtime_texture_cache[path] = imported_texture
+            return imported_texture
+
+    if not FileAccess.file_exists(path):
+        return null
+    var file: FileAccess = FileAccess.open(path, FileAccess.READ)
+    if file == null:
+        return null
+    var encoded: PackedByteArray = file.get_buffer(file.get_length())
+    if encoded.is_empty():
+        return null
+
+    var image: Image = Image.new()
+    var ext: String = path.get_extension().to_lower()
+    var err: int = ERR_FILE_UNRECOGNIZED
+    match ext:
+        "png":
+            err = image.load_png_from_buffer(encoded)
+        "jpg", "jpeg":
+            err = image.load_jpg_from_buffer(encoded)
+        "webp":
+            err = image.load_webp_from_buffer(encoded)
+        _:
+            err = image.load_png_from_buffer(encoded)
+    if err != OK:
+        return null
+
+    var texture: ImageTexture = ImageTexture.create_from_image(image)
+    _runtime_texture_cache[path] = texture
+    return texture

@@ -1,6 +1,46 @@
 class_name UpgradeSystem
 extends Node
 
+const REWARD_ID_RARITY_SEPARATOR: String = "::"
+const DEFAULT_RARITY_SCALING: Dictionary = {
+    "common": 1.0,
+    "uncommon": 1.18,
+    "rare": 1.4,
+    "epic": 1.72,
+    "legendary": 2.05,
+}
+const LEVELUP_ALLOWED_EFFECT_TYPES: Dictionary = {
+    "attack_damage_flat": true,
+    "melee_damage_flat": true,
+    "ranged_damage_flat": true,
+    "auto_attack_interval_mult": true,
+    "crit_chance_flat": true,
+    "crit_multiplier_flat": true,
+    "armor_flat": true,
+    "dodge_chance_flat": true,
+    "max_hp_flat": true,
+    "lifesteal_flat": true,
+    "move_speed_flat": true,
+    "target_range_flat": true,
+    "stamina_recover_mult": true,
+}
+const LEVELUP_ALLOWED_REWARD_IDS: Dictionary = {
+    "atk_flat_1": true,
+    "melee_damage_flat_2": true,
+    "ranged_damage_flat_2": true,
+    "range_up_40": true,
+    "move_up_6": true,
+    "hp_flat_3": true,
+    "armor_up_2": true,
+    "dodge_up_5": true,
+    "atk_rate_10": true,
+    "atk_rate_8": true,
+    "crit_chance_8": true,
+    "crit_damage_25": true,
+    "lifesteal_3": true,
+    "stamina_regen_10": true,
+}
+
 static func build_reward_context(run_state: Dictionary) -> Dictionary:
     return {
         "stage_id": str(run_state.get("stage_id", "stage_001")),
@@ -46,6 +86,8 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
         var reward_id: String = str(reward.get("id", ""))
         if reward_id.is_empty():
             continue
+        if not _is_levelup_reward_candidate(reward):
+            continue
 
         var max_stacks: int = max(1, int(reward.get("max_stacks", 1)))
         var owned_count: int = int(owned_rewards.get(reward_id, 0))
@@ -69,14 +111,23 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
             if all_same:
                 continue
 
-        var rarity: String = str(reward.get("rarity", "common"))
-        var rarity_weight: float = max(0.0, float(stage_rarity_weights.get(rarity, 0.0)))
-        if rarity_weight <= 0.0:
-            continue
+        var rarity_tiers: Array[String] = _resolve_reward_rarity_tiers(reward)
         var category_weight: float = max(0.01, float(pool_weights.get(category, 1.0)))
-        var final_weight: float = rarity_weight * category_weight
-        reward["_weight"] = final_weight
-        candidates.append(reward)
+        for rarity_tier: String in rarity_tiers:
+            var rarity_weight: float = max(0.0, float(stage_rarity_weights.get(rarity_tier, 0.0)))
+            if rarity_weight <= 0.0:
+                continue
+            var runtime_reward: Dictionary = reward.duplicate(true)
+            runtime_reward["rarity"] = rarity_tier
+            runtime_reward["effects"] = _scale_effects_by_rarity(
+                _extract_effects_array(reward.get("effects", [])),
+                rarity_tier,
+                reward.get("rarity_scaling", {})
+            )
+            runtime_reward["_base_id"] = reward_id
+            runtime_reward["_resolved_id"] = _compose_reward_choice_id(reward_id, rarity_tier)
+            runtime_reward["_weight"] = rarity_weight * category_weight
+            candidates.append(runtime_reward)
 
     if candidates.is_empty():
         return _fallback_choices()
@@ -90,14 +141,14 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
         )
         if not output_candidate.is_empty():
             selected.append(output_candidate)
-            candidates.erase(output_candidate)
+            _remove_candidates_with_base_id(candidates, str(output_candidate.get("_base_id", output_candidate.get("id", ""))))
 
     while selected.size() < choices_count and not candidates.is_empty():
         var picked: Dictionary = _pick_weighted(candidates)
         if picked.is_empty():
             break
         selected.append(picked)
-        candidates.erase(picked)
+        _remove_candidates_with_base_id(candidates, str(picked.get("_base_id", picked.get("id", ""))))
 
     if require_two_axes and selected.size() >= 2:
         var axes: Dictionary = {}
@@ -132,10 +183,14 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
 
     var result: Array[Dictionary] = []
     for reward in selected:
+        var rarity_label: String = str(reward.get("rarity", "common")).to_upper()
+        var base_id: String = str(reward.get("_base_id", reward.get("id", "")))
+        var localized_name: String = _localize_reward_name(base_id, str(reward.get("name", "Unknown")))
+        var localized_desc: String = _localize_reward_desc(base_id, str(reward.get("desc", "")))
         result.append({
-            "id": str(reward.get("id", "")),
-            "name": str(reward.get("name", "Unknown")),
-            "desc": str(reward.get("desc", "")),
+            "id": str(reward.get("_resolved_id", reward.get("id", ""))),
+            "name": "%s [%s]" % [localized_name, rarity_label],
+            "desc": localized_desc,
             "category": str(reward.get("category", "basic_growth")),
             "rarity": str(reward.get("rarity", "common")),
             "tags": reward.get("tags", []),
@@ -146,18 +201,29 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
 static func apply_reward(reward_id: String, player: Player, run_state: Dictionary) -> Dictionary:
     var catalog: Dictionary = BalanceService.get_reward_catalog()
     var rewards: Array = catalog.get("rewards", [])
+    var parsed_id: Dictionary = _parse_reward_choice_id(reward_id)
+    var base_reward_id: String = str(parsed_id.get("base_id", reward_id))
+    var selected_rarity: String = str(parsed_id.get("rarity", ""))
     var selected: Dictionary = {}
     for reward_value in rewards:
         if not (reward_value is Dictionary):
             continue
         var reward: Dictionary = reward_value
-        if str(reward.get("id", "")) == reward_id:
+        if str(reward.get("id", "")) == base_reward_id:
             selected = reward
             break
     if selected.is_empty() or player == null:
         return run_state
 
-    var effects: Array = selected.get("effects", [])
+    var effective_rarity: String = selected_rarity
+    if effective_rarity.is_empty():
+        effective_rarity = str(selected.get("rarity", "common"))
+
+    var effects: Array = _scale_effects_by_rarity(
+        _extract_effects_array(selected.get("effects", [])),
+        effective_rarity,
+        selected.get("rarity_scaling", {})
+    )
     for effect_value in effects:
         if not (effect_value is Dictionary):
             continue
@@ -190,7 +256,7 @@ static func apply_reward(reward_id: String, player: Player, run_state: Dictionar
     run_state["reward_pity_state"] = pity_state
 
     var owned_rewards: Dictionary = run_state.get("owned_rewards", {})
-    owned_rewards[reward_id] = int(owned_rewards.get(reward_id, 0)) + 1
+    owned_rewards[base_reward_id] = int(owned_rewards.get(base_reward_id, 0)) + 1
     run_state["owned_rewards"] = owned_rewards
 
     var build_tags: Array = run_state.get("build_tags", [])
@@ -201,6 +267,86 @@ static func apply_reward(reward_id: String, player: Player, run_state: Dictionar
     run_state["build_tags"] = build_tags
 
     return run_state
+
+static func _resolve_reward_rarity_tiers(reward: Dictionary) -> Array[String]:
+    var result: Array[String] = []
+    var tiers_raw: Variant = reward.get("rarity_tiers", [])
+    if tiers_raw is Array:
+        for entry in tiers_raw:
+            var tier: String = str(entry).strip_edges().to_lower()
+            if tier.is_empty():
+                continue
+            if not result.has(tier):
+                result.append(tier)
+    if result.is_empty():
+        var fallback_rarity: String = str(reward.get("rarity", "common")).to_lower()
+        if fallback_rarity.is_empty():
+            fallback_rarity = "common"
+        result.append(fallback_rarity)
+    return result
+
+static func _extract_effects_array(raw_effects: Variant) -> Array:
+    if raw_effects is Array:
+        return (raw_effects as Array).duplicate(true)
+    return []
+
+static func _get_rarity_multiplier(rarity: String, scaling_raw: Variant) -> float:
+    var rarity_key: String = rarity.strip_edges().to_lower()
+    var scaling: Dictionary = DEFAULT_RARITY_SCALING
+    if scaling_raw is Dictionary:
+        scaling = (scaling_raw as Dictionary)
+    return max(0.01, float(scaling.get(rarity_key, DEFAULT_RARITY_SCALING.get(rarity_key, 1.0))))
+
+static func _scale_effects_by_rarity(effects: Array, rarity: String, scaling_raw: Variant) -> Array:
+    var multiplier: float = _get_rarity_multiplier(rarity, scaling_raw)
+    if is_equal_approx(multiplier, 1.0):
+        return effects.duplicate(true)
+    var scaled_effects: Array = []
+    for effect_value in effects:
+        if not (effect_value is Dictionary):
+            continue
+        var effect: Dictionary = (effect_value as Dictionary).duplicate(true)
+        if effect.has("value"):
+            var raw_value: Variant = effect.get("value")
+            if raw_value is int:
+                var base_int: int = int(raw_value)
+                var scaled_int: int = int(round(float(base_int) * multiplier))
+                if scaled_int == 0 and base_int != 0:
+                    scaled_int = 1 if base_int > 0 else -1
+                effect["value"] = scaled_int
+            elif raw_value is float:
+                effect["value"] = float(raw_value) * multiplier
+        scaled_effects.append(effect)
+    return scaled_effects
+
+static func _compose_reward_choice_id(base_id: String, rarity: String) -> String:
+    var rarity_key: String = rarity.strip_edges().to_lower()
+    if rarity_key.is_empty():
+        return base_id
+    return "%s%s%s" % [base_id, REWARD_ID_RARITY_SEPARATOR, rarity_key]
+
+static func _parse_reward_choice_id(choice_id: String) -> Dictionary:
+    var parsed: Dictionary = {
+        "base_id": choice_id,
+        "rarity": "",
+    }
+    if choice_id.find(REWARD_ID_RARITY_SEPARATOR) < 0:
+        return parsed
+    var parts: PackedStringArray = choice_id.split(REWARD_ID_RARITY_SEPARATOR, false, 1)
+    if parts.size() >= 1:
+        parsed["base_id"] = parts[0]
+    if parts.size() >= 2:
+        parsed["rarity"] = parts[1].to_lower()
+    return parsed
+
+static func _remove_candidates_with_base_id(candidates: Array[Dictionary], base_id: String) -> void:
+    if base_id.is_empty():
+        return
+    for i: int in range(candidates.size() - 1, -1, -1):
+        var candidate: Dictionary = candidates[i]
+        var candidate_base_id: String = str(candidate.get("_base_id", candidate.get("id", "")))
+        if candidate_base_id == base_id:
+            candidates.remove_at(i)
 
 static func _pick_weighted(candidates: Array[Dictionary], predicate: Callable = Callable()) -> Dictionary:
     var filtered: Array[Dictionary] = []
@@ -223,9 +369,35 @@ static func _pick_weighted(candidates: Array[Dictionary], predicate: Callable = 
             return item
     return filtered[filtered.size() - 1]
 
+static func _is_levelup_reward_candidate(reward: Dictionary) -> bool:
+    var reward_id: String = str(reward.get("id", ""))
+    if reward_id.is_empty():
+        return false
+    if not bool(LEVELUP_ALLOWED_REWARD_IDS.get(reward_id, false)):
+        return false
+    var effects: Array = _extract_effects_array(reward.get("effects", []))
+    if effects.size() != 1:
+        return false
+    var effect_value: Variant = effects[0]
+    if not (effect_value is Dictionary):
+        return false
+    var effect: Dictionary = effect_value
+    var effect_type: String = str(effect.get("type", ""))
+    return bool(LEVELUP_ALLOWED_EFFECT_TYPES.get(effect_type, false))
+
 static func _fallback_choices() -> Array[Dictionary]:
     return [
-        {"id":"atk_flat_1", "name":"攻击+1", "desc":"基础攻击伤害 +1", "category":"basic_growth", "rarity":"common", "tags":["output"], "effects":[{"type":"attack_damage_flat","value":1}]},
-        {"id":"hp_up_2", "name":"生命+2", "desc":"最大生命 +2 并治疗 2", "category":"survival_counter", "rarity":"common", "tags":["survival"], "effects":[{"type":"max_hp_flat","value":2},{"type":"heal_flat","value":2}]},
-        {"id":"move_up_6", "name":"移速+6", "desc":"移动速度 +6", "category":"basic_growth", "rarity":"common", "tags":["utility"], "effects":[{"type":"move_speed_flat","value":6}]}
+        {"id":"atk_flat_1", "name":"Attack +1 [COMMON]", "desc":"Base attack damage +1", "category":"basic_growth", "rarity":"common", "tags":["output"], "effects":[{"type":"attack_damage_flat","value":1}]},
+        {"id":"hp_flat_3", "name":"Max HP +3 [COMMON]", "desc":"Max HP +3", "category":"survival_counter", "rarity":"common", "tags":["survival"], "effects":[{"type":"max_hp_flat","value":3}]},
+        {"id":"move_up_6", "name":"Move Speed +6 [COMMON]", "desc":"Move speed +6", "category":"basic_growth", "rarity":"common", "tags":["utility"], "effects":[{"type":"move_speed_flat","value":6}]}
     ]
+
+static func _localize_reward_name(reward_id: String, fallback: String) -> String:
+    if LocaleService == null:
+        return fallback
+    return LocaleService.t_data("reward", reward_id, "name", fallback)
+
+static func _localize_reward_desc(reward_id: String, fallback: String) -> String:
+    if LocaleService == null:
+        return fallback
+    return LocaleService.t_data("reward", reward_id, "desc", fallback)

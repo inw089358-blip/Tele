@@ -91,7 +91,7 @@ func _roll_if_needed() -> void:
 
 func _on_refresh_pressed() -> void:
     if not _pending_replace_offer_id.is_empty():
-        hint_label.text = "Please finish weapon replacement first."
+        hint_label.text = _tx("msg.shop.finish_replacement_first", "Please finish weapon replacement first.")
         return
     var shop_rules: Dictionary = BalanceService.get_shop_catalog().get("shop_rules", {})
     var state: Dictionary = _snapshot.get("shop_runtime_state", {})
@@ -99,19 +99,19 @@ func _on_refresh_pressed() -> void:
     var refresh_price: int = int(shop_rules.get("refresh_base_cost", 20)) + int(shop_rules.get("refresh_cost_step", 10)) * refresh_count
     var current_gold: int = int(_snapshot.get("current_gold", 0))
     if current_gold < refresh_price:
-        hint_label.text = "Not enough gold for refresh."
+        hint_label.text = _tx("msg.shop.not_enough_gold_refresh", "Not enough gold for refresh.")
         return
     _snapshot["current_gold"] = current_gold - refresh_price
     state["refresh_count"] = refresh_count + 1
     _snapshot["shop_runtime_state"] = state
     _shop_offers = _shop_system.roll_shop_offers(_snapshot)
     _snapshot["shop_offers"] = _shop_offers.duplicate(true)
-    hint_label.text = "Shop refreshed."
+    hint_label.text = _tx("msg.shop.refreshed", "Shop refreshed.")
     _rebuild_ui()
 
 func _on_lock_pressed() -> void:
     if not _pending_replace_offer_id.is_empty():
-        hint_label.text = "Please finish weapon replacement first."
+        hint_label.text = _tx("msg.shop.finish_replacement_first", "Please finish weapon replacement first.")
         return
     var state: Dictionary = _snapshot.get("shop_runtime_state", {})
     var next_locked: bool = not bool(state.get("shop_locked", false))
@@ -121,12 +121,16 @@ func _on_lock_pressed() -> void:
     else:
         state["locked_shop_offers"] = []
     _snapshot["shop_runtime_state"] = state
-    hint_label.text = "Shop lock %s." % ("enabled" if next_locked else "disabled")
+    hint_label.text = _tf(
+        "msg.shop.lock_state_fmt",
+        [_tx("msg.common.enabled", "enabled") if next_locked else _tx("msg.common.disabled", "disabled")],
+        "Shop lock %s."
+    )
     _rebuild_ui()
 
 func _on_next_wave_pressed() -> void:
     if not _pending_replace_offer_id.is_empty():
-        hint_label.text = "Choose a slot to replace first."
+        hint_label.text = _tx("msg.shop.choose_slot_replace", "Choose a slot to replace first.")
         return
     var state: Dictionary = _snapshot.get("shop_runtime_state", {})
     if not bool(state.get("shop_locked", false)):
@@ -138,7 +142,7 @@ func _on_next_wave_pressed() -> void:
 
 func _on_offer_buy_pressed(offer_id: String) -> void:
     if not _pending_replace_offer_id.is_empty():
-        hint_label.text = "Choose a weapon slot first."
+        hint_label.text = _tx("msg.shop.choose_weapon_slot", "Choose a weapon slot first.")
         return
     _snapshot["shop_offers"] = _shop_offers.duplicate(true)
     var result: Dictionary = _shop_system.purchase_offer(offer_id, _snapshot)
@@ -146,16 +150,16 @@ func _on_offer_buy_pressed(offer_id: String) -> void:
     if bool(result.get("ok", false)):
         _snapshot = updated_state
         _shop_offers = _extract_offer_list(_snapshot.get("shop_offers", []))
-        hint_label.text = str(result.get("message", "Purchased."))
+        hint_label.text = _tx(str(result.get("message", "msg.shop.purchase_success")), "Purchased.")
         _rebuild_ui()
         return
     if bool(result.get("needs_replace", false)):
         _snapshot = updated_state
         _pending_replace_offer_id = offer_id
-        hint_label.text = "Weapon slots full. Click a slot below to replace."
+        hint_label.text = _tx("msg.shop.weapon_slots_full_click_replace", "Weapon slots full. Click a slot below to replace.")
         _rebuild_ui()
         return
-    hint_label.text = str(result.get("message", "Purchase failed"))
+    hint_label.text = _tx(str(result.get("message", "msg.shop.purchase_failed")), "Purchase failed")
     _rebuild_ui()
 
 func _on_weapon_slot_pressed(slot_index: int) -> void:
@@ -169,9 +173,9 @@ func _on_weapon_slot_pressed(slot_index: int) -> void:
         _snapshot = result.get("state", _snapshot)
         _shop_offers = _extract_offer_list(_snapshot.get("shop_offers", []))
         _pending_replace_offer_id = ""
-        hint_label.text = "Weapon replaced."
+        hint_label.text = _tx("msg.shop.weapon_replaced", "Weapon replaced.")
     else:
-        hint_label.text = str(result.get("message", "Replace failed"))
+        hint_label.text = _tx(str(result.get("message", "msg.shop.replace_failed")), "Replace failed")
     _rebuild_ui()
 
 func _extract_offer_list(raw: Variant) -> Array[Dictionary]:
@@ -194,16 +198,20 @@ func _normalize_weapon_slots(raw_slots: Variant) -> Array:
     return slots
 
 func _rebuild_ui() -> void:
-    gold_label.text = "Gold: %d" % int(_snapshot.get("current_gold", 0))
-    wave_label.text = "Stage %s Shop" % str(_snapshot.get("stage_id", GameManager.current_stage_id))
+    gold_label.text = _tf("ui.shop.gold_fmt", [int(_snapshot.get("current_gold", 0))], "Gold: %d")
+    wave_label.text = _tf("ui.shop.wave_fmt", [str(_snapshot.get("stage_id", GameManager.current_stage_id))], "Stage %s Shop")
     var shop_state: Dictionary = _snapshot.get("shop_runtime_state", {})
     var refresh_count: int = int(shop_state.get("refresh_count", 0))
     var shop_rules: Dictionary = BalanceService.get_shop_catalog().get("shop_rules", {})
     var refresh_price: int = int(shop_rules.get("refresh_base_cost", 20)) + int(shop_rules.get("refresh_cost_step", 10)) * refresh_count
-    refresh_button.text = "Refresh (%dG)" % refresh_price
-    lock_button.text = "Lock: %s" % ("ON" if bool(shop_state.get("shop_locked", false)) else "OFF")
+    refresh_button.text = _tf("ui.shop.refresh_fmt", [refresh_price], "Refresh (%dG)")
+    lock_button.text = _tf(
+        "ui.shop.lock_fmt",
+        [_tx("ui.common.on", "ON") if bool(shop_state.get("shop_locked", false)) else _tx("ui.common.off", "OFF")],
+        "Lock: %s"
+    )
     lock_button.modulate = Color(0.98, 0.85, 0.4, 1.0) if bool(shop_state.get("shop_locked", false)) else Color(1, 1, 1, 1)
-    next_wave_button.text = "Start Next Stage"
+    next_wave_button.text = _tx("ui.shop.next_stage", "Start Next Stage")
     next_wave_button.disabled = false
     _rebuild_offer_cards()
     _rebuild_attr_panel()
@@ -213,19 +221,22 @@ func _rebuild_offer_cards() -> void:
     for child: Node in offers_grid.get_children():
         child.queue_free()
     for offer: Dictionary in _shop_offers:
+        var offer_name: String = _resolve_offer_name(offer)
+        var offer_desc: String = _resolve_offer_desc(offer)
+        var rarity_label: String = _rarity_label(str(offer.get("rarity", "common")))
         var card: PanelContainer = PanelContainer.new()
         card.custom_minimum_size = Vector2(220, 190)
         var vb: VBoxContainer = VBoxContainer.new()
         var title: Label = Label.new()
-        title.text = "%s [%s]" % [str(offer.get("name", "Offer")), str(offer.get("rarity", "common")).to_upper()]
+        title.text = _tf("ui.shop.offer_title_fmt", [offer_name, rarity_label], "%s [%s]")
         title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         var desc: Label = Label.new()
-        desc.text = str(offer.get("description", ""))
+        desc.text = offer_desc
         desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
         var buy_button: Button = Button.new()
         var sold: bool = bool(offer.get("sold", false))
-        buy_button.text = "Sold Out" if sold else "Buy - %dG" % int(offer.get("price", 0))
+        buy_button.text = _tx("ui.shop.sold_out", "Sold Out") if sold else _tf("ui.shop.buy_fmt", [int(offer.get("price", 0))], "Buy - %dG")
         buy_button.disabled = sold or int(_snapshot.get("current_gold", 0)) < int(offer.get("price", 0))
         buy_button.pressed.connect(_on_offer_buy_pressed.bind(str(offer.get("offer_id", ""))))
         vb.add_child(title)
@@ -237,16 +248,16 @@ func _rebuild_offer_cards() -> void:
 func _rebuild_attr_panel() -> void:
     var stats: Dictionary = _snapshot.get("player_stats", {})
     var lines: Array[String] = []
-    lines.append("[b]Stats[/b]")
-    lines.append("ATK Bonus: %d" % int(_snapshot.get("bonus_attack_damage", 0)))
-    lines.append("Range Bonus: %.0f" % float(_snapshot.get("bonus_target_range", 0.0)))
-    lines.append("Move Speed: %.0f" % float(_snapshot.get("player_move_speed", 220.0)))
-    lines.append("Armor: %.1f" % float(stats.get("armor", 0.0)))
-    lines.append("Dodge: %.1f%%" % (float(stats.get("dodge_chance", 0.0)) * 100.0))
-    lines.append("Atk Speed: %.2f" % float(stats.get("attack_speed_mult", 1.0)))
-    lines.append("Crit: %.1f%%" % (float(stats.get("crit_chance", 0.05)) * 100.0))
-    lines.append("Crit Mult: %.2f" % float(stats.get("crit_multiplier", 1.5)))
-    lines.append("Lifesteal: %.1f%%" % (float(stats.get("lifesteal", 0.0)) * 100.0))
+    lines.append(_tx("ui.shop.stats_title_bb", "[b]Stats[/b]"))
+    lines.append(_tf("ui.shop.stat_atk_bonus", [int(_snapshot.get("bonus_attack_damage", 0))], "ATK Bonus: %d"))
+    lines.append(_tf("ui.shop.stat_range_bonus", [float(_snapshot.get("bonus_target_range", 0.0))], "Range Bonus: %.0f"))
+    lines.append(_tf("ui.shop.stat_move_speed", [float(_snapshot.get("player_move_speed", 220.0))], "Move Speed: %.0f"))
+    lines.append(_tf("ui.shop.stat_armor", [float(stats.get("armor", 0.0))], "Armor: %.1f"))
+    lines.append(_tf("ui.shop.stat_dodge", [(float(stats.get("dodge_chance", 0.0)) * 100.0)], "Dodge: %.1f%%"))
+    lines.append(_tf("ui.shop.stat_atk_speed", [float(stats.get("attack_speed_mult", 1.0))], "Atk Speed: %.2f"))
+    lines.append(_tf("ui.shop.stat_crit", [(float(stats.get("crit_chance", 0.05)) * 100.0)], "Crit: %.1f%%"))
+    lines.append(_tf("ui.shop.stat_crit_mult", [float(stats.get("crit_multiplier", 1.5))], "Crit Mult: %.2f"))
+    lines.append(_tf("ui.shop.stat_lifesteal", [(float(stats.get("lifesteal", 0.0)) * 100.0)], "Lifesteal: %.1f%%"))
     attr_label.text = "\n".join(lines)
 
 func _rebuild_weapon_slots() -> void:
@@ -261,9 +272,54 @@ func _rebuild_weapon_slots() -> void:
         var has_weapon: bool = slot_weapon is Dictionary and not str((slot_weapon as Dictionary).get("weapon_id", "")).is_empty()
         if has_weapon:
             var weapon: Dictionary = slot_weapon
-            button.text = "%d: %s\n%s" % [i + 1, str(weapon.get("weapon_id", "weapon")), str(weapon.get("rarity", "common"))]
+            var weapon_id: String = str(weapon.get("weapon_id", "weapon"))
+            var weapon_name: String = LocaleService.t_data("weapon", weapon_id, "name", weapon_id)
+            var rarity_label: String = _rarity_label(str(weapon.get("rarity", "common")))
+            button.text = _tf("ui.shop.weapon_slot_filled", [i + 1, weapon_name, rarity_label], "%d: %s\n%s")
         else:
-            button.text = "%d: Empty" % (i + 1)
+            button.text = _tf("ui.shop.weapon_slot_empty", [i + 1], "%d: Empty")
         button.pressed.connect(_on_weapon_slot_pressed.bind(i))
         button.disabled = _pending_replace_offer_id.is_empty()
         weapon_slots_row.add_child(button)
+
+func _resolve_offer_name(offer: Dictionary) -> String:
+    var kind: String = str(offer.get("kind", "item"))
+    if kind == "weapon":
+        var weapon_id: String = _extract_offer_weapon_id(offer)
+        return LocaleService.t_data("weapon", weapon_id, "name", str(offer.get("name", "Weapon")))
+    var item_id: String = str(offer.get("item_id", ""))
+    return LocaleService.t_data("item", item_id, "name", str(offer.get("name", "Item")))
+
+func _resolve_offer_desc(offer: Dictionary) -> String:
+    var kind: String = str(offer.get("kind", "item"))
+    if kind == "weapon":
+        var weapon_id: String = _extract_offer_weapon_id(offer)
+        return LocaleService.t_data("weapon", weapon_id, "desc", str(offer.get("description", "")))
+    var item_id: String = str(offer.get("item_id", ""))
+    return LocaleService.t_data("item", item_id, "desc", str(offer.get("description", "")))
+
+func _extract_offer_weapon_id(offer: Dictionary) -> String:
+    var weapon_id: String = str(offer.get("weapon_id", ""))
+    if not weapon_id.is_empty():
+        return weapon_id
+    var weapon_value: Variant = offer.get("weapon", {})
+    if weapon_value is Dictionary:
+        return str((weapon_value as Dictionary).get("weapon_id", ""))
+    return ""
+
+func _rarity_label(rarity_raw: String) -> String:
+    var rarity: String = rarity_raw.to_lower()
+    return _tx("ui.common.rarity.%s" % rarity, rarity.to_upper())
+
+func _tx(key: String, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tx(key, fallback if not fallback.is_empty() else key)
+    if fallback.is_empty():
+        return key
+    return fallback
+
+func _tf(key: String, args: Array, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
+    var base: String = fallback if not fallback.is_empty() else key
+    return base % args

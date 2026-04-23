@@ -1,4 +1,4 @@
-﻿extends Node2D
+extends Node2D
 
 const PLAYER_SCRIPT_MAP: Dictionary[String, Script] = {
     "the_fool": preload("res://scripts/characters/the_fool.gd"),
@@ -18,6 +18,7 @@ const HUB_CAMERA_ZOOM: Vector2 = Vector2(1.08, 1.08)
 
 const PATH_WORLD_ROOT: NodePath = ^"CrtWorldContainer/CrtWorldViewport/GameWorldRoot"
 const PATH_GOLD_LABEL: NodePath = ^"HubUI/Root/TopBar/TopBarVBox/GoldLabel"
+const PATH_GOLD_GAIN_LABEL: NodePath = ^"HubUI/Root/TopBar/TopBarVBox/GoldGainLabel"
 const PATH_HINT_LABEL: NodePath = ^"HubUI/Root/TopBar/TopBarVBox/HintLabel"
 const PATH_VENDOR_PANEL: NodePath = ^"HubUI/Root/VendorPanel"
 const PATH_VENDOR_TITLE: NodePath = ^"HubUI/Root/VendorPanel/VendorVBox/VendorTitle"
@@ -39,6 +40,7 @@ const PATH_STATUS_LABEL: NodePath = ^"HubUI/Root/TopBar/TopBarVBox/StatusLabel"
 
 var world_root: Node2D
 var gold_label: Label
+var gold_gain_label: Label
 var hint_label: Label
 var vendor_panel: PanelContainer
 var vendor_title: Label
@@ -312,7 +314,7 @@ func _ready() -> void:
     _apply_player_state_to_instance()
     _build_vendor_offers()
     _close_vendor_panel()
-    _refresh_status_ui("Supply Hub ready")
+    _refresh_status_ui(_tx("msg.hub.ready", "Supply Hub ready"))
 
 func _process(delta: float) -> void:
     _interact_cooldown_timer = max(0.0, _interact_cooldown_timer - delta)
@@ -325,7 +327,7 @@ func _process(delta: float) -> void:
     if not _is_interact_pressed():
         return
     if not _can_open_vendor():
-        _refresh_status_ui("Move closer to a vendor and press E")
+        _refresh_status_ui(_tx("msg.hub.move_closer_short", "Move closer to a vendor and press E"))
         _interact_cooldown_timer = INTERACT_COOLDOWN_SEC
         return
     _open_nearest_vendor()
@@ -473,15 +475,15 @@ func _rebuild_vendor_panel() -> void:
     vendor_panel.visible = true
     match _active_vendor:
         "witch":
-            vendor_title.text = "WITCH - Recover & Upgrade"
+            vendor_title.text = _tx("ui.hub.vendor.witch", "WITCH - Recover & Upgrade")
         "traveler":
-            vendor_title.text = "TRAVELER - Shop"
+            vendor_title.text = _tx("ui.hub.vendor.traveler", "TRAVELER - Shop")
         "seer":
-            vendor_title.text = "SEER - Build Bias"
+            vendor_title.text = _tx("ui.hub.vendor.seer", "SEER - Build Bias")
         "broker":
-            vendor_title.text = "BROKER - Contracts"
+            vendor_title.text = _tx("ui.hub.vendor.broker", "BROKER - Contracts")
         _:
-            vendor_title.text = "VENDOR"
+            vendor_title.text = _tx("ui.hub.vendor.default", "VENDOR")
 
     for child: Node in offer_list.get_children():
         child.queue_free()
@@ -494,7 +496,7 @@ func _rebuild_vendor_panel() -> void:
         traveler_refresh_button.focus_mode = Control.FOCUS_NONE
         var refresh_count: int = int(_run_state.get("refresh_count", 0))
         var refresh_price: int = BASE_REFRESH_PRICE + REFRESH_PRICE_STEP * refresh_count
-        traveler_refresh_button.text = "Refresh Shop (%d/%d) - %dG" % [refresh_count, MAX_REFRESH_COUNT, refresh_price]
+        traveler_refresh_button.text = _tf("ui.hub.refresh_fmt", [refresh_count, MAX_REFRESH_COUNT, refresh_price], "Refresh Shop (%d/%d) - %dG")
         traveler_refresh_button.disabled = (
             vendor_locked
             or refresh_count >= MAX_REFRESH_COUNT
@@ -513,16 +515,16 @@ func _rebuild_vendor_panel() -> void:
         var price: int = _resolve_offer_price(offer)
         var bought_count: int = _get_purchase_count(str(offer.get("offer_id", "")))
         var limit: int = max(1, int(offer.get("limit", 1)))
-        button.text = "%s | %dG | %d/%d" % [str(offer.get("name", "Offer")), price, bought_count, limit]
+        button.text = "%s | %dG | %d/%d" % [_offer_name(offer), price, bought_count, limit]
         button.disabled = vendor_locked or bought_count >= limit or int(_run_state.get("current_gold", 0)) < price
         button.pressed.connect(_on_offer_pressed.bind(str(offer.get("offer_id", ""))))
         offer_list.add_child(button)
 
-    _refresh_status_ui("Browsing %s" % _active_vendor)
+    _refresh_status_ui(_tf("msg.hub.browsing_fmt", [_vendor_name(_active_vendor)], "Browsing %s"))
 
 func _on_offer_pressed(offer_id: String) -> void:
     if _vendor_has_core_purchase(_active_vendor):
-        _refresh_status_ui("This vendor is exhausted for this hub")
+        _refresh_status_ui(_tx("msg.hub.vendor_exhausted", "This vendor is exhausted for this hub"))
         _rebuild_vendor_panel()
         return
     var offer: Dictionary = _find_offer(_active_vendor, offer_id)
@@ -531,7 +533,7 @@ func _on_offer_pressed(offer_id: String) -> void:
     var price: int = _resolve_offer_price(offer)
     var gold: int = int(_run_state.get("current_gold", 0))
     if gold < price:
-        _refresh_status_ui("Not enough gold: need %d more" % [price - gold])
+        _refresh_status_ui(_tf("msg.shop.not_enough_gold_need_fmt", [price - gold], "Not enough gold: need %d more"))
         _rebuild_vendor_panel()
         return
 
@@ -541,7 +543,7 @@ func _on_offer_pressed(offer_id: String) -> void:
     _append_hub_action("buy:%s:%d" % [offer_id, price])
     _apply_offer_effect(offer)
 
-    _refresh_status_ui("Purchased %s" % str(offer.get("name", "Offer")))
+    _refresh_status_ui(_tf("msg.hub.purchased_fmt", [_offer_name(offer)], "Purchased %s"))
     _rebuild_vendor_panel()
 
 func _apply_offer_effect(offer: Dictionary) -> void:
@@ -681,22 +683,22 @@ func _append_hub_action(action: String) -> void:
 
 func _on_refresh_pressed() -> void:
     if _active_vendor != "traveler":
-        _refresh_status_ui("Traveler refresh is only available in Traveler shop")
+        _refresh_status_ui(_tx("msg.hub.refresh_only_traveler", "Traveler refresh is only available in Traveler shop"))
         return
     var refresh_count: int = int(_run_state.get("refresh_count", 0))
     if refresh_count >= MAX_REFRESH_COUNT:
-        _refresh_status_ui("Refresh limit reached")
+        _refresh_status_ui(_tx("msg.hub.refresh_limit", "Refresh limit reached"))
         return
     var price: int = BASE_REFRESH_PRICE + REFRESH_PRICE_STEP * refresh_count
     var gold: int = int(_run_state.get("current_gold", 0))
     if gold < price:
-        _refresh_status_ui("Not enough gold to refresh")
+        _refresh_status_ui(_tx("msg.shop.not_enough_gold_refresh", "Not enough gold to refresh"))
         return
     _run_state["current_gold"] = gold - price
     _run_state["refresh_count"] = refresh_count + 1
     _append_hub_action("refresh:%d" % [price])
     _vendor_offers["traveler"] = _roll_traveler_offers()
-    _refresh_status_ui("Traveler stock refreshed")
+    _refresh_status_ui(_tx("msg.hub.traveler_refreshed", "Traveler stock refreshed"))
     if not _active_vendor.is_empty():
         _rebuild_vendor_panel()
     else:
@@ -705,7 +707,7 @@ func _on_refresh_pressed() -> void:
 func _on_leave_pressed() -> void:
     if leave_confirm == null:
         return
-    leave_confirm.dialog_text = "Leave Supply Hub? You cannot return to this hub."
+    leave_confirm.dialog_text = _tx("msg.hub.leave_confirm", "Leave Supply Hub? You cannot return to this hub.")
     leave_confirm.popup_centered(Vector2i(460, 160))
 
 func _on_leave_confirmed() -> void:
@@ -743,55 +745,61 @@ func _calculate_next_stage_id(stage_id: String) -> String:
     return "stage_%03d" % [stage_number + 1]
 
 func _refresh_status_ui(status_text: String) -> void:
-    if gold_label == null or status_label == null or refresh_button == null:
+    if gold_label == null or gold_gain_label == null or status_label == null or refresh_button == null:
         return
     var refresh_count: int = int(_run_state.get("refresh_count", 0))
     var refresh_price: int = BASE_REFRESH_PRICE + REFRESH_PRICE_STEP * refresh_count
-    gold_label.text = "Gold: %d" % int(_run_state.get("current_gold", 0))
+    var gold_gain_multiplier: float = max(0.1, float(_run_state.get("gold_gain_multiplier", 1.0)))
+    var gold_gain_bonus_percent: int = int(round((gold_gain_multiplier - 1.0) * 100.0))
+    var gold_gain_bonus_text: String = "%d%%" % gold_gain_bonus_percent
+    if gold_gain_bonus_percent > 0:
+        gold_gain_bonus_text = "+%d%%" % gold_gain_bonus_percent
+    gold_label.text = _tf("ui.shop.gold_fmt", [int(_run_state.get("current_gold", 0))], "Gold: %d")
+    gold_gain_label.text = _tf("ui.hub.gold_gain_fmt", [gold_gain_multiplier, gold_gain_bonus_text], "Gold Gain: x%.2f (%s)")
     status_label.text = status_text
     refresh_button.disabled = refresh_count >= MAX_REFRESH_COUNT or int(_run_state.get("current_gold", 0)) < refresh_price
-    refresh_button.text = "Refresh Shop (%d/%d) - %dG" % [refresh_count, MAX_REFRESH_COUNT, refresh_price]
+    refresh_button.text = _tf("ui.hub.refresh_fmt", [refresh_count, MAX_REFRESH_COUNT, refresh_price], "Refresh Shop (%d/%d) - %dG")
     _refresh_interact_hint()
 
 func _refresh_interact_hint() -> void:
     if hint_label == null or world_hint_label == null:
         return
     if not _active_vendor.is_empty():
-        hint_label.text = "Browsing %s. Purchase or close panel." % _active_vendor
+        hint_label.text = _tf("msg.hub.browsing_action_fmt", [_vendor_name(_active_vendor)], "Browsing %s. Purchase or close panel.")
         world_hint_label.visible = false
         return
     if _in_witch_range:
-        hint_label.text = "Press E to trade with Witch"
+        hint_label.text = _tx("msg.hub.press_e_witch", "Press E to trade with Witch")
         world_hint_label.visible = true
-        world_hint_label.text = "[E] Witch"
+        world_hint_label.text = _tx("ui.hub.world_hint_witch", "[E] Witch")
         return
     if _in_traveler_range:
-        hint_label.text = "Press E to trade with Rift Traveler"
+        hint_label.text = _tx("msg.hub.press_e_traveler", "Press E to trade with Rift Traveler")
         world_hint_label.visible = true
-        world_hint_label.text = "[E] Traveler"
+        world_hint_label.text = _tx("ui.hub.world_hint_traveler", "[E] Traveler")
         return
     if _in_seer_range:
-        hint_label.text = "Press E to consult Seer"
+        hint_label.text = _tx("msg.hub.press_e_seer", "Press E to consult Seer")
         world_hint_label.visible = true
-        world_hint_label.text = "[E] Seer"
+        world_hint_label.text = _tx("ui.hub.world_hint_seer", "[E] Seer")
         return
     if _in_broker_range:
-        hint_label.text = "Press E to negotiate Broker"
+        hint_label.text = _tx("msg.hub.press_e_broker", "Press E to negotiate Broker")
         world_hint_label.visible = true
-        world_hint_label.text = "[E] Broker"
+        world_hint_label.text = _tx("ui.hub.world_hint_broker", "[E] Broker")
         return
     var nearest_distance: float = _get_nearest_vendor_distance()
     if nearest_distance >= 0.0:
-        hint_label.text = "Move closer to a vendor and press E (%.0f)" % nearest_distance
+        hint_label.text = _tf("msg.hub.move_closer_distance_fmt", [nearest_distance], "Move closer to a vendor and press E (%.0f)")
     else:
-        hint_label.text = "Move to a vendor and press E to interact"
+        hint_label.text = _tx("msg.hub.move_to_vendor", "Move to a vendor and press E to interact")
     world_hint_label.visible = false
 
 func _on_witch_body_entered(body: Node) -> void:
     if body == _player:
         _in_witch_range = true
         if _active_vendor.is_empty():
-            _refresh_status_ui("Near Witch")
+            _refresh_status_ui(_tx("msg.hub.near_witch", "Near Witch"))
 
 func _on_witch_body_exited(body: Node) -> void:
     if body == _player:
@@ -799,13 +807,13 @@ func _on_witch_body_exited(body: Node) -> void:
         if _active_vendor == "witch":
             _close_vendor_panel()
         elif _active_vendor.is_empty():
-            _refresh_status_ui("Left Witch")
+            _refresh_status_ui(_tx("msg.hub.left_witch", "Left Witch"))
 
 func _on_traveler_body_entered(body: Node) -> void:
     if body == _player:
         _in_traveler_range = true
         if _active_vendor.is_empty():
-            _refresh_status_ui("Near Traveler")
+            _refresh_status_ui(_tx("msg.hub.near_traveler", "Near Traveler"))
 
 func _on_traveler_body_exited(body: Node) -> void:
     if body == _player:
@@ -813,13 +821,13 @@ func _on_traveler_body_exited(body: Node) -> void:
         if _active_vendor == "traveler":
             _close_vendor_panel()
         elif _active_vendor.is_empty():
-            _refresh_status_ui("Left Traveler")
+            _refresh_status_ui(_tx("msg.hub.left_traveler", "Left Traveler"))
 
 func _on_seer_body_entered(body: Node) -> void:
     if body == _player:
         _in_seer_range = true
         if _active_vendor.is_empty():
-            _refresh_status_ui("Near Seer")
+            _refresh_status_ui(_tx("msg.hub.near_seer", "Near Seer"))
 
 func _on_seer_body_exited(body: Node) -> void:
     if body == _player:
@@ -827,13 +835,13 @@ func _on_seer_body_exited(body: Node) -> void:
         if _active_vendor == "seer":
             _close_vendor_panel()
         elif _active_vendor.is_empty():
-            _refresh_status_ui("Left Seer")
+            _refresh_status_ui(_tx("msg.hub.left_seer", "Left Seer"))
 
 func _on_broker_body_entered(body: Node) -> void:
     if body == _player:
         _in_broker_range = true
         if _active_vendor.is_empty():
-            _refresh_status_ui("Near Broker")
+            _refresh_status_ui(_tx("msg.hub.near_broker", "Near Broker"))
 
 func _on_broker_body_exited(body: Node) -> void:
     if body == _player:
@@ -841,11 +849,12 @@ func _on_broker_body_exited(body: Node) -> void:
         if _active_vendor == "broker":
             _close_vendor_panel()
         elif _active_vendor.is_empty():
-            _refresh_status_ui("Left Broker")
+            _refresh_status_ui(_tx("msg.hub.left_broker", "Left Broker"))
 
 func _resolve_ui_refs() -> bool:
     world_root = get_node_or_null(PATH_WORLD_ROOT) as Node2D
     gold_label = get_node_or_null(PATH_GOLD_LABEL) as Label
+    gold_gain_label = get_node_or_null(PATH_GOLD_GAIN_LABEL) as Label
     hint_label = get_node_or_null(PATH_HINT_LABEL) as Label
     vendor_panel = get_node_or_null(PATH_VENDOR_PANEL) as PanelContainer
     vendor_title = get_node_or_null(PATH_VENDOR_TITLE) as Label
@@ -870,6 +879,8 @@ func _resolve_ui_refs() -> bool:
         missing.append("GameWorldRoot")
     if gold_label == null:
         missing.append("GoldLabel")
+    if gold_gain_label == null:
+        missing.append("GoldGainLabel")
     if hint_label == null:
         missing.append("HintLabel")
     if vendor_panel == null:
@@ -997,3 +1008,33 @@ func _constrain_player_to_hub() -> void:
     var clamped_y: float = clampf(_player.global_position.y, min_y, max_y)
     if not is_equal_approx(clamped_x, _player.global_position.x) or not is_equal_approx(clamped_y, _player.global_position.y):
         _player.global_position = Vector2(clamped_x, clamped_y)
+
+func _offer_name(offer: Dictionary) -> String:
+    var offer_id: String = str(offer.get("offer_id", ""))
+    return LocaleService.t_data("hub_offer", offer_id, "name", str(offer.get("name", "Offer")))
+
+func _vendor_name(vendor_id: String) -> String:
+    match vendor_id:
+        "witch":
+            return _tx("ui.hub.vendor_short.witch", "Witch")
+        "traveler":
+            return _tx("ui.hub.vendor_short.traveler", "Traveler")
+        "seer":
+            return _tx("ui.hub.vendor_short.seer", "Seer")
+        "broker":
+            return _tx("ui.hub.vendor_short.broker", "Broker")
+        _:
+            return _tx("ui.hub.vendor_short.default", "Vendor")
+
+func _tx(key: String, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tx(key, fallback if not fallback.is_empty() else key)
+    if fallback.is_empty():
+        return key
+    return fallback
+
+func _tf(key: String, args: Array, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
+    var base: String = fallback if not fallback.is_empty() else key
+    return base % args
