@@ -72,16 +72,16 @@ size_flags_vertical = 3
 
 [node name="OffersMargin" type="MarginContainer" parent="Root/MainVBox/MidRow/OffersPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="OffersGrid" type="GridContainer" parent="Root/MainVBox/MidRow/OffersPanel/OffersMargin" unique_name_in_owner=true]
 layout_mode = 2
-columns = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
+columns = 4
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
 
 [node name="RightPanel" type="PanelContainer" parent="Root/MainVBox/MidRow"]
 custom_minimum_size = Vector2(280, 0)
@@ -103,6 +103,7 @@ fit_content = true
 text = "[b]Stats[/b]"
 
 [node name="BottomPanel" type="PanelContainer" parent="Root/MainVBox"]
+custom_minimum_size = Vector2(0, 210)
 layout_mode = 2
 
 [node name="BottomMargin" type="MarginContainer" parent="Root/MainVBox/BottomPanel"]
@@ -116,17 +117,21 @@ theme_override_constants/margin_bottom = 10
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="WeaponSlotsRow" type="HBoxContainer" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox" unique_name_in_owner=true]
+[node name="BottomContentRow" type="HBoxContainer" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox" unique_name_in_owner=true]
 layout_mode = 2
-theme_override_constants/separation = 6
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 
 [node name="BottomActions" type="HBoxContainer" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="HintLabel" type="Label" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox/BottomActions" unique_name_in_owner=true]
 layout_mode = 2
 size_flags_horizontal = 3
+autowrap_mode = 3
+clip_text = true
 text = "Shop ready."
 
 [node name="NextWaveButton" type="Button" parent="Root/MainVBox/BottomPanel/BottomMargin/BottomVBox/BottomActions" unique_name_in_owner=true]

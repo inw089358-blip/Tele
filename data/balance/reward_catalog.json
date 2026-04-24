@@ -382,8 +382,8 @@
                     },
                     {
                         "id":  "crit_damage_25",
-                        "name":  "暴伤 +25%",
-                        "desc":  "暴击伤害倍率 +0.18",
+                        "name":  "暴击率 +2.2%",
+                        "desc":  "提升暴击触发概率",
                         "category":  "weapon_behavior",
                         "rarity":  "uncommon",
                         "tags":  [
@@ -699,7 +699,7 @@
                     {
                         "id":  "impact_matrix",
                         "name":  "冲击矩阵",
-                        "desc":  "攻击与暴伤同步提升（随稀有度提升数值）",
+                        "desc":  "攻击与暴击率同步提升（随稀有度提升数值）",
                         "category":  "build_core",
                         "rarity":  "uncommon",
                         "rarity_tiers":  [

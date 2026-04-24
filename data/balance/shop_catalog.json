@@ -105,7 +105,11 @@
                                                    "common":  70,
                                                    "uncommon":  24,
                                                    "rare":  6
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "eagle_eye",
+                                               "rapid"
+                                           ]
                         },
                         {
                             "weapon_id":  "road_sign",
@@ -135,7 +139,11 @@
                                                    "uncommon":  28,
                                                    "rare":  10,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "bulwark",
+                                               "berserker"
+                                           ]
                         },
                         {
                             "weapon_id":  "nail_gun",
@@ -168,7 +176,11 @@
                                                    "uncommon":  28,
                                                    "rare":  8,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "rapid",
+                                               "eagle_eye"
+                                           ]
                         },
                         {
                             "weapon_id":  "chain_whip",
@@ -197,7 +209,11 @@
                                                    "common":  66,
                                                    "uncommon":  26,
                                                    "rare":  8
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "raider",
+                                               "rapid"
+                                           ]
                         },
                         {
                             "weapon_id":  "circular_saw",
@@ -229,7 +245,11 @@
                                                    "uncommon":  30,
                                                    "rare":  12,
                                                    "epic":  3
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "berserker",
+                                               "raider"
+                                           ]
                         },
                         {
                             "weapon_id":  "flare_launcher",
@@ -261,7 +281,11 @@
                                                    "uncommon":  30,
                                                    "rare":  8,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "eagle_eye",
+                                               "raider"
+                                           ]
                         },
                         {
                             "weapon_id":  "traffic_cone",
@@ -293,7 +317,11 @@
                                                    "uncommon":  30,
                                                    "rare":  10,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "bulwark",
+                                               "sustain"
+                                           ]
                         },
                         {
                             "weapon_id":  "heavy_wrench",
@@ -323,7 +351,11 @@
                                                    "uncommon":  28,
                                                    "rare":  10,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "berserker",
+                                               "bulwark"
+                                           ]
                         },
                         {
                             "weapon_id":  "molotov",
@@ -355,7 +387,11 @@
                                                    "uncommon":  28,
                                                    "rare":  8,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "raider",
+                                               "sustain"
+                                           ]
                         },
                         {
                             "weapon_id":  "shuriken_ring",
@@ -387,7 +423,11 @@
                                                    "uncommon":  26,
                                                    "rare":  8,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "rapid",
+                                               "eagle_eye"
+                                           ]
                         },
                         {
                             "weapon_id":  "steel_pipe",
@@ -416,7 +456,11 @@
                                                    "common":  70,
                                                    "uncommon":  22,
                                                    "rare":  8
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "sustain",
+                                               "bulwark"
+                                           ]
                         },
                         {
                             "weapon_id":  "rebar_spear",
@@ -446,7 +490,11 @@
                                                    "uncommon":  28,
                                                    "rare":  8,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "eagle_eye",
+                                               "berserker"
+                                           ]
                         },
                         {
                             "weapon_id":  "mechanical_crossbow",
@@ -479,7 +527,11 @@
                                                    "uncommon":  30,
                                                    "rare":  8,
                                                    "epic":  2
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "eagle_eye",
+                                               "rapid"
+                                           ]
                         },
                         {
                             "weapon_id":  "drum_mallet",
@@ -508,7 +560,11 @@
                                                    "common":  68,
                                                    "uncommon":  24,
                                                    "rare":  8
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "rapid",
+                                               "sustain"
+                                           ]
                         },
                         {
                             "weapon_id":  "meteor_hammer",
@@ -538,7 +594,240 @@
                                                    "uncommon":  30,
                                                    "rare":  10,
                                                    "epic":  4
-                                               }
+                                               },
+                            "build_tags":  [
+                                               "berserker",
+                                               "sustain"
+                                           ]
                         }
-                    ]
+                    ],
+    "weapon_tag_bonus_rules":  {
+                                   "enabled":  false,
+                                   "max_stack_per_tag":  6,
+                                   "tier_steps":  [
+                                                      2,
+                                                      3,
+                                                      4,
+                                                      5,
+                                                      6
+                                                  ],
+                                   "tag_defs":  {
+                                                    "eagle_eye":  {
+                                                                      "name":  "鹰眼",
+                                                                      "desc":  "暴击向标签，强调精准与暴击收益。",
+                                                                      "tiers":  {
+                                                                                    "2":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD eagle_eye tier2"
+                                                                                          },
+                                                                                    "3":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD eagle_eye tier3"
+                                                                                          },
+                                                                                    "4":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD eagle_eye tier4"
+                                                                                          },
+                                                                                    "5":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD eagle_eye tier5"
+                                                                                          },
+                                                                                    "6":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD eagle_eye tier6"
+                                                                                          }
+                                                                                }
+                                                                  },
+                                                    "berserker":  {
+                                                                      "name":  "狂战",
+                                                                      "desc":  "进攻向标签，强调高压输出与前线压制。",
+                                                                      "tiers":  {
+                                                                                    "2":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD berserker tier2"
+                                                                                          },
+                                                                                    "3":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD berserker tier3"
+                                                                                          },
+                                                                                    "4":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD berserker tier4"
+                                                                                          },
+                                                                                    "5":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD berserker tier5"
+                                                                                          },
+                                                                                    "6":  {
+                                                                                              "effects":  [
+
+                                                                                                          ],
+                                                                                              "note":  "TBD berserker tier6"
+                                                                                          }
+                                                                                }
+                                                                  },
+                                                    "bulwark":  {
+                                                                    "name":  "壁垒",
+                                                                    "desc":  "防御向标签，强调护甲与生存稳态。",
+                                                                    "tiers":  {
+                                                                                  "2":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD bulwark tier2"
+                                                                                        },
+                                                                                  "3":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD bulwark tier3"
+                                                                                        },
+                                                                                  "4":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD bulwark tier4"
+                                                                                        },
+                                                                                  "5":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD bulwark tier5"
+                                                                                        },
+                                                                                  "6":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD bulwark tier6"
+                                                                                        }
+                                                                              }
+                                                                },
+                                                    "rapid":  {
+                                                                  "name":  "急速",
+                                                                  "desc":  "攻速向标签，强调攻击频率与节奏。",
+                                                                  "tiers":  {
+                                                                                "2":  {
+                                                                                          "effects":  [
+
+                                                                                                      ],
+                                                                                          "note":  "TBD rapid tier2"
+                                                                                      },
+                                                                                "3":  {
+                                                                                          "effects":  [
+
+                                                                                                      ],
+                                                                                          "note":  "TBD rapid tier3"
+                                                                                      },
+                                                                                "4":  {
+                                                                                          "effects":  [
+
+                                                                                                      ],
+                                                                                          "note":  "TBD rapid tier4"
+                                                                                      },
+                                                                                "5":  {
+                                                                                          "effects":  [
+
+                                                                                                      ],
+                                                                                          "note":  "TBD rapid tier5"
+                                                                                      },
+                                                                                "6":  {
+                                                                                          "effects":  [
+
+                                                                                                      ],
+                                                                                          "note":  "TBD rapid tier6"
+                                                                                      }
+                                                                            }
+                                                              },
+                                                    "raider":  {
+                                                                   "name":  "掠袭",
+                                                                   "desc":  "机动向标签，强调追击、机动和战场穿插。",
+                                                                   "tiers":  {
+                                                                                 "2":  {
+                                                                                           "effects":  [
+
+                                                                                                       ],
+                                                                                           "note":  "TBD raider tier2"
+                                                                                       },
+                                                                                 "3":  {
+                                                                                           "effects":  [
+
+                                                                                                       ],
+                                                                                           "note":  "TBD raider tier3"
+                                                                                       },
+                                                                                 "4":  {
+                                                                                           "effects":  [
+
+                                                                                                       ],
+                                                                                           "note":  "TBD raider tier4"
+                                                                                       },
+                                                                                 "5":  {
+                                                                                           "effects":  [
+
+                                                                                                       ],
+                                                                                           "note":  "TBD raider tier5"
+                                                                                       },
+                                                                                 "6":  {
+                                                                                           "effects":  [
+
+                                                                                                       ],
+                                                                                           "note":  "TBD raider tier6"
+                                                                                       }
+                                                                             }
+                                                               },
+                                                    "sustain":  {
+                                                                    "name":  "续战",
+                                                                    "desc":  "续航向标签，强调吸血、恢复与长线作战。",
+                                                                    "tiers":  {
+                                                                                  "2":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD sustain tier2"
+                                                                                        },
+                                                                                  "3":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD sustain tier3"
+                                                                                        },
+                                                                                  "4":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD sustain tier4"
+                                                                                        },
+                                                                                  "5":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD sustain tier5"
+                                                                                        },
+                                                                                  "6":  {
+                                                                                            "effects":  [
+
+                                                                                                        ],
+                                                                                            "note":  "TBD sustain tier6"
+                                                                                        }
+                                                                              }
+                                                                }
+                                                }
+                               }
 }

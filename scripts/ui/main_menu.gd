@@ -16,6 +16,9 @@ const SAVE_SLOT_PANEL_SCENE: PackedScene = preload("res://scenes/ui/save_slot_pa
 var _title_base_pos: Vector2
 var _notice_base_alpha: float = 0.85
 var _continue_slot_panel: SaveSlotPanel
+var _scene_input_ready: bool = false
+var _queued_action: Callable = Callable()
+var _queued_action_id: String = ""
 
 func _ready() -> void :
     _refresh_static_texts()
@@ -31,6 +34,7 @@ func _ready() -> void :
     _apply_test_entry_visibility()
     AudioManager.play_menu_bgm()
     _update_clock()
+    _arm_scene_ready_gate()
 
 func _process(_delta: float) -> void :
     _update_clock()
@@ -54,20 +58,15 @@ func _update_notice_glitch() -> void:
     notice_label.modulate = c
 
 func _on_start_button_pressed() -> void :
-    notice_label.text = _tx("msg.main.start_new_run", "Start new run")
-    AudioManager.play_prepare_bgm()
-    GameManager.go_to_character_select()
+    _invoke_or_queue("start", Callable(self, "_do_start"), _tx("msg.common.loading_short", "Loading..."))
 
 func _on_boss_test_button_pressed() -> void :
-    notice_label.text = _tx("msg.main.jump_stage_015", "Jump to stage_015 (Final boss test)")
-    AudioManager.play_prepare_bgm()
-    if GameManager.selected_character.is_empty():
-        GameManager.selected_character = "the_fool"
-    if GameManager.current_difficulty.is_empty():
-        GameManager.current_difficulty = "normal"
-    GameManager.start_game("stage_015")
+    _invoke_or_queue("boss_test", Callable(self, "_do_boss_test"), _tx("msg.common.loading_short", "Loading..."))
 
 func _on_continue_button_pressed() -> void :
+    if not _scene_input_ready or _is_scene_transition_pending():
+        _queue_action("continue", Callable(self, "_on_continue_button_pressed"), _tx("msg.common.loading_short", "Loading..."))
+        return
     if _continue_slot_panel == null:
         notice_label.text = _tx("msg.main.save_panel_unavailable", "Save panel unavailable")
         return
@@ -78,14 +77,10 @@ func _on_continue_button_pressed() -> void :
     _continue_slot_panel.visible = true
 
 func _on_settings_button_pressed() -> void :
-    notice_label.text = _tx("msg.main.open_settings", "Open settings")
-    GameManager.go_to_settings()
+    _invoke_or_queue("settings", Callable(self, "_do_settings"), _tx("msg.common.loading_short", "Loading..."))
 
 func _on_quit_button_pressed() -> void :
-    _trigger_ui_flash()
-    if CRTTransition != null and CRTTransition.has_method("play_shutdown"):
-        await CRTTransition.play_shutdown()
-    get_tree().quit()
+    _invoke_or_queue("quit", Callable(self, "_do_quit"), _tx("msg.common.loading_short", "Loading..."))
 
 func _refresh_static_texts() -> void:
     start_button.text = _tx("ui.main.start_button", "Start Game")
@@ -114,8 +109,10 @@ func _on_continue_slot_selected(slot_id: String) -> void :
     if slot_data.is_empty():
         _continue_slot_panel.show_hint(_tx("msg.slot.empty", "This slot is empty."))
         return
-    notice_label.text = _tx("msg.main.loading_save", "Loading save...")
-    GameManager.start_game_from_slot(slot_data)
+    _invoke_or_queue(
+        "continue_slot",
+        Callable(self, "_do_start_from_slot").bind(slot_data)
+    )
 
 func _on_continue_slot_closed() -> void :
     if _continue_slot_panel != null:
@@ -191,6 +188,78 @@ func _trigger_ui_flash() -> void:
     tween.set_ease(Tween.EASE_OUT)
     tween.tween_property(ui_feedback_flash, "color:a", 0.16, 0.05)
     tween.tween_property(ui_feedback_flash, "color:a", 0.0, 0.16)
+
+func _do_start() -> void:
+    notice_label.text = _tx("msg.main.start_new_run", "Start new run")
+    AudioManager.play_prepare_bgm()
+    GameManager.go_to_character_select()
+
+func _do_boss_test() -> void:
+    notice_label.text = _tx("msg.main.jump_stage_015", "Jump to stage_015 (Final boss test)")
+    AudioManager.play_prepare_bgm()
+    if GameManager.selected_character.is_empty():
+        GameManager.selected_character = "the_fool"
+    if GameManager.current_difficulty.is_empty():
+        GameManager.current_difficulty = "normal"
+    GameManager.start_game("stage_015")
+
+func _do_settings() -> void:
+    notice_label.text = _tx("msg.main.open_settings", "Open settings")
+    GameManager.go_to_settings()
+
+func _do_quit() -> void:
+    _trigger_ui_flash()
+    _do_quit_async()
+
+func _do_quit_async() -> void:
+    if CRTTransition != null and CRTTransition.has_method("play_shutdown"):
+        await CRTTransition.play_shutdown()
+    get_tree().quit()
+
+func _do_start_from_slot(slot_data: Dictionary) -> void:
+    notice_label.text = _tx("msg.main.loading_save", "Loading save...")
+    GameManager.start_game_from_slot(slot_data)
+
+func _arm_scene_ready_gate() -> void:
+    _scene_input_ready = false
+    call_deferred("_await_scene_input_ready")
+
+func _await_scene_input_ready() -> void:
+    await get_tree().process_frame
+    var guard: int = 0
+    while _is_scene_transition_pending() and guard < 180:
+        guard += 1
+        await get_tree().process_frame
+    await get_tree().process_frame
+    await get_tree().process_frame
+    _scene_input_ready = true
+    _flush_queued_action()
+
+func _invoke_or_queue(action_id: String, action: Callable, pending_text: String = "") -> void:
+    if _scene_input_ready and not _is_scene_transition_pending():
+        action.call()
+        return
+    _queue_action(action_id, action, pending_text)
+
+func _queue_action(action_id: String, action: Callable, pending_text: String = "") -> void:
+    if _queued_action_id.is_empty():
+        _queued_action_id = action_id
+        _queued_action = action
+    if not pending_text.is_empty():
+        notice_label.text = pending_text
+
+func _flush_queued_action() -> void:
+    if not _queued_action.is_valid():
+        return
+    var queued: Callable = _queued_action
+    _queued_action = Callable()
+    _queued_action_id = ""
+    queued.call_deferred()
+
+func _is_scene_transition_pending() -> bool:
+    var gm_busy: bool = GameManager != null and GameManager.has_method("is_scene_transition_busy") and bool(GameManager.call("is_scene_transition_busy"))
+    var crt_busy: bool = CRTTransition != null and CRTTransition.has_method("is_busy") and bool(CRTTransition.call("is_busy"))
+    return gm_busy or crt_busy
 
 func _tx(key: String, fallback: String = "") -> String:
     if LocaleService != null:

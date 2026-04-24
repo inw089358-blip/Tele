@@ -1,11 +1,20 @@
 extends Node
 
+@warning_ignore("unused_signal")
 signal game_state_changed(from: int, to: int)
+@warning_ignore("unused_signal")
 signal player_died
+@warning_ignore("unused_signal")
 signal level_up(new_level: int)
+@warning_ignore("unused_signal")
 signal wave_started(wave_id: int)
+@warning_ignore("unused_signal")
 signal wave_cleared(wave_id: int)
+@warning_ignore("unused_signal")
 signal reward_offered(choices: Array)
+@warning_ignore("unused_signal")
 signal reward_selected(upgrade_id: String, payload: Dictionary)
+@warning_ignore("unused_signal")
 signal stage_cleared(stage_id: String)
+@warning_ignore("unused_signal")
 signal game_over(is_victory: bool)

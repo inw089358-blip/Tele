@@ -102,7 +102,8 @@ func _tick_phase_two() -> void :
         _skill_timers["p2_tracking"] = float(_boss_config.get("p2_tracking_interval", 8.0))
         var tracking_count: int = max(1, int(_boss_config.get("p2_tracking_count", 3)))
         for i: int in range(tracking_count):
-            var offset: float = deg_to_rad(float(i - tracking_count / 2) * 7.0)
+            var offset_center: float = float(i) - (float(tracking_count) / 2.0)
+            var offset: float = deg_to_rad(offset_center * 7.0)
             try_fire_projectile(to_player.rotated(offset), 320.0, 13, 5.0, 4.0, Color(1.0, 0.62, 0.28, 1.0))
     if _skill_timers["p2_summon"] <= 0.0:
         _skill_timers["p2_summon"] = float(_boss_config.get("p2_summon_interval", 35.0))

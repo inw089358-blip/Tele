@@ -24,6 +24,7 @@ const BG_TUTORIAL_TEXTURE: Texture2D = preload("res://sprite/maps/map_tutorial_d
 const BG_COMBAT_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_combat_default.png")
 const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_arena.png")
 const MELEE_ARC_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_arc_effect.gd")
+const ShopSystemScript: Script = preload("res://scripts/systems/shop_system.gd")
 const WEAPON_ORBIT_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/"
 const WEAPON_ORBIT_ANGULAR_SPEED: float = 1.65
 const WEAPON_ORBIT_ICON_TARGET_WIDTH: float = 38.0
@@ -33,6 +34,26 @@ const WEAPON_ORBIT_FLASH_DURATION: float = 0.11
 const WEAPON_ORBIT_FLASH_SCALE_MAX: float = 1.22
 const WEAPON_ORBIT_BASE_TINT: Color = Color(0.86, 0.95, 1.0, 0.9)
 const WEAPON_ORBIT_FLASH_TINT: Color = Color(1.0, 1.0, 1.0, 1.0)
+const WEAPON_TAG_ADDITIVE_EFFECT_TYPES: Dictionary = {
+    "attack_damage_flat": true,
+    "melee_damage_flat": true,
+    "ranged_damage_flat": true,
+    "global_attack_percent_flat": true,
+    "target_range_flat": true,
+    "move_speed_flat": true,
+    "armor_flat": true,
+    "dodge_chance_flat": true,
+    "crit_chance_flat": true,
+    "crit_multiplier_flat": true,
+    "lifesteal_flat": true,
+    "luck_flat": true,
+    "harvest_flat": true,
+}
+const WEAPON_TAG_MULTIPLIER_EFFECT_TYPES: Dictionary = {
+    "attack_speed_mult": true,
+    "auto_attack_interval_mult": true,
+    "xp_gain_mult": true,
+}
 
 var _player: Player
 var _player_camera: Camera2D
@@ -45,6 +66,7 @@ var _elite_spawn_relief_timer: float = 0.0
 var _enemies: Array[Enemy] = []
 var _projectiles: Array[Projectile] = []
 var _enemy_projectiles: Array[EnemyProjectile] = []
+var _pending_enemy_shots: Array[Dictionary] = []
 var _experience_orbs: Array[ExperienceOrb] = []
 var _active_elite: Enemy
 var _is_game_over: bool = false
@@ -103,6 +125,8 @@ var _shop_runtime_state: Dictionary = {
     "inventory_overflow": [],
     "locked_shop_offers": [],
     "refresh_count": 0,
+    "shop_locked": false,
+    "owned_items": [],
 }
 var _stage_background_key: String = ""
 var _weapon_orbit_root: Node2D
@@ -116,6 +140,8 @@ var _pause_transition_tween: Tween
 var _death_fx_layer: CanvasLayer
 var _death_fx_overlay: ColorRect
 var _death_fx_tween: Tween
+var _shop_system_runtime: ShopSystem
+var _weapon_tag_applied_effects: Array[Dictionary] = []
 
 const INITIAL_ENEMY_COUNT: int = 10
 const MAX_ENEMY_COUNT: int = 24
@@ -162,6 +188,14 @@ const CONTACT_DAMAGE_INTERVAL: float = 0.34
 const XP_CURVE_LEVEL_OFFSET_DEFAULT: int = 3
 const XP_CURVE_BASE_MULT_DEFAULT: float = 1.0
 const XP_REQUIRED_MIN_DEFAULT: int = 1
+const ATTACK_FLAT_TO_GLOBAL_ATTACK_PERCENT_DEFAULT: float = 3.0
+const CRIT_MULTIPLIER_TO_CRIT_CHANCE_RATIO_DEFAULT: float = 0.12
+const HARVEST_WAVE_GOLD_PER_POINT_DEFAULT: float = 0.8
+const HARVEST_KILL_GOLD_CHANCE_PER_POINT_DEFAULT: float = 0.0008
+const HARVEST_KILL_GOLD_MAX_CHANCE_DEFAULT: float = 0.35
+const HARVEST_KILL_GOLD_AMOUNT_DEFAULT: int = 1
+const LEVEL_UP_MAX_HP_BONUS_DEFAULT: int = 1
+const LEVEL_UP_CURRENT_HP_BONUS_DEFAULT: int = 1
 const REWARD_TARGET_RANGE_BONUS: float = 80.0
 const REWARD_ATTACK_DAMAGE_BONUS: int = 3
 const REWARD_MOVE_SPEED_BONUS: float = 15.0
@@ -194,9 +228,11 @@ func _ready() -> void :
     _apply_enemy_mix_from_balance(GameManager.current_stage_id)
     _reset_progress_state()
     _spawn_player()
+    _ensure_shop_system_runtime()
     if not pending_slot_data.is_empty():
         _apply_loaded_slot_data(pending_slot_data, false)
     _ensure_starter_weapon_equipped()
+    _refresh_weapon_tag_state_runtime(true)
     _sync_weapon_orbit_visuals(true)
     _spawn_initial_enemies()
     wave_manager.start_stage()
@@ -240,6 +276,7 @@ func _reset_progress_state() -> void :
     _auto_attack_interval_multiplier_runtime = 1.0
     _weapon_cooldowns.clear()
     _weapon_cooldown_signatures.clear()
+    _weapon_tag_applied_effects.clear()
     _clear_weapon_orbit_runtime()
     _current_gold_runtime = 0
     _selected_starter_weapon_id_runtime = GameManager.selected_starter_weapon_id
@@ -248,6 +285,8 @@ func _reset_progress_state() -> void :
         "inventory_overflow": [],
         "locked_shop_offers": [],
         "refresh_count": 0,
+        "shop_locked": false,
+        "owned_items": [],
     }
     if hud != null and hud.has_method("hide_boss_bar"):
         hud.call("hide_boss_bar")
@@ -281,6 +320,7 @@ func _process(delta: float) -> void :
     _tick_equipped_weapon_attacks(delta)
     _tick_weapon_orbit_visuals(delta)
     _handle_projectile_hits()
+    _flush_pending_enemy_shots()
     _handle_enemy_projectile_hits()
     _handle_enemy_contact_damage()
     _update_experience_orbs(delta)
@@ -506,6 +546,7 @@ func _on_wave_time_up() -> void:
     _clear_all_enemies()
     var current_wave_profile: Dictionary = wave_manager.get_current_wave_definition()
     _add_gold(int(current_wave_profile.get("reward_gold", 0)))
+    _add_gold(_resolve_wave_harvest_gold())
     _add_experience(int(current_wave_profile.get("reward_xp", 0)))
     var next_stage_id: String = _resolve_next_stage_id(GameManager.current_stage_id)
     if next_stage_id.is_empty():
@@ -532,11 +573,16 @@ func _open_shop_after_wave_reward() -> void:
         return
     if _pending_level_up_rewards > 0 or _reward_opened:
         return
-    var shop_snapshot: Dictionary = _pending_wave_shop_snapshot.duplicate(true)
+    var pending_snapshot: Dictionary = _pending_wave_shop_snapshot.duplicate(true)
     _wave_end_reward_gate_active = false
     _pending_wave_shop_snapshot = {}
-    if shop_snapshot.is_empty():
+    if pending_snapshot.is_empty():
         return
+    # Rebuild from current runtime after reward selection so shop/next stage inherits latest stats.
+    var shop_snapshot: Dictionary = _build_wave_runtime_snapshot()
+    shop_snapshot["stage_id"] = str(pending_snapshot.get("stage_id", shop_snapshot.get("stage_id", GameManager.current_stage_id)))
+    shop_snapshot["wave"] = max(1, int(pending_snapshot.get("wave", 1)))
+    shop_snapshot["wave_progress_index"] = max(0, int(pending_snapshot.get("wave_progress_index", 0)))
     GameManager.open_wave_shop(shop_snapshot)
 
 func _complete_stage_by_timer() -> void:
@@ -566,9 +612,7 @@ func _build_stage_transition_payload(next_stage_id: String) -> Dictionary:
     payload["wave"] = 1
     payload["wave_progress_index"] = 0
     var next_shop_state: Dictionary = _normalize_shop_runtime_state(payload.get("shop_runtime_state", {}))
-    next_shop_state["locked_shop_offers"] = []
     next_shop_state["shop_locked"] = false
-    next_shop_state["refresh_count"] = 0
     payload["shop_runtime_state"] = next_shop_state
     return payload
 
@@ -826,7 +870,7 @@ func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, h
     projectile.speed = max(180.0, float(attack_profile.get("projectile_speed", BULLET_SPEED)))
     projectile.hit_radius = max(2.0, float(attack_profile.get("projectile_radius", 4.0)))
     projectile.crit_chance = _player.crit_chance
-    projectile.crit_multiplier = _player.crit_multiplier
+    projectile.crit_multiplier = _resolve_weapon_crit_multiplier(attack_profile)
     projectile.lifesteal_ratio = _player.lifesteal
     projectile.owner_player = _player
     projectile.global_position = _player.global_position
@@ -842,6 +886,7 @@ func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary) 
     var impact_position: Vector2 = target_enemy.global_position
     _spawn_melee_arc_effect(impact_position, attack_profile)
     var base_damage: int = _resolve_weapon_damage(attack_profile)
+    var crit_multiplier: float = _resolve_weapon_crit_multiplier(attack_profile)
     var splash_radius: float = _resolve_melee_splash_radius(attack_profile)
     var total_dealt_damage: int = 0
     for enemy: Enemy in _enemies:
@@ -850,17 +895,24 @@ func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary) 
         var hit_distance: float = splash_radius + enemy.body_radius
         if impact_position.distance_squared_to(enemy.global_position) > hit_distance * hit_distance:
             continue
-        var outgoing_damage: int = _player.roll_outgoing_damage(base_damage, _player.crit_chance, _player.crit_multiplier)
+        var outgoing_damage: int = _player.roll_outgoing_damage(base_damage, _player.crit_chance, crit_multiplier)
         total_dealt_damage += enemy.take_damage(outgoing_damage)
     if total_dealt_damage > 0:
         _player.heal_from_lifesteal(total_dealt_damage, _player.lifesteal)
     _cleanup_dead_enemies()
 
 func _resolve_weapon_damage(attack_profile: Dictionary) -> int:
+    if _player == null or not is_instance_valid(_player):
+        return max(1, int(attack_profile.get("base_damage", AUTO_ATTACK_BASE_DAMAGE)))
     var base_damage: int = int(attack_profile.get("base_damage", AUTO_ATTACK_BASE_DAMAGE))
     var mode: String = str(attack_profile.get("mode", "ranged_homing"))
-    var total_bonus: int = _player.get_attack_damage_bonus() + _resolve_mode_damage_bonus(mode)
-    return max(1, base_damage + total_bonus)
+    var mode_bonus: int = _resolve_mode_damage_bonus(mode)
+    var damage_before_global: int = max(1, base_damage + mode_bonus)
+    var global_mult: float = max(0.1, 1.0 + _player.get_global_attack_percent() / 100.0)
+    return max(1, int(round(float(damage_before_global) * global_mult)))
+
+func _resolve_weapon_crit_multiplier(attack_profile: Dictionary) -> float:
+    return max(1.0, float(attack_profile.get("crit_multiplier", 1.5)))
 
 func _resolve_mode_damage_bonus(mode: String) -> int:
     if _player == null or not is_instance_valid(_player):
@@ -876,10 +928,11 @@ func _resolve_mode_damage_bonus(mode: String) -> int:
 func _resolve_weapon_attack_range(attack_profile: Dictionary) -> float:
     var mode: String = str(attack_profile.get("mode", "ranged_homing"))
     var profile_range: float = float(attack_profile.get("range", _player.get_current_target_range()))
+    var range_bonus_ratio: float = 1.0
     if mode == "melee_arc":
-        return clampf(profile_range, 55.0, 130.0)
-    var safe_range: float = max(60.0, profile_range)
-    return max(60.0, safe_range + _player.bonus_target_range)
+        range_bonus_ratio = 0.5
+    var final_range: float = profile_range + _player.bonus_target_range * range_bonus_ratio
+    return max(1.0, final_range)
 
 func _resolve_melee_splash_radius(attack_profile: Dictionary) -> float:
     var melee_range: float = clampf(float(attack_profile.get("range", 95.0)), 55.0, 130.0)
@@ -1152,22 +1205,23 @@ func _handle_projectile_hits() -> void :
                 continue
             var hit_distance: float = projectile.hit_radius + enemy.body_radius
             if projectile.global_position.distance_squared_to(enemy.global_position) <= hit_distance * hit_distance:
-                var owner: Player = projectile.owner_player
+                var projectile_owner: Player = projectile.owner_player
                 var outgoing_damage: int = projectile.damage
-                if owner != null and is_instance_valid(owner):
-                    outgoing_damage = owner.roll_outgoing_damage(
+                if projectile_owner != null and is_instance_valid(projectile_owner):
+                    outgoing_damage = projectile_owner.roll_outgoing_damage(
                         projectile.damage,
                         projectile.crit_chance,
                         projectile.crit_multiplier
                     )
                 var dealt_damage: int = enemy.take_damage(outgoing_damage)
-                if owner != null and is_instance_valid(owner):
-                    owner.heal_from_lifesteal(dealt_damage, projectile.lifesteal_ratio)
+                if projectile_owner != null and is_instance_valid(projectile_owner):
+                    projectile_owner.heal_from_lifesteal(dealt_damage, projectile.lifesteal_ratio)
                 projectile.queue_free()
                 break
     _cleanup_dead_enemies()
 
 func _on_enemy_projectile_fired(
+    shooter: Enemy,
     origin: Vector2, 
     direction: Vector2, 
     speed: float, 
@@ -1176,16 +1230,40 @@ func _on_enemy_projectile_fired(
     life_time: float, 
     tint: Color
 ) -> void :
-    var projectile: EnemyProjectile = EnemyProjectile.new()
-    projectile.global_position = origin
-    projectile.direction = direction
-    projectile.speed = speed
-    projectile.damage = max(1, int(round(float(damage) * _enemy_damage_multiplier)))
-    projectile.hit_radius = hit_radius
-    projectile.life_time = life_time
-    projectile.tint = tint
-    add_child(projectile)
-    _enemy_projectiles.append(projectile)
+    _pending_enemy_shots.append({
+        "shooter": shooter,
+        "origin": origin,
+        "direction": direction,
+        "speed": speed,
+        "damage": damage,
+        "hit_radius": hit_radius,
+        "life_time": life_time,
+        "tint": tint,
+        "physics_frame_id": Engine.get_physics_frames(),
+    })
+
+func _flush_pending_enemy_shots() -> void:
+    if _pending_enemy_shots.is_empty():
+        return
+    var pending: Array[Dictionary] = _pending_enemy_shots
+    _pending_enemy_shots = []
+    for shot: Dictionary in pending:
+        var shooter_value: Variant = shot.get("shooter", null)
+        if not _is_enemy_combat_active(shooter_value):
+            continue
+        var projectile: EnemyProjectile = EnemyProjectile.new()
+        projectile.global_position = shot.get("origin", Vector2.ZERO)
+        projectile.direction = Vector2(shot.get("direction", Vector2.ZERO))
+        projectile.speed = float(shot.get("speed", 0.0))
+        projectile.damage = max(
+            1,
+            int(round(float(shot.get("damage", 1)) * _enemy_damage_multiplier))
+        )
+        projectile.hit_radius = float(shot.get("hit_radius", 4.0))
+        projectile.life_time = float(shot.get("life_time", 3.0))
+        projectile.tint = shot.get("tint", Color(1.0, 0.36, 0.3, 1.0))
+        add_child(projectile)
+        _enemy_projectiles.append(projectile)
 
 func _handle_enemy_projectile_hits() -> void :
     if _player == null or not is_instance_valid(_player):
@@ -1262,6 +1340,7 @@ func _clear_experience_orbs() -> void :
     _experience_orbs.clear()
 
 func _clear_enemy_projectiles() -> void :
+    _pending_enemy_shots.clear()
     for projectile: EnemyProjectile in _enemy_projectiles:
         if projectile != null and is_instance_valid(projectile):
             projectile.queue_free()
@@ -1639,17 +1718,17 @@ func _resume_game_from_pause() -> void :
         GameManager.resume_game()
     )
 
-func _set_pause_overlay_visible(visible: bool) -> void :
+func _set_pause_overlay_visible(is_visible: bool) -> void :
     _stop_pause_transition_tween()
-    pause_overlay.visible = visible
-    pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP if visible else Control.MOUSE_FILTER_IGNORE
+    pause_overlay.visible = is_visible
+    pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP if is_visible else Control.MOUSE_FILTER_IGNORE
     if pause_dimmer != null:
-        pause_dimmer.modulate.a = 1.0 if visible else 0.0
+        pause_dimmer.modulate.a = 1.0 if is_visible else 0.0
     if pause_panel != null:
-        pause_panel.modulate.a = 1.0 if visible else 0.0
+        pause_panel.modulate.a = 1.0 if is_visible else 0.0
         pause_panel.scale = Vector2.ONE
         pause_panel.pivot_offset = pause_panel.size * 0.5
-    if not visible:
+    if not is_visible:
         _hide_pause_sub_panels()
 
 func _play_pause_overlay_open_transition() -> void:
@@ -1824,6 +1903,7 @@ func _on_enemy_died(enemy: Enemy) -> void :
         if hud.has_method("hide_boss_bar"):
             hud.call("hide_boss_bar")
     _add_gold(_resolve_enemy_gold_drop(enemy))
+    _add_gold(_roll_harvest_kill_bonus_gold())
     _spawn_experience_orb(enemy.global_position, enemy.xp_drop_amount)
 
 func _resolve_enemy_gold_drop(enemy: Enemy) -> int:
@@ -1841,6 +1921,40 @@ func _add_gold(amount: int) -> void:
     var scaled_amount: int = max(0, int(round(float(amount) * _gold_multiplier)))
     _current_gold_runtime = max(0, _current_gold_runtime + scaled_amount)
     _refresh_player_hud()
+
+func _resolve_wave_harvest_gold() -> int:
+    if _player == null or not is_instance_valid(_player):
+        return 0
+    var harvest_value: float = max(0.0, _player.get_harvest())
+    if harvest_value <= 0.0:
+        return 0
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    var wave_gold_per_point: float = max(
+        0.0,
+        float(combat_params.get("harvest_wave_gold_per_point", HARVEST_WAVE_GOLD_PER_POINT_DEFAULT))
+    )
+    return max(0, int(round(harvest_value * wave_gold_per_point)))
+
+func _roll_harvest_kill_bonus_gold() -> int:
+    if _player == null or not is_instance_valid(_player):
+        return 0
+    var harvest_value: float = max(0.0, _player.get_harvest())
+    if harvest_value <= 0.0:
+        return 0
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    var chance_per_point: float = max(
+        0.0,
+        float(combat_params.get("harvest_kill_gold_chance_per_point", HARVEST_KILL_GOLD_CHANCE_PER_POINT_DEFAULT))
+    )
+    var max_chance: float = clampf(
+        float(combat_params.get("harvest_kill_gold_max_chance", HARVEST_KILL_GOLD_MAX_CHANCE_DEFAULT)),
+        0.0,
+        1.0
+    )
+    var trigger_chance: float = clampf(harvest_value * chance_per_point, 0.0, max_chance)
+    if randf() > trigger_chance:
+        return 0
+    return max(0, int(combat_params.get("harvest_kill_gold_amount", HARVEST_KILL_GOLD_AMOUNT_DEFAULT)))
 
 func _spawn_experience_orb(spawn_position: Vector2, xp_value: int) -> void :
     var orb: ExperienceOrb = ExperienceOrb.new()
@@ -1860,11 +1974,32 @@ func _add_experience(amount: int) -> void :
     while _current_xp >= _xp_to_next_level:
         _current_xp -= _xp_to_next_level
         _current_level += 1
+        _apply_level_up_base_growth()
         _xp_to_next_level = _xp_required_for_level(_current_level)
         _pending_level_up_rewards += 1
         EventBus.level_up.emit(_current_level)
     _refresh_player_hud()
     _try_open_next_level_reward()
+
+func _apply_level_up_base_growth() -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    var max_hp_bonus: int = _get_level_up_max_hp_bonus()
+    var current_hp_bonus: int = _get_level_up_current_hp_bonus()
+    if max_hp_bonus <= 0 and current_hp_bonus <= 0:
+        return
+    if max_hp_bonus > 0:
+        _player.max_hp = max(1, _player.max_hp + max_hp_bonus)
+    if current_hp_bonus > 0:
+        _player.current_hp = clampi(_player.current_hp + current_hp_bonus, 0, _player.max_hp)
+
+func _get_level_up_max_hp_bonus() -> int:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    return max(0, int(combat_params.get("level_up_max_hp_bonus", LEVEL_UP_MAX_HP_BONUS_DEFAULT)))
+
+func _get_level_up_current_hp_bonus() -> int:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    return max(0, int(combat_params.get("level_up_current_hp_bonus", LEVEL_UP_CURRENT_HP_BONUS_DEFAULT)))
 
 func _xp_required_for_level(current_level: int) -> int:
     var combat_params: Dictionary = BalanceService.get_global_combat_params()
@@ -1953,11 +2088,15 @@ func _refresh_level_reward_choices() -> void:
         button.tooltip_text = str(reward.get("desc", ""))
 
 func _build_reward_run_state() -> Dictionary:
+    var player_luck: float = 0.0
+    if _player != null and is_instance_valid(_player):
+        player_luck = _player.luck
     return {
         "stage_id": GameManager.current_stage_id,
         "level": _current_level,
         "hp_ratio": _get_player_hp_ratio(),
         "difficulty": GameManager.current_difficulty,
+        "luck": player_luck,
         "build_tags": _build_tags_runtime.duplicate(),
         "history": _reward_history_runtime.duplicate(),
         "recent_categories": _recent_categories_runtime.duplicate(),
@@ -2037,6 +2176,7 @@ func _slot_title(slot_id: String) -> String:
             return slot_id
 
 func _build_runtime_save_payload() -> Dictionary:
+    _refresh_weapon_tag_state_runtime(false)
     var base_save: Dictionary = SaveSystem.load_save()
     var unlocked_characters: Array[String] = _extract_character_array(base_save.get("unlocked_characters", ["the_fool"]))
     if unlocked_characters.is_empty():
@@ -2062,8 +2202,8 @@ func _build_runtime_save_payload() -> Dictionary:
         player_stamina_max = _player.stamina_max
         player_move_speed = _player.move_speed
         bonus_target_range = _player.bonus_target_range
-        bonus_attack_damage = _player.bonus_attack_damage
         player_stats = _player.export_runtime_stats()
+        bonus_attack_damage = _estimate_legacy_attack_bonus_from_stats(player_stats)
         player_pos_x = _player.global_position.x
         player_pos_y = _player.global_position.y
 
@@ -2136,6 +2276,7 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
 
     if selected_id != _current_player_id or _player == null or not is_instance_valid(_player):
         _spawn_player(selected_id)
+    _clear_applied_weapon_tag_effects()
 
     var max_hp: int = max(1, int(slot_data.get("player_max_hp", _player.max_hp)))
     var hp: int = clampi(int(slot_data.get("player_hp", max_hp)), 0, max_hp)
@@ -2154,10 +2295,22 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
 
     _player.move_speed = float(slot_data.get("player_move_speed", _player.move_speed))
     _player.bonus_target_range = float(slot_data.get("bonus_target_range", 0.0))
-    _player.bonus_attack_damage = int(slot_data.get("bonus_attack_damage", 0))
+    var legacy_bonus_attack_damage: int = int(slot_data.get("bonus_attack_damage", 0))
+    _player.bonus_attack_damage = legacy_bonus_attack_damage
     var player_stats_value: Variant = slot_data.get("player_stats", {})
+    var migrated_stats: Dictionary = {}
     if player_stats_value is Dictionary:
-        _player.import_runtime_stats(player_stats_value)
+        migrated_stats = (player_stats_value as Dictionary).duplicate(true)
+    if (
+        legacy_bonus_attack_damage != 0
+        and not migrated_stats.has("global_attack_percent")
+    ):
+        migrated_stats["global_attack_percent"] = (
+            float(legacy_bonus_attack_damage) * _get_attack_flat_to_global_attack_percent()
+        )
+    migrated_stats = _migrate_legacy_crit_multiplier_stat(migrated_stats, selected_id)
+    if not migrated_stats.is_empty():
+        _player.import_runtime_stats(migrated_stats)
 
     _current_level = max(1, int(slot_data.get("current_level", 1)))
     _current_xp = max(0, int(slot_data.get("current_xp", 0)))
@@ -2185,6 +2338,7 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
         if legacy_locked is Array:
             _shop_runtime_state["locked_shop_offers"] = legacy_locked.duplicate(true)
     _ensure_starter_weapon_equipped()
+    _refresh_weapon_tag_state_runtime(true)
     _reward_history_runtime = _extract_string_array(slot_data.get("reward_history", []))
     _recent_categories_runtime = _extract_string_array(slot_data.get("recent_categories", []))
     _build_tags_runtime = _extract_string_array(slot_data.get("build_tags", []))
@@ -2223,6 +2377,41 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
             enemy.set_target(_player)
 
     _refresh_player_hud()
+
+func _estimate_legacy_attack_bonus_from_stats(player_stats: Dictionary) -> int:
+    var conversion: float = _get_attack_flat_to_global_attack_percent()
+    if conversion <= 0.0:
+        return 0
+    var global_attack_percent: float = float(player_stats.get("global_attack_percent", 0.0))
+    return int(round(global_attack_percent / conversion))
+
+func _get_attack_flat_to_global_attack_percent() -> float:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    return max(
+        0.0,
+        float(combat_params.get("attack_flat_to_global_attack_percent", ATTACK_FLAT_TO_GLOBAL_ATTACK_PERCENT_DEFAULT))
+    )
+
+func _get_crit_multiplier_to_crit_chance_ratio() -> float:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    return max(
+        0.0,
+        float(combat_params.get("crit_multiplier_to_crit_chance_ratio", CRIT_MULTIPLIER_TO_CRIT_CHANCE_RATIO_DEFAULT))
+    )
+
+func _migrate_legacy_crit_multiplier_stat(raw_stats: Dictionary, character_id: String) -> Dictionary:
+    var migrated: Dictionary = raw_stats.duplicate(true)
+    if not migrated.has("crit_multiplier"):
+        return migrated
+    var profile: Dictionary = BalanceService.get_character_profile(character_id)
+    var base_crit_multiplier: float = max(1.0, float(profile.get("crit_multiplier", 1.5)))
+    var legacy_crit_multiplier: float = max(1.0, float(migrated.get("crit_multiplier", base_crit_multiplier)))
+    var delta: float = legacy_crit_multiplier - base_crit_multiplier
+    if absf(delta) > 0.0001:
+        var current_crit_chance: float = float(migrated.get("crit_chance", _player.crit_chance if _player != null else 0.05))
+        migrated["crit_chance"] = current_crit_chance + delta * _get_crit_multiplier_to_crit_chance_ratio()
+    migrated.erase("crit_multiplier")
+    return migrated
 
 func _extract_character_array(raw_value: Variant) -> Array[String]:
     var result: Array[String] = []
@@ -2295,9 +2484,9 @@ func _apply_enemy_mix_from_balance(stage_id: String) -> void:
     # Prevent overflow so melee always has room in the spawn pool.
     var combined: float = ranged_weight + barrage_weight
     if combined > 0.95:
-        var scale: float = 0.95 / combined
-        ranged_weight *= scale
-        barrage_weight *= scale
+        var weight_scale: float = 0.95 / combined
+        ranged_weight *= weight_scale
+        barrage_weight *= weight_scale
 
     _enemy_ranged_weight_runtime = ranged_weight
     _enemy_barrage_weight_runtime = barrage_weight
@@ -2374,6 +2563,7 @@ func _extract_stage_number(stage_id: String) -> int:
     return stage_no
 
 func _build_wave_runtime_snapshot() -> Dictionary:
+    _refresh_weapon_tag_state_runtime(false)
     var snapshot: Dictionary = _build_runtime_save_payload()
     snapshot["stage_id"] = GameManager.current_stage_id
     snapshot["wave"] = max(1, int(wave_manager.current_wave))
@@ -2389,6 +2579,8 @@ func _normalize_shop_runtime_state(raw_state: Variant) -> Dictionary:
         "locked_shop_offers": [],
         "refresh_count": 0,
         "shop_locked": false,
+        "owned_items": [],
+        "weapon_tag_state": {},
     }
     if raw_state is Dictionary:
         var source: Dictionary = raw_state
@@ -2401,8 +2593,16 @@ func _normalize_shop_runtime_state(raw_state: Variant) -> Dictionary:
         var locked: Variant = source.get("locked_shop_offers", [])
         if locked is Array:
             normalized["locked_shop_offers"] = locked.duplicate(true)
+        var owned_items: Variant = source.get("owned_items", [])
+        if owned_items is Array:
+            normalized["owned_items"] = owned_items.duplicate(true)
+        var weapon_tag_state_raw: Variant = source.get("weapon_tag_state", {})
+        if weapon_tag_state_raw is Dictionary:
+            normalized["weapon_tag_state"] = (weapon_tag_state_raw as Dictionary).duplicate(true)
         normalized["refresh_count"] = max(0, int(source.get("refresh_count", 0)))
-        normalized["shop_locked"] = bool(source.get("shop_locked", false))
+        normalized["shop_locked"] = false
+    else:
+        normalized["shop_locked"] = false
     return normalized
 
 func _extract_weapon_list_from_shop_state(shop_state: Dictionary) -> Array:
@@ -2423,6 +2623,7 @@ func _ensure_starter_weapon_equipped() -> void:
     if _selected_starter_weapon_id_runtime.is_empty():
         _selected_starter_weapon_id_runtime = _resolve_default_starter_weapon_id()
     if _selected_starter_weapon_id_runtime.is_empty():
+        _refresh_weapon_tag_state_runtime(false)
         return
     GameManager.selected_starter_weapon_id = _selected_starter_weapon_id_runtime
 
@@ -2432,15 +2633,18 @@ func _ensure_starter_weapon_equipped() -> void:
     if slot0_has_weapon:
         _shop_runtime_state["equipped_weapons"] = equipped
         _sync_weapon_cooldowns_with_equipped_slots()
+        _refresh_weapon_tag_state_runtime(false)
         return
     var starter_weapon: Dictionary = _build_weapon_instance_by_id(_selected_starter_weapon_id_runtime)
     if starter_weapon.is_empty():
         _shop_runtime_state["equipped_weapons"] = equipped
         _sync_weapon_cooldowns_with_equipped_slots()
+        _refresh_weapon_tag_state_runtime(false)
         return
     equipped[0] = starter_weapon
     _shop_runtime_state["equipped_weapons"] = equipped
     _sync_weapon_cooldowns_with_equipped_slots()
+    _refresh_weapon_tag_state_runtime(false)
 
 func _get_primary_weapon_runtime() -> Dictionary:
     var equipped: Array = _normalize_equipped_weapon_slots(_shop_runtime_state.get("equipped_weapons", []))
@@ -2482,10 +2686,79 @@ func _build_weapon_instance_by_id(weapon_id: String) -> Dictionary:
         "rarity": "common",
         "level": 1,
         "tags": catalog_weapon.get("tags", []),
+        "build_tags": catalog_weapon.get("build_tags", []),
         "effects": catalog_weapon.get("effects", {}),
         "stack_key": str(catalog_weapon.get("stack_key", weapon_id)),
         "attack_profile": attack_profile.duplicate(true),
     }
+
+func _ensure_shop_system_runtime() -> void:
+    if _shop_system_runtime != null:
+        return
+    _shop_system_runtime = ShopSystemScript.new() as ShopSystem
+    _shop_system_runtime.setup(BalanceService.get_shop_catalog())
+
+func _refresh_weapon_tag_state_runtime(apply_effects: bool = true) -> void:
+    _ensure_shop_system_runtime()
+    if _shop_system_runtime == null:
+        return
+    _shop_runtime_state = _normalize_shop_runtime_state(_shop_runtime_state)
+    var tag_state: Dictionary = _shop_system_runtime.resolve_weapon_tag_state(_shop_runtime_state)
+    _shop_runtime_state["weapon_tag_state"] = tag_state
+    if apply_effects:
+        _apply_weapon_tag_effects_runtime(tag_state)
+
+func _apply_weapon_tag_effects_runtime(tag_state: Dictionary) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    _clear_applied_weapon_tag_effects()
+    if not bool(tag_state.get("enabled", false)):
+        return
+    var effects_raw: Variant = tag_state.get("preview_effects", [])
+    if not (effects_raw is Array):
+        return
+    var effects: Array = effects_raw
+    for effect_value: Variant in effects:
+        if not (effect_value is Dictionary):
+            continue
+        var effect: Dictionary = (effect_value as Dictionary).duplicate(true)
+        var effect_type: String = str(effect.get("type", "")).strip_edges()
+        if effect_type.is_empty():
+            continue
+        if not WEAPON_TAG_ADDITIVE_EFFECT_TYPES.has(effect_type) and not WEAPON_TAG_MULTIPLIER_EFFECT_TYPES.has(effect_type):
+            continue
+        var effect_amount: Variant = effect.get("value", 0)
+        if _player.apply_effect(effect_type, effect_amount):
+            _weapon_tag_applied_effects.append(
+                {
+                    "type": effect_type,
+                    "value": effect_amount,
+                }
+            )
+
+func _clear_applied_weapon_tag_effects() -> void:
+    if _player == null or not is_instance_valid(_player):
+        _weapon_tag_applied_effects.clear()
+        return
+    for i: int in range(_weapon_tag_applied_effects.size() - 1, -1, -1):
+        var effect: Dictionary = _weapon_tag_applied_effects[i]
+        _apply_inverse_weapon_tag_effect(effect)
+    _weapon_tag_applied_effects.clear()
+
+func _apply_inverse_weapon_tag_effect(effect: Dictionary) -> void:
+    var effect_type: String = str(effect.get("type", "")).strip_edges()
+    if effect_type.is_empty():
+        return
+    if WEAPON_TAG_ADDITIVE_EFFECT_TYPES.has(effect_type):
+        _player.apply_effect(effect_type, -float(effect.get("value", 0.0)))
+        return
+    if not WEAPON_TAG_MULTIPLIER_EFFECT_TYPES.has(effect_type):
+        return
+    var value: float = float(effect.get("value", 1.0))
+    if is_zero_approx(value):
+        return
+    var inverse_value: float = 1.0 / value
+    _player.apply_effect(effect_type, inverse_value)
 
 func _get_weapon_catalog_entry(weapon_id: String) -> Dictionary:
     var catalog: Dictionary = BalanceService.get_shop_catalog()

@@ -63,8 +63,8 @@ data.reward.atk_rate_8.name,攻速 +8%,Attack Speed +8%
 data.reward.atk_rate_8.desc,自动攻击间隔 -6%,Auto-attack interval -6%
 data.reward.crit_chance_8.name,暴击率 +8%,Crit Chance +8%
 data.reward.crit_chance_8.desc,更容易触发暴击,Higher chance to trigger crit
-data.reward.crit_damage_25.name,暴伤 +25%,Crit Damage +25%
-data.reward.crit_damage_25.desc,暴击伤害倍率 +0.18,Crit multiplier +0.18
+data.reward.crit_damage_25.name,暴击率 +2.2%,Crit Chance +2.2%
+data.reward.crit_damage_25.desc,提升暴击触发概率,Increase crit trigger chance
 data.reward.lifesteal_3.name,吸血 +3%,Lifesteal +3%
 data.reward.lifesteal_3.desc,伤害转化为生命回复,Convert damage into healing
 data.reward.stamina_regen_10.name,体力回复 +10%,Stamina Regen +10%
@@ -84,7 +84,7 @@ data.reward.precision_calibration.desc,暴击率基础值提升（随稀有度�
 data.reward.burst_gears.name,爆发齿轮,Burst Gears
 data.reward.burst_gears.desc,攻击间隔缩短（随稀有度提升数值）,Attack interval reduced with rarity
 data.reward.impact_matrix.name,冲击矩阵,Impact Matrix
-data.reward.impact_matrix.desc,攻击与暴伤同步提升（随稀有度提升数值）,ATK and crit damage scale with rarity
+data.reward.impact_matrix.desc,攻击与暴击率同步提升（随稀有度提升数值）,ATK and crit chance scale with rarity
 data.reward.fortified_lining.name,强化衬层,Fortified Lining
 data.reward.fortified_lining.desc,护甲提升（随稀有度提升数值）,Armor scales with rarity
 data.reward.phase_shift.name,相位偏移,Phase Shift
