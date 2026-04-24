@@ -54,7 +54,61 @@ func tf(key: String, args: Array = [], fallback: String = "") -> String:
 	var text: String = tx(key, fallback if not fallback.is_empty() else key)
 	if args.is_empty():
 		return text
-	return text % args
+	var placeholder_count: int = _count_format_placeholders(text)
+	if placeholder_count <= 0:
+		push_warning(
+			"LocaleService.tf format mismatch (no placeholders): key=%s text=%s args=%s"
+			% [key, text, str(args)]
+		)
+		return text
+	if args.size() < placeholder_count:
+		push_warning(
+			"LocaleService.tf format mismatch (not enough args): key=%s text=%s args=%s"
+			% [key, text, str(args)]
+		)
+		return fallback if not fallback.is_empty() else text
+
+	var format_args: Variant
+	if placeholder_count == 1:
+		format_args = args[0]
+	else:
+		var trimmed: Array = []
+		for i: int in range(placeholder_count):
+			trimmed.append(args[i])
+		format_args = trimmed
+
+	if args.size() != placeholder_count:
+		push_warning(
+			"LocaleService.tf format mismatch (arg count adjusted): key=%s text=%s args=%s placeholders=%d"
+			% [key, text, str(args), placeholder_count]
+		)
+	return text % format_args
+
+func _count_format_placeholders(text: String) -> int:
+	var count: int = 0
+	var i: int = 0
+	while i < text.length():
+		if text[i] != "%":
+			i += 1
+			continue
+		if i + 1 < text.length() and text[i + 1] == "%":
+			i += 2
+			continue
+		count += 1
+		var j: int = i + 1
+		while j < text.length():
+			var token: String = text[j]
+			if _is_format_specifier(token):
+				break
+			if token == "%":
+				j -= 1
+				break
+			j += 1
+		i = max(i + 1, j + 1)
+	return count
+
+func _is_format_specifier(token: String) -> bool:
+	return token.length() == 1 and "bcdoOxXeEfgGaAs".contains(token)
 
 func t_data(kind: String, id: String, field: String, fallback: String = "") -> String:
 	if kind.is_empty() or id.is_empty() or field.is_empty():

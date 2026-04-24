@@ -6,6 +6,8 @@ const SLOT_IDS: PackedStringArray = ["slot_1", "slot_2", "slot_3"]
 const XP_CURVE_LEVEL_OFFSET_DEFAULT: int = 3
 const XP_CURVE_BASE_MULT_DEFAULT: float = 1.0
 const XP_REQUIRED_MIN_DEFAULT: int = 1
+const ATTACK_FLAT_TO_GLOBAL_ATTACK_PERCENT_DEFAULT: float = 3.0
+const CRIT_MULTIPLIER_TO_CRIT_CHANCE_RATIO_DEFAULT: float = 0.12
 const DEFAULT_SETTINGS: Dictionary = {
     "display": {
         "resolution": "1920x1080", 
@@ -181,21 +183,46 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
     normalized["player_stamina_max"] = float(input_data.get("player_stamina_max", 100.0))
     normalized["player_move_speed"] = float(input_data.get("player_move_speed", 220.0))
     normalized["bonus_target_range"] = float(input_data.get("bonus_target_range", 0.0))
-    normalized["bonus_attack_damage"] = int(input_data.get("bonus_attack_damage", 0))
+    var legacy_bonus_attack_damage: int = int(input_data.get("bonus_attack_damage", 0))
+    normalized["bonus_attack_damage"] = legacy_bonus_attack_damage
     var player_stats_value: Variant = input_data.get("player_stats", {})
     if player_stats_value is Dictionary:
-        normalized["player_stats"] = player_stats_value
+        normalized["player_stats"] = (player_stats_value as Dictionary).duplicate(true)
     else:
         normalized["player_stats"] = {}
+    var normalized_player_stats: Dictionary = normalized.get("player_stats", {})
+    if (
+        legacy_bonus_attack_damage != 0
+        and not normalized_player_stats.has("global_attack_percent")
+    ):
+        normalized_player_stats["global_attack_percent"] = (
+            float(legacy_bonus_attack_damage) * _get_attack_flat_to_global_attack_percent()
+        )
+    if not normalized_player_stats.has("global_attack_percent"):
+        normalized_player_stats["global_attack_percent"] = 0.0
+    if not normalized_player_stats.has("luck"):
+        normalized_player_stats["luck"] = 0.0
+    if not normalized_player_stats.has("harvest"):
+        normalized_player_stats["harvest"] = 0.0
+    if not normalized_player_stats.has("hp_regen"):
+        normalized_player_stats["hp_regen"] = 0.0
+    if normalized_player_stats.has("crit_multiplier"):
+        var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
+        var character_profile: Dictionary = BalanceService.get_character_profile(selected_character_id)
+        var base_crit_multiplier: float = max(1.0, float(character_profile.get("crit_multiplier", 1.5)))
+        var legacy_crit_multiplier: float = max(1.0, float(normalized_player_stats.get("crit_multiplier", base_crit_multiplier)))
+        var delta_crit_multiplier: float = legacy_crit_multiplier - base_crit_multiplier
+        if absf(delta_crit_multiplier) > 0.0001:
+            var base_crit_chance: float = float(character_profile.get("crit_chance", 0.05))
+            var existing_crit_chance: float = float(normalized_player_stats.get("crit_chance", base_crit_chance))
+            normalized_player_stats["crit_chance"] = existing_crit_chance + delta_crit_multiplier * _get_crit_multiplier_to_crit_chance_ratio()
+        normalized_player_stats.erase("crit_multiplier")
+    normalized["player_stats"] = normalized_player_stats
     var current_level: int = max(1, int(input_data.get("current_level", 1)))
     normalized["current_level"] = current_level
     normalized["current_xp"] = max(0, int(input_data.get("current_xp", 0)))
     normalized["current_gold"] = max(0, int(input_data.get("current_gold", 0)))
-    var shop_state_value: Variant = input_data.get("shop_runtime_state", {})
-    if shop_state_value is Dictionary:
-        normalized["shop_runtime_state"] = shop_state_value
-    else:
-        normalized["shop_runtime_state"] = {}
+    normalized["shop_runtime_state"] = _normalize_shop_runtime_state(input_data.get("shop_runtime_state", {}))
     normalized["equipped_weapons"] = _normalize_variant_array(input_data.get("equipped_weapons", []))
     normalized["locked_shop_offers"] = _normalize_variant_array(input_data.get("locked_shop_offers", []))
     normalized["reward_history"] = _normalize_string_array(input_data.get("reward_history", []))
@@ -331,6 +358,20 @@ func _resolve_character_xp_required_multiplier(character_id: String) -> float:
     var character_profile: Dictionary = BalanceService.get_character_profile(character_id)
     return clampf(float(character_profile.get("xp_required_mult", 1.0)), 0.2, 5.0)
 
+func _get_attack_flat_to_global_attack_percent() -> float:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    return max(
+        0.0,
+        float(combat_params.get("attack_flat_to_global_attack_percent", ATTACK_FLAT_TO_GLOBAL_ATTACK_PERCENT_DEFAULT))
+    )
+
+func _get_crit_multiplier_to_crit_chance_ratio() -> float:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    return max(
+        0.0,
+        float(combat_params.get("crit_multiplier_to_crit_chance_ratio", CRIT_MULTIPLIER_TO_CRIT_CHANCE_RATIO_DEFAULT))
+    )
+
 func _default_save() -> Dictionary:
     return {
         "unlocked_characters": ["the_fool"], 
@@ -351,11 +392,22 @@ func _default_save() -> Dictionary:
         "player_move_speed": 220.0, 
         "bonus_target_range": 0.0, 
         "bonus_attack_damage": 0, 
-        "player_stats": {},
+        "player_stats": {
+            "global_attack_percent": 0.0,
+            "harvest": 0.0,
+            "hp_regen": 0.0,
+        },
         "current_level": 1, 
         "current_xp": 0, 
         "current_gold": 0, 
-        "shop_runtime_state": {},
+        "shop_runtime_state": {
+            "equipped_weapons": [],
+            "inventory_overflow": [],
+            "locked_shop_offers": [],
+            "refresh_count": 0,
+            "shop_locked": false,
+            "owned_items": [],
+        },
         "equipped_weapons": [],
         "locked_shop_offers": [],
         "reward_history": [],
@@ -394,6 +446,25 @@ func _normalize_variant_array(value: Variant) -> Array:
         var raw: Array = value
         return raw.duplicate(true)
     return []
+
+func _normalize_shop_runtime_state(value: Variant) -> Dictionary:
+    var normalized: Dictionary = {
+        "equipped_weapons": [],
+        "inventory_overflow": [],
+        "locked_shop_offers": [],
+        "refresh_count": 0,
+        "shop_locked": false,
+        "owned_items": [],
+    }
+    if value is Dictionary:
+        var source: Dictionary = value
+        normalized["equipped_weapons"] = _normalize_variant_array(source.get("equipped_weapons", []))
+        normalized["inventory_overflow"] = _normalize_variant_array(source.get("inventory_overflow", []))
+        normalized["locked_shop_offers"] = _normalize_variant_array(source.get("locked_shop_offers", []))
+        normalized["refresh_count"] = max(0, int(source.get("refresh_count", 0)))
+        normalized["owned_items"] = _normalize_variant_array(source.get("owned_items", []))
+    normalized["shop_locked"] = false
+    return normalized
 
 func _normalize_language(raw_value: String) -> String:
     if raw_value == "en_US":

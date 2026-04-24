@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://q72srgiec0jv" path="res://scripts/systems/wave_manager.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://cfew37lt2wtgt" path="res://scenes/ui/hud.tscn" id="3"]
 [ext_resource type="Shader" uid="uid://rngcbghhe148" path="res://shaders/crt_overlay.gdshader" id="4"]
-[ext_resource type="Script" uid="uid://dp0h4ow8wmo1i" path="res://scripts/ui/neon_option_button.gd" id="5"]
+[ext_resource type="Script" uid="uid://bluorya04gmv1" path="res://scripts/ui/neon_option_button.gd" id="5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
 shader = ExtResource("4")

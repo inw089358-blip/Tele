@@ -37,6 +37,9 @@ var _pending_slot_data: Dictionary = {}
 var _pending_shop_snapshot: Dictionary = {}
 var _scene_transition_busy: bool = false
 
+func is_scene_transition_busy() -> bool:
+    return _scene_transition_busy
+
 func _ready() -> void :
     _apply_settings_from_save()
     change_state(GameState.MENU)

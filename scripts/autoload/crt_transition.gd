@@ -79,7 +79,7 @@ func _play_transition(
     from_value: float,
     to_value: float,
     duration: float,
-    play_hum: bool,
+    _play_hum: bool,
     ease_type: Tween.EaseType,
     hold_line: bool,
     show_line: bool

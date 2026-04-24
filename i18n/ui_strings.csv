@@ -131,11 +131,25 @@ ui.shop.sold_out,已售罄,Sold Out
 ui.shop.buy_fmt,购买 - %dG,Buy - %dG
 ui.shop.offer_title_fmt,%s [%s],%s [%s]
 ui.shop.stats_title_bb,[b]属性[/b],[b]Stats[/b]
-ui.shop.stat_atk_bonus,攻击加成：%d,ATK Bonus: %d
-ui.shop.stat_range_bonus,射程加成：%.0f,Range Bonus: %.0f
+
+ui.shop.stat_global_atk_percent,全局攻击：%.1f%%,Global ATK: %.1f%%
+
+ui.shop.stat_melee_bonus,近战攻击：%d,Melee ATK+: %d
+
+ui.shop.stat_ranged_bonus,远程攻击：%d,Ranged ATK+: %d
+
+ui.shop.stat_luck,幸运：%.1f,Luck: %.1f
+
+ui.shop.stat_harvest,收获：%.1f,Harvest: %.1f
+
+ui.shop.stat_max_hp,最大生命值：%d,Max HP: %d
+ui.shop.stat_hp_regen,生命再生：%.1f,HP Regen: %.1f
+ui.shop.stat_range_bonus,范围（攻击范围）：%.0f,Attack Range: %.0f
+ui.shop.stat_extra_move_speed,额外移速：%+.0f,Bonus Move Speed: %+.0f
 ui.shop.stat_move_speed,移速：%.0f,Move Speed: %.0f
 ui.shop.stat_armor,护甲：%.1f,Armor: %.1f
 ui.shop.stat_dodge,闪避：%.1f%%,Dodge: %.1f%%
+ui.shop.stat_extra_atk_speed,额外攻速：%+.1f%%,Bonus Atk Speed: %+.1f%%
 ui.shop.stat_atk_speed,攻速：%.2f,Atk Speed: %.2f
 ui.shop.stat_crit,暴击：%.1f%%,Crit: %.1f%%
 ui.shop.stat_crit_mult,暴伤：%.2f,Crit Mult: %.2f
@@ -272,3 +286,14 @@ ui.weapon_select.mode.melee_arc,近战弧击,Melee Arc
 "Refresh Shop (0/2) - 30G",刷新商店（0/2）- 30G,Refresh Shop (0/2) - 30G
 "Leave Supply Hub",离开补给站,Leave Supply Hub
 "[E] Interact",[E] 交互,[E] Interact
+msg.shop.offer_locked,已锁定该商品,Offer locked
+msg.shop.offer_unlocked,已解锁该商品,Offer unlocked
+ui.shop.offer_lock,锁定,Lock
+ui.shop.offer_unlock,解锁,Unlock
+ui.shop.no_image,无图片,No Image
+ui.shop.owned_items_title,道具,Items
+ui.shop.owned_items_empty,暂无道具,None
+ui.shop.owned_item_count_fmt,x%d,x%d
+ui.shop.equipped_weapons_title_fmt,武器（%d/%d）,Weapons (%d/%d)
+ui.shop.elite_hint_fmt,一个精英怪会出现在第%d波敌袭,An elite enemy will appear on wave %d
+ui.shop.elite_hint_none,暂无精英怪预告,No elite wave announced

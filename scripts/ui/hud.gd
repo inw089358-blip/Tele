@@ -40,11 +40,11 @@ func _process(delta: float) -> void:
 func _on_wave_started(wave_id: int) -> void :
     set_status_entries(_build_preview_status_entries(wave_id))
 
-func set_stage_timer(visible: bool, value_text: String = "", tint: Color = Color(0.82, 0.96, 1.0, 0.95)) -> void:
+func set_stage_timer(is_visible: bool, value_text: String = "", tint: Color = Color(0.82, 0.96, 1.0, 0.95)) -> void:
     if stage_timer_label == null:
         return
-    stage_timer_label.visible = visible
-    if not visible:
+    stage_timer_label.visible = is_visible
+    if not is_visible:
         return
     stage_timer_label.text = value_text
     stage_timer_label.modulate = tint

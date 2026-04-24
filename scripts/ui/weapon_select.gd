@@ -37,6 +37,9 @@ var _weapon_icon_cache: Dictionary = {}
 var _style_unselected: StyleBoxFlat
 var _style_hover: StyleBoxFlat
 var _style_selected: StyleBoxFlat
+var _scene_input_ready: bool = false
+var _queued_action: Callable = Callable()
+var _queued_action_id: String = ""
 
 func _ready() -> void :
     if not _validate_ui_nodes():
@@ -49,6 +52,7 @@ func _ready() -> void :
     _refresh_selection_ui()
     await get_tree().process_frame
     _scroll_selected_button_into_view(false)
+    _arm_scene_ready_gate()
 
 func _unhandled_input(event: InputEvent) -> void :
     if event.is_action_pressed("cancel"):
@@ -56,13 +60,13 @@ func _unhandled_input(event: InputEvent) -> void :
     elif event.is_action_pressed("confirm"):
         _on_confirm_pressed()
     elif event.is_action_pressed("ui_left"):
-        _move_selection(-1)
+        _invoke_or_queue("weapon_nav_left", Callable(self, "_do_nav_left"))
     elif event.is_action_pressed("ui_right"):
-        _move_selection(1)
+        _invoke_or_queue("weapon_nav_right", Callable(self, "_do_nav_right"))
     elif event.is_action_pressed("ui_up"):
-        _move_selection(-WEAPON_GRID_COLUMNS)
+        _invoke_or_queue("weapon_nav_up", Callable(self, "_do_nav_up"))
     elif event.is_action_pressed("ui_down"):
-        _move_selection(WEAPON_GRID_COLUMNS)
+        _invoke_or_queue("weapon_nav_down", Callable(self, "_do_nav_down"))
 
 func _bind_buttons() -> void:
     confirm_button.pressed.connect(_on_confirm_pressed)
@@ -160,9 +164,10 @@ func _get_weapon_icon(weapon_id: String) -> Texture2D:
     return icon
 
 func _on_weapon_selected(weapon_id: String) -> void:
-    _selected_weapon_id = weapon_id
-    _refresh_selection_ui()
-    _scroll_selected_button_into_view(true)
+    _invoke_or_queue(
+        "weapon_select_%s" % weapon_id,
+        Callable(self, "_do_weapon_select").bind(weapon_id)
+    )
 
 func _refresh_selection_ui() -> void:
     title_label.text = _tx("ui.weapon_select.title", "Select Starter Weapon")
@@ -203,13 +208,10 @@ func _find_weapon_by_id(weapon_id: String) -> Dictionary:
     return {}
 
 func _on_confirm_pressed() -> void:
-    if _selected_weapon_id.is_empty():
-        return
-    GameManager.go_to_difficulty_select_with_weapon(_selected_weapon_id)
+    _invoke_or_queue("weapon_confirm", Callable(self, "_do_confirm"))
 
 func _on_back_pressed() -> void:
-    GameManager.selected_starter_weapon_id = ""
-    GameManager.go_to_character_select()
+    _invoke_or_queue("weapon_back", Callable(self, "_do_back"))
 
 func _move_selection(delta: int) -> void:
     if _starter_weapons.is_empty():
@@ -223,6 +225,32 @@ func _move_selection(delta: int) -> void:
     _selected_weapon_id = str(_starter_weapons[next_index].get("weapon_id", ""))
     _refresh_selection_ui()
     _scroll_selected_button_into_view(true)
+
+func _do_nav_left() -> void:
+    _move_selection(-1)
+
+func _do_nav_right() -> void:
+    _move_selection(1)
+
+func _do_nav_up() -> void:
+    _move_selection(-WEAPON_GRID_COLUMNS)
+
+func _do_nav_down() -> void:
+    _move_selection(WEAPON_GRID_COLUMNS)
+
+func _do_weapon_select(weapon_id: String) -> void:
+    _selected_weapon_id = weapon_id
+    _refresh_selection_ui()
+    _scroll_selected_button_into_view(true)
+
+func _do_confirm() -> void:
+    if _selected_weapon_id.is_empty():
+        return
+    GameManager.go_to_difficulty_select_with_weapon(_selected_weapon_id)
+
+func _do_back() -> void:
+    GameManager.selected_starter_weapon_id = ""
+    GameManager.go_to_character_select()
 
 func _get_selected_index() -> int:
     for i: int in range(_starter_weapons.size()):
@@ -308,3 +336,40 @@ func _tf(key: String, args: Array, fallback: String = "") -> String:
         return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
     var base: String = fallback if not fallback.is_empty() else key
     return base % args
+
+func _arm_scene_ready_gate() -> void:
+    _scene_input_ready = false
+    call_deferred("_await_scene_input_ready")
+
+func _await_scene_input_ready() -> void:
+    await get_tree().process_frame
+    var guard: int = 0
+    while _is_scene_transition_pending() and guard < 180:
+        guard += 1
+        await get_tree().process_frame
+    await get_tree().process_frame
+    await get_tree().process_frame
+    _scene_input_ready = true
+    _flush_queued_action()
+
+func _invoke_or_queue(action_id: String, action: Callable) -> void:
+    if _scene_input_ready and not _is_scene_transition_pending():
+        action.call()
+        return
+    if _queued_action_id.is_empty():
+        _queued_action_id = action_id
+        _queued_action = action
+        subtitle_label.text = _tx("msg.common.loading_short", "Loading...")
+
+func _flush_queued_action() -> void:
+    if not _queued_action.is_valid():
+        return
+    var queued: Callable = _queued_action
+    _queued_action = Callable()
+    _queued_action_id = ""
+    queued.call_deferred()
+
+func _is_scene_transition_pending() -> bool:
+    var gm_busy: bool = GameManager != null and GameManager.has_method("is_scene_transition_busy") and bool(GameManager.call("is_scene_transition_busy"))
+    var crt_busy: bool = CRTTransition != null and CRTTransition.has_method("is_busy") and bool(CRTTransition.call("is_busy"))
+    return gm_busy or crt_busy

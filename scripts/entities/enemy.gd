@@ -2,6 +2,7 @@
 extends CharacterBody2D
 
 static var _runtime_texture_cache: Dictionary = {}
+const ENEMY_DEATH_VISUAL_FX_SCRIPT: Script = preload("res://scripts/effects/enemy_death_visual_fx.gd")
 
 enum EnemyType {
     MELEE,
@@ -12,6 +13,7 @@ enum EnemyType {
 
 signal died(enemy: Enemy)
 signal enemy_projectile_fired(
+    shooter: Enemy,
     origin: Vector2,
     direction: Vector2,
     speed: float,
@@ -39,12 +41,9 @@ var _visual_flip_with_velocity: bool = true
 var _visual_anim_time: float = 0.0
 var _visual_anim_frame_index: int = 0
 var _visual_has_sprite: bool = false
-var _death_anim_active: bool = false
 var _death_frames: Array[int] = []
 var _death_anim_fps: float = 10.0
 var _death_hold_seconds: float = 0.1
-var _death_elapsed: float = 0.0
-var _death_playback_finished: bool = false
 
 func _ready() -> void :
     _apply_profile_from_balance()
@@ -66,7 +65,6 @@ func _physics_process(delta: float) -> void :
     if GameManager.current_state != GameManager.GameState.PLAYING:
         return
     if _is_dead:
-        _tick_death_animation(delta)
         return
     if _target == null:
         _tick_visual_animation(delta)
@@ -97,7 +95,7 @@ func try_fire_projectile(
         return
     if direction.length_squared() <= 0.0001:
         return
-    enemy_projectile_fired.emit(global_position, direction.normalized(), speed, damage, hit_radius, life_time, tint)
+    enemy_projectile_fired.emit(self, global_position, direction.normalized(), speed, damage, hit_radius, life_time, tint)
 
 func take_damage(amount: int) -> int:
     if _is_dead:
@@ -174,9 +172,6 @@ func _setup_visual_from_config(config: Dictionary) -> void:
     _death_hold_seconds = max(0.0, float(config.get("death_hold_seconds", 0.1)))
     _visual_anim_time = 0.0
     _visual_anim_frame_index = 0
-    _death_anim_active = false
-    _death_elapsed = 0.0
-    _death_playback_finished = false
     _visual_sprite = sprite
     _visual_has_sprite = true
     _apply_visual_frame()
@@ -193,7 +188,7 @@ func _sanitize_visual_frames(raw_frames: Variant, total_frames: int) -> Array[in
     return result
 
 func _tick_visual_animation(delta: float) -> void:
-    if _is_dead or _death_anim_active:
+    if _is_dead:
         return
     if not _visual_has_sprite or _visual_sprite == null:
         return
@@ -221,54 +216,36 @@ func _apply_visual_frame() -> void:
 func _enter_death_state_or_free() -> void:
     velocity = Vector2.ZERO
     _target = null
-    if not _can_play_death_animation():
-        queue_free()
-        return
-    _death_anim_active = true
-    _death_playback_finished = false
-    _death_elapsed = 0.0
-    _visual_anim_time = 0.0
-    _visual_anim_frame_index = 0
-    _apply_death_visual_frame()
+    _spawn_death_visual_fx()
+    queue_free()
 
-func _can_play_death_animation() -> bool:
-    return _visual_has_sprite and _visual_sprite != null and not _death_frames.is_empty()
-
-func _tick_death_animation(delta: float) -> void:
-    if not _death_anim_active:
+func _spawn_death_visual_fx() -> void:
+    if not _visual_has_sprite:
         return
     if _visual_sprite == null or _death_frames.is_empty():
-        _death_anim_active = false
-        queue_free()
         return
-
-    if _death_playback_finished:
-        _death_elapsed += delta
-        if _death_elapsed >= _death_hold_seconds:
-            _death_anim_active = false
-            queue_free()
+    if ENEMY_DEATH_VISUAL_FX_SCRIPT == null:
         return
-
-    var frame_step: float = 1.0 / max(0.01, _death_anim_fps)
-    _visual_anim_time += delta
-    while _visual_anim_time >= frame_step and not _death_playback_finished:
-        _visual_anim_time -= frame_step
-        if _visual_anim_frame_index < _death_frames.size() - 1:
-            _visual_anim_frame_index += 1
-            _apply_death_visual_frame()
-        else:
-            _death_playback_finished = true
-            _death_elapsed = 0.0
-            _visual_anim_time = 0.0
-            break
-    if not _death_playback_finished:
-        _apply_death_visual_frame()
-
-func _apply_death_visual_frame() -> void:
-    if _visual_sprite == null or _death_frames.is_empty():
+    var parent: Node = get_parent()
+    if parent == null or not is_instance_valid(parent):
         return
-    var safe_index: int = clampi(_visual_anim_frame_index, 0, _death_frames.size() - 1)
-    _visual_sprite.frame = _death_frames[safe_index]
+    var fx: Node2D = ENEMY_DEATH_VISUAL_FX_SCRIPT.new() as Node2D
+    if fx == null:
+        return
+    parent.add_child(fx)
+    fx.global_position = global_position
+    fx.call(
+        "setup_from_enemy",
+        _visual_sprite.texture,
+        _visual_sprite.hframes,
+        _visual_sprite.vframes,
+        _visual_sprite.scale,
+        _visual_sprite.flip_h,
+        _death_frames.duplicate(),
+        _death_anim_fps,
+        _death_hold_seconds,
+        _visual_sprite.z_index
+    )
 
 func _clear_visual_sprite() -> void:
     if _visual_sprite != null and is_instance_valid(_visual_sprite):
@@ -280,12 +257,9 @@ func _clear_visual_sprite() -> void:
     _visual_anim_time = 0.0
     _visual_anim_frame_index = 0
     _visual_has_sprite = false
-    _death_anim_active = false
     _death_frames.clear()
     _death_anim_fps = 10.0
     _death_hold_seconds = 0.1
-    _death_elapsed = 0.0
-    _death_playback_finished = false
 
 func _load_texture_with_runtime_fallback(path: String) -> Texture2D:
     if path.is_empty():

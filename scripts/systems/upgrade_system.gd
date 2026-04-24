@@ -20,6 +20,8 @@ const LEVELUP_ALLOWED_EFFECT_TYPES: Dictionary = {
     "dodge_chance_flat": true,
     "max_hp_flat": true,
     "lifesteal_flat": true,
+    "luck_flat": true,
+    "harvest_flat": true,
     "move_speed_flat": true,
     "target_range_flat": true,
     "stamina_recover_mult": true,
@@ -38,6 +40,8 @@ const LEVELUP_ALLOWED_REWARD_IDS: Dictionary = {
     "crit_chance_8": true,
     "crit_damage_25": true,
     "lifesteal_3": true,
+    "luck_up_8": true,
+    "fortune_protocol": true,
     "stamina_regen_10": true,
 }
 
@@ -47,6 +51,7 @@ static func build_reward_context(run_state: Dictionary) -> Dictionary:
         "level": int(run_state.get("level", 1)),
         "hp_ratio": float(run_state.get("hp_ratio", 1.0)),
         "difficulty": str(run_state.get("difficulty", "normal")),
+        "luck": float(run_state.get("luck", 0.0)),
         "build_tags": run_state.get("build_tags", []),
         "history": run_state.get("history", []),
         "recent_categories": run_state.get("recent_categories", []),
@@ -69,6 +74,8 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
     var pity_state: Dictionary = context.get("pity_state", {"no_output_streak": 0})
     var no_output_streak: int = int(pity_state.get("no_output_streak", 0))
     var owned_rewards: Dictionary = context.get("owned_rewards", {})
+    var luck_value: float = float(context.get("luck", 0.0))
+    var luck_rarity_step: float = _get_luck_rarity_step()
 
     var rarity_weights_by_stage: Dictionary = catalog.get("rarity_weights_by_stage", {})
     var stage_rarity_weights: Dictionary = rarity_weights_by_stage.get(stage_id, rarity_weights_by_stage.get("stage_001", {"common": 1.0}))
@@ -114,7 +121,12 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
         var rarity_tiers: Array[String] = _resolve_reward_rarity_tiers(reward)
         var category_weight: float = max(0.01, float(pool_weights.get(category, 1.0)))
         for rarity_tier: String in rarity_tiers:
-            var rarity_weight: float = max(0.0, float(stage_rarity_weights.get(rarity_tier, 0.0)))
+            var rarity_weight: float = _adjust_rarity_weight_by_luck(
+                rarity_tier,
+                max(0.0, float(stage_rarity_weights.get(rarity_tier, 0.0))),
+                luck_value,
+                luck_rarity_step
+            )
             if rarity_weight <= 0.0:
                 continue
             var runtime_reward: Dictionary = reward.duplicate(true)
@@ -284,6 +296,32 @@ static func _resolve_reward_rarity_tiers(reward: Dictionary) -> Array[String]:
             fallback_rarity = "common"
         result.append(fallback_rarity)
     return result
+
+static func _adjust_rarity_weight_by_luck(rarity_tier: String, base_weight: float, luck_value: float, luck_step: float) -> float:
+    if base_weight <= 0.0:
+        return 0.0
+    var tier_index: int = _rarity_tier_index(rarity_tier)
+    var modifier: float = max(0.1, 1.0 + luck_value * luck_step * float(tier_index))
+    return max(0.0, base_weight * modifier)
+
+static func _rarity_tier_index(rarity_tier: String) -> int:
+    match rarity_tier.to_lower():
+        "common":
+            return 0
+        "uncommon":
+            return 1
+        "rare":
+            return 2
+        "epic":
+            return 3
+        "legendary":
+            return 4
+        _:
+            return 0
+
+static func _get_luck_rarity_step() -> float:
+    var combat_params: Dictionary = BalanceService.get_global_combat_params()
+    return max(0.0, float(combat_params.get("luck_rarity_step", 0.012)))
 
 static func _extract_effects_array(raw_effects: Variant) -> Array:
     if raw_effects is Array:
