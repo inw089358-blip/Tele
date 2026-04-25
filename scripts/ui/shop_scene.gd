@@ -759,6 +759,7 @@ func _on_next_wave_pressed() -> void:
     _snapshot["shop_runtime_state"] = state
     _synchronize_locked_offers_state(false)
     _refresh_weapon_tag_state_snapshot()
+    _clear_shop_offer_locks_for_transition()
     _snapshot["shop_offers"] = _shop_offers.duplicate(true)
     GameManager.continue_from_shop(_snapshot)
 
@@ -861,6 +862,20 @@ func _synchronize_locked_offers_state(sync_snapshot_offers: bool) -> void:
     if sync_snapshot_offers:
         _snapshot["shop_offers"] = _shop_offers.duplicate(true)
 
+func _clear_shop_offer_locks_for_transition() -> void:
+    for i: int in range(_shop_offers.size()):
+        var offer: Dictionary = (_shop_offers[i] as Dictionary).duplicate(true)
+        offer["locked"] = false
+        offer["slot_index"] = int(offer.get("slot_index", i))
+        _shop_offers[i] = offer
+
+    var state: Dictionary = _snapshot.get("shop_runtime_state", {})
+    if not (state is Dictionary):
+        state = {}
+    state["locked_shop_offers"] = []
+    state["shop_locked"] = false
+    _snapshot["shop_runtime_state"] = state
+
 func _normalize_offer_list(raw: Variant) -> Array[Dictionary]:
     var result: Array[Dictionary] = []
     if not (raw is Array):
@@ -882,22 +897,52 @@ func _normalize_offer_list(raw: Variant) -> Array[Dictionary]:
 func _apply_locked_flags_from_state(offers: Array[Dictionary]) -> Array[Dictionary]:
     var state: Dictionary = _snapshot.get("shop_runtime_state", {})
     var locked_source: Array[Dictionary] = _normalize_locked_offers(state.get("locked_shop_offers", []))
-    var locked_slots: Dictionary = {}
+    var locked_by_offer_id: Dictionary = {}
+    var legacy_locked_slots: Dictionary = {}
     for locked_offer: Dictionary in locked_source:
         if bool(locked_offer.get("sold", false)):
             continue
-        locked_slots[int(locked_offer.get("slot_index", -1))] = true
+        var locked_offer_id: String = str(locked_offer.get("offer_id", ""))
+        if locked_offer_id.is_empty():
+            legacy_locked_slots[int(locked_offer.get("slot_index", -1))] = locked_offer
+            continue
+        locked_by_offer_id[locked_offer_id] = locked_offer
 
     var result: Array[Dictionary] = []
     for i: int in range(offers.size()):
         var offer: Dictionary = offers[i].duplicate(true)
         var slot_index: int = int(offer.get("slot_index", i))
         offer["slot_index"] = slot_index
-        offer["locked"] = bool(locked_slots.get(slot_index, false)) and not bool(offer.get("sold", false))
+        var is_locked: bool = false
+        var offer_id: String = str(offer.get("offer_id", ""))
+        if not offer_id.is_empty() and locked_by_offer_id.has(offer_id):
+            var locked_offer: Dictionary = locked_by_offer_id[offer_id]
+            is_locked = _offer_matches_locked_record(offer, locked_offer)
+        elif legacy_locked_slots.has(slot_index):
+            var legacy_locked_offer: Dictionary = legacy_locked_slots[slot_index]
+            is_locked = _offer_matches_locked_record(offer, legacy_locked_offer)
+        offer["locked"] = is_locked and not bool(offer.get("sold", false))
         if str(offer.get("icon_path", "")).is_empty():
             offer["icon_path"] = _resolve_offer_icon_path(offer)
         result.append(offer)
     return result
+
+func _offer_matches_locked_record(offer: Dictionary, locked_offer: Dictionary) -> bool:
+    var offer_slot: int = int(offer.get("slot_index", -1))
+    var locked_slot: int = int(locked_offer.get("slot_index", -1))
+    if offer_slot != locked_slot:
+        return false
+
+    var locked_offer_id: String = str(locked_offer.get("offer_id", ""))
+    if not locked_offer_id.is_empty():
+        return str(offer.get("offer_id", "")) == locked_offer_id
+
+    var offer_kind: String = str(offer.get("kind", ""))
+    if offer_kind != str(locked_offer.get("kind", "")):
+        return false
+    if offer_kind == "weapon":
+        return _extract_offer_weapon_id(offer) == _extract_offer_weapon_id(locked_offer)
+    return str(offer.get("item_id", "")) == str(locked_offer.get("item_id", ""))
 
 func _normalize_locked_offers(value: Variant) -> Array[Dictionary]:
     var result: Array[Dictionary] = []

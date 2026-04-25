@@ -2,6 +2,7 @@ class_name ExperienceOrb
 extends Node2D
 
 @export var xp_value: int = 5
+@export var gold_value: int = 0
 @export var magnet_radius: float = 120.0
 @export var magnet_speed: float = 480.0
 @export var collect_radius: float = 12.0
@@ -12,8 +13,9 @@ func _ready() -> void :
     process_mode = Node.PROCESS_MODE_PAUSABLE
     queue_redraw()
 
-func setup(value: int) -> void :
-    xp_value = max(1, value)
+func setup(xp_amount: int, gold_amount: int = 0) -> void :
+    xp_value = max(1, xp_amount)
+    gold_value = max(0, gold_amount)
 
 func tick_collect(player_position: Vector2, pickup_radius: float, delta: float) -> bool:
     if _collected:
