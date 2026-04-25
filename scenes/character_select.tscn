@@ -72,14 +72,15 @@ offset_bottom = 252.0
 theme_override_font_sizes/font_size = 56
 text = ">"
 
-[node name="CharacterSilhouette" type="ColorRect" parent="CharacterCenter/CharacterStage" unique_id=802120398]
+[node name="CharacterSilhouette" type="TextureRect" parent="CharacterCenter/CharacterStage" unique_id=802120398]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 330.0
 offset_top = 64.0
 offset_right = 590.0
 offset_bottom = 366.0
-color = Color(0.756863, 0.690196, 0.545098, 1)
+expand_mode = 1
+stretch_mode = 5
 
 [node name="CharacterNameLabel" type="Label" parent="CharacterCenter/CharacterStage" unique_id=1198274784]
 unique_name_in_owner = true

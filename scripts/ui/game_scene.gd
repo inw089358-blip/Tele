@@ -26,12 +26,11 @@ const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_are
 const MELEE_ARC_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_arc_effect.gd")
 const ShopSystemScript: Script = preload("res://scripts/systems/shop_system.gd")
 const WEAPON_ORBIT_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/"
-const WEAPON_ORBIT_ANGULAR_SPEED: float = 1.65
-const WEAPON_ORBIT_ICON_TARGET_WIDTH: float = 38.0
-const WEAPON_ORBIT_MIN_RADIUS: float = 30.0
-const WEAPON_ORBIT_MAX_RADIUS: float = 40.0
+const WEAPON_ORBIT_ICON_TARGET_WIDTH: float = 22.0
+const WEAPON_ORBIT_FORWARD_OFFSET: float = 29.0
+const WEAPON_ORBIT_SLOT_SPACING: float = 10.0
 const WEAPON_ORBIT_FLASH_DURATION: float = 0.11
-const WEAPON_ORBIT_FLASH_SCALE_MAX: float = 1.22
+const WEAPON_ORBIT_FLASH_SCALE_MAX: float = 1.12
 const WEAPON_ORBIT_BASE_TINT: Color = Color(0.86, 0.95, 1.0, 0.9)
 const WEAPON_ORBIT_FLASH_TINT: Color = Color(1.0, 1.0, 1.0, 1.0)
 const WEAPON_TAG_ADDITIVE_EFFECT_TYPES: Dictionary = {
@@ -63,6 +62,10 @@ var _contact_damage_timer: float = 0.0
 var _battle_elapsed: float = 0.0
 var _next_elite_spawn_time: float = 60.0
 var _elite_spawn_relief_timer: float = 0.0
+var _elite_schedule_enabled: bool = false
+var _elite_respawn_check_interval_runtime: float = 120.0
+var _elite_max_alive_runtime: int = 1
+var _elite_hp_override_runtime: int = 0
 var _enemies: Array[Enemy] = []
 var _projectiles: Array[Projectile] = []
 var _enemy_projectiles: Array[EnemyProjectile] = []
@@ -134,6 +137,7 @@ var _weapon_orbit_nodes: Dictionary = {}
 var _weapon_orbit_signatures: Dictionary = {}
 var _weapon_orbit_flash_timers: Dictionary = {}
 var _weapon_orbit_angle: float = 0.0
+var _weapon_orbit_aim_direction: Vector2 = Vector2.RIGHT
 var _weapon_orbit_icon_cache: Dictionary = {}
 var _weapon_orbit_placeholder_texture: Texture2D
 var _pause_transition_tween: Tween
@@ -266,6 +270,10 @@ func _reset_progress_state() -> void :
     _stage_clear_triggered = false
     _next_elite_spawn_time = ELITE_FIRST_SPAWN_TIME
     _elite_spawn_relief_timer = 0.0
+    _elite_schedule_enabled = false
+    _elite_respawn_check_interval_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+    _elite_max_alive_runtime = 1
+    _elite_hp_override_runtime = 0
     _active_elite = null
     _owned_weapon_rewards = {}
     _reward_history_runtime = []
@@ -717,10 +725,12 @@ func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy
     return enemy
 
 func _try_spawn_elite_by_schedule() -> void :
+    if not _elite_schedule_enabled:
+        return
     if _battle_elapsed < _next_elite_spawn_time:
         return
-    _next_elite_spawn_time += ELITE_RESPAWN_CHECK_INTERVAL
-    if _has_alive_elite():
+    _next_elite_spawn_time += _elite_respawn_check_interval_runtime
+    if _count_alive_elites() >= _elite_max_alive_runtime:
         return
     _spawn_elite()
 
@@ -736,11 +746,30 @@ func _has_alive_elite() -> bool:
     _active_elite = null
     return false
 
+func _count_alive_elites() -> int:
+    var count: int = 0
+    if _is_enemy_combat_active(_active_elite):
+        count += 1
+    for enemy: Enemy in _enemies:
+        if enemy == _active_elite:
+            continue
+        if not _is_enemy_combat_active(enemy):
+            continue
+        if enemy.is_elite:
+            count += 1
+    if count <= 0:
+        _active_elite = null
+    return count
+
 func _spawn_elite() -> void :
     if _player == null or not is_instance_valid(_player):
         return
     var elite_spawn: Vector2 = _random_spawn_position()
     var enemy: Enemy = _spawn_enemy(Enemy.EnemyType.ELITE_WARDEN, elite_spawn)
+    if _elite_hp_override_runtime > 0:
+        enemy.max_hp = _elite_hp_override_runtime
+        enemy.current_hp = enemy.max_hp
+        enemy.queue_redraw()
     _active_elite = enemy
     _elite_spawn_relief_timer = ELITE_SPAWN_RELIEF_DURATION
     print("[Elite] Spawned %s at %.2fs" % [enemy.get_display_name(), _battle_elapsed])
@@ -871,7 +900,7 @@ func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, h
     projectile.hit_radius = max(2.0, float(attack_profile.get("projectile_radius", 4.0)))
     projectile.crit_chance = _player.crit_chance
     projectile.crit_multiplier = _resolve_weapon_crit_multiplier(attack_profile)
-    projectile.lifesteal_ratio = _player.lifesteal
+    projectile.lifesteal_chance = _resolve_weapon_lifesteal_chance(attack_profile)
     projectile.owner_player = _player
     projectile.global_position = _player.global_position
     projectile.direction = (_player.global_position.direction_to(target_enemy.global_position)).normalized()
@@ -887,8 +916,8 @@ func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary) 
     _spawn_melee_arc_effect(impact_position, attack_profile)
     var base_damage: int = _resolve_weapon_damage(attack_profile)
     var crit_multiplier: float = _resolve_weapon_crit_multiplier(attack_profile)
+    var lifesteal_chance: float = _resolve_weapon_lifesteal_chance(attack_profile)
     var splash_radius: float = _resolve_melee_splash_radius(attack_profile)
-    var total_dealt_damage: int = 0
     for enemy: Enemy in _enemies:
         if not _is_enemy_combat_active(enemy):
             continue
@@ -896,9 +925,9 @@ func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary) 
         if impact_position.distance_squared_to(enemy.global_position) > hit_distance * hit_distance:
             continue
         var outgoing_damage: int = _player.roll_outgoing_damage(base_damage, _player.crit_chance, crit_multiplier)
-        total_dealt_damage += enemy.take_damage(outgoing_damage)
-    if total_dealt_damage > 0:
-        _player.heal_from_lifesteal(total_dealt_damage, _player.lifesteal)
+        var dealt_damage: int = enemy.take_damage(outgoing_damage)
+        if dealt_damage > 0:
+            _player.try_lifesteal_on_hit(lifesteal_chance)
     _cleanup_dead_enemies()
 
 func _resolve_weapon_damage(attack_profile: Dictionary) -> int:
@@ -913,6 +942,12 @@ func _resolve_weapon_damage(attack_profile: Dictionary) -> int:
 
 func _resolve_weapon_crit_multiplier(attack_profile: Dictionary) -> float:
     return max(1.0, float(attack_profile.get("crit_multiplier", 1.5)))
+
+func _resolve_weapon_lifesteal_chance(attack_profile: Dictionary) -> float:
+    if _player == null or not is_instance_valid(_player):
+        return 0.0
+    var weapon_lifesteal: float = float(attack_profile.get("lifesteal", attack_profile.get("lifesteal_chance", 0.0)))
+    return clampf(_player.lifesteal + weapon_lifesteal, 0.0, 1.0)
 
 func _resolve_mode_damage_bonus(mode: String) -> int:
     if _player == null or not is_instance_valid(_player):
@@ -985,7 +1020,6 @@ func _tick_weapon_orbit_visuals(delta: float) -> void:
     _sync_weapon_orbit_visuals()
     if _weapon_orbit_nodes.is_empty():
         return
-    _weapon_orbit_angle = wrapf(_weapon_orbit_angle + delta * WEAPON_ORBIT_ANGULAR_SPEED, 0.0, TAU)
     var active_slots: Array[int] = []
     for key in _weapon_orbit_nodes.keys():
         active_slots.append(int(key))
@@ -993,7 +1027,9 @@ func _tick_weapon_orbit_visuals(delta: float) -> void:
     if active_slots.is_empty():
         return
 
-    var radius: float = _resolve_weapon_orbit_radius(active_slots.size())
+    var aim_direction: Vector2 = _resolve_weapon_orbit_aim_direction()
+    var side_direction: Vector2 = aim_direction.orthogonal().normalized()
+    var middle_index: float = (float(active_slots.size()) - 1.0) * 0.5
     for i: int in range(active_slots.size()):
         var slot_index: int = active_slots[i]
         var sprite_value: Variant = _weapon_orbit_nodes.get(slot_index, null)
@@ -1002,9 +1038,9 @@ func _tick_weapon_orbit_visuals(delta: float) -> void:
         var sprite: Sprite2D = sprite_value
         if not is_instance_valid(sprite):
             continue
-        var angle: float = _weapon_orbit_angle + (TAU * float(i) / float(active_slots.size()))
-        sprite.position = Vector2.RIGHT.rotated(angle) * radius
-        sprite.rotation = angle + PI * 0.5
+        var slot_offset: float = (float(i) - middle_index) * WEAPON_ORBIT_SLOT_SPACING
+        sprite.position = aim_direction * WEAPON_ORBIT_FORWARD_OFFSET + side_direction * slot_offset
+        sprite.rotation = aim_direction.angle() + PI * 0.5
 
         var flash_left: float = max(0.0, float(_weapon_orbit_flash_timers.get(slot_index, 0.0)) - delta)
         if flash_left <= 0.0:
@@ -1017,6 +1053,33 @@ func _tick_weapon_orbit_visuals(delta: float) -> void:
         var flash_scale: float = lerpf(1.0, WEAPON_ORBIT_FLASH_SCALE_MAX, flash_t)
         sprite.scale = _resolve_weapon_orbit_base_scale(sprite) * flash_scale
         sprite.modulate = WEAPON_ORBIT_BASE_TINT.lerp(WEAPON_ORBIT_FLASH_TINT, flash_t)
+
+func _resolve_weapon_orbit_aim_direction() -> Vector2:
+    if _player == null or not is_instance_valid(_player):
+        return _weapon_orbit_aim_direction
+    var nearest_enemy: Enemy = _find_nearest_enemy_any_distance()
+    if nearest_enemy != null:
+        var enemy_direction: Vector2 = _player.global_position.direction_to(nearest_enemy.global_position)
+        if enemy_direction.length_squared() > 0.0001:
+            _weapon_orbit_aim_direction = enemy_direction.normalized()
+            return _weapon_orbit_aim_direction
+    if _player.velocity.length_squared() > 0.0001:
+        _weapon_orbit_aim_direction = _player.velocity.normalized()
+    return _weapon_orbit_aim_direction
+
+func _find_nearest_enemy_any_distance() -> Enemy:
+    if _player == null:
+        return null
+    var best_enemy: Enemy = null
+    var best_dist_sq: float = INF
+    for enemy: Enemy in _enemies:
+        if not _is_enemy_combat_active(enemy):
+            continue
+        var dist_sq: float = _player.global_position.distance_squared_to(enemy.global_position)
+        if dist_sq < best_dist_sq:
+            best_dist_sq = dist_sq
+            best_enemy = enemy
+    return best_enemy
 
 func _sync_weapon_orbit_visuals(force_rebuild: bool = false) -> void:
     if _player == null or not is_instance_valid(_player):
@@ -1154,9 +1217,7 @@ func _resolve_weapon_orbit_base_scale(sprite: Sprite2D) -> Vector2:
     return Vector2.ONE
 
 func _resolve_weapon_orbit_radius(active_weapon_count: int) -> float:
-    var clamped_count: int = clampi(active_weapon_count, 1, 6)
-    var ratio: float = float(clamped_count - 1) / 5.0
-    return lerpf(WEAPON_ORBIT_MIN_RADIUS, WEAPON_ORBIT_MAX_RADIUS, ratio)
+    return WEAPON_ORBIT_FORWARD_OFFSET + float(max(0, active_weapon_count - 1)) * 2.0
 
 func _trigger_weapon_orbit_flash(slot_index: int) -> void:
     if not _weapon_orbit_nodes.has(slot_index):
@@ -1215,7 +1276,7 @@ func _handle_projectile_hits() -> void :
                     )
                 var dealt_damage: int = enemy.take_damage(outgoing_damage)
                 if projectile_owner != null and is_instance_valid(projectile_owner):
-                    projectile_owner.heal_from_lifesteal(dealt_damage, projectile.lifesteal_ratio)
+                    projectile_owner.heal_from_lifesteal(dealt_damage, projectile.lifesteal_chance)
                 projectile.queue_free()
                 break
     _cleanup_dead_enemies()
@@ -1322,6 +1383,8 @@ func _update_experience_orbs(delta: float) -> void :
             continue
         if orb.tick_collect(_player.global_position, pickup_radius, delta):
             _add_experience(orb.xp_value)
+            if orb.gold_value > 0:
+                _add_gold(orb.gold_value)
             orb.queue_free()
             if _reward_opened:
                 break
@@ -1902,9 +1965,8 @@ func _on_enemy_died(enemy: Enemy) -> void :
         _active_elite = null
         if hud.has_method("hide_boss_bar"):
             hud.call("hide_boss_bar")
-    _add_gold(_resolve_enemy_gold_drop(enemy))
-    _add_gold(_roll_harvest_kill_bonus_gold())
-    _spawn_experience_orb(enemy.global_position, enemy.xp_drop_amount)
+    var gold_amount: int = _resolve_enemy_gold_drop(enemy) + _roll_harvest_kill_bonus_gold()
+    _spawn_experience_orb(enemy.global_position, enemy.xp_drop_amount, gold_amount)
 
 func _resolve_enemy_gold_drop(enemy: Enemy) -> int:
     var combat_params: Dictionary = BalanceService.get_global_combat_params()
@@ -1956,10 +2018,10 @@ func _roll_harvest_kill_bonus_gold() -> int:
         return 0
     return max(0, int(combat_params.get("harvest_kill_gold_amount", HARVEST_KILL_GOLD_AMOUNT_DEFAULT)))
 
-func _spawn_experience_orb(spawn_position: Vector2, xp_value: int) -> void :
+func _spawn_experience_orb(spawn_position: Vector2, xp_value: int, gold_value: int = 0) -> void :
     var orb: ExperienceOrb = ExperienceOrb.new()
     orb.global_position = spawn_position
-    orb.setup(xp_value)
+    orb.setup(xp_value, gold_value)
     add_child(orb)
     _experience_orbs.append(orb)
 
@@ -2363,7 +2425,6 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
     _active_elite = null
     _elite_spawn_relief_timer = 0.0
     _battle_elapsed = 0.0
-    _next_elite_spawn_time = ELITE_FIRST_SPAWN_TIME
     if hud.has_method("hide_boss_bar"):
         hud.call("hide_boss_bar")
 
@@ -2495,6 +2556,7 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     var stage_profile: Dictionary = BalanceService.get_stage_profile(stage_id)
     _stage_is_boss_stage = bool(stage_profile.get("is_boss_stage", false))
     _stage_background_key = str(stage_profile.get("background_key", "")).to_lower()
+    _apply_elite_schedule_from_stage_profile(stage_profile)
     _enemy_hp_stage_multiplier = clampf(float(stage_profile.get("enemy_hp_multiplier", 1.0)), 0.1, 3.0)
     _enemy_move_speed_stage_multiplier = clampf(
         float(stage_profile.get("enemy_move_speed_multiplier", 1.0)),
@@ -2508,6 +2570,31 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     _wave_duration_runtime = _stage_target_duration
     _apply_arena_size_from_background_texture()
     queue_redraw()
+
+func _apply_elite_schedule_from_stage_profile(stage_profile: Dictionary) -> void:
+    var elite_schedule_value: Variant = stage_profile.get("elite_schedule", {})
+    if not (elite_schedule_value is Dictionary):
+        _elite_schedule_enabled = false
+        _next_elite_spawn_time = INF
+        _elite_respawn_check_interval_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+        _elite_max_alive_runtime = 1
+        _elite_hp_override_runtime = 0
+        return
+    var elite_schedule: Dictionary = elite_schedule_value
+    _elite_schedule_enabled = bool(elite_schedule.get("enabled", false))
+    if not _elite_schedule_enabled:
+        _next_elite_spawn_time = INF
+        _elite_respawn_check_interval_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+        _elite_max_alive_runtime = 1
+        _elite_hp_override_runtime = 0
+        return
+    _next_elite_spawn_time = max(0.0, float(elite_schedule.get("first_spawn_time", ELITE_FIRST_SPAWN_TIME)))
+    _elite_respawn_check_interval_runtime = max(
+        1.0,
+        float(elite_schedule.get("respawn_check_interval", ELITE_RESPAWN_CHECK_INTERVAL))
+    )
+    _elite_max_alive_runtime = max(1, int(elite_schedule.get("max_alive", 1)))
+    _elite_hp_override_runtime = max(0, int(elite_schedule.get("elite_hp_override", 0)))
 
 func _sync_wave_runtime_from_manager() -> void:
     if wave_manager == null:

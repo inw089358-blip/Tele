@@ -36,8 +36,19 @@ var _attribute_rules: Dictionary = {}
 var _is_dead: bool = false
 var _attack_flat_to_global_attack_percent: float = 3.0
 var _crit_multiplier_to_crit_chance_ratio: float = 0.12
-var _hp_regen_tick_interval_seconds: float = 3.5
+var _hp_regen_first_hps: float = 0.2
+var _hp_regen_extra_hps_per_point: float = 0.089
 var _hp_regen_elapsed: float = 0.0
+var _lifesteal_internal_cooldown_seconds: float = 0.1
+var _lifesteal_cooldown_remaining: float = 0.0
+var _visual_sprite: Sprite2D
+var _visual_move_frames: Array[int] = []
+var _visual_anim_fps: float = 0.0
+var _visual_flip_with_velocity: bool = true
+var _visual_anim_time: float = 0.0
+var _visual_anim_frame_index: int = 0
+var _visual_idle_frame: int = 0
+var _visual_has_sprite: bool = false
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -55,6 +66,7 @@ func _physics_process(delta: float) -> void :
         return
     _try_start_dash()
     _dash_timer = max(0.0, _dash_timer - delta)
+    _lifesteal_cooldown_remaining = max(0.0, _lifesteal_cooldown_remaining - delta)
     if _dash_timer <= 0.0:
         current_stamina = min(stamina_max, current_stamina + stamina_recover_per_sec * delta)
     _tick_hp_regen(delta)
@@ -73,6 +85,7 @@ func _physics_process(delta: float) -> void :
     var speed_scale: float = dash_speed_multiplier if _dash_timer > 0.0 else 1.0
     velocity = move_vector.normalized() * move_speed * speed_scale
     move_and_slide()
+    _tick_visual_animation(delta)
 
 func take_damage(amount: int) -> int:
     if amount <= 0:
@@ -109,8 +122,129 @@ func _try_start_dash() -> void :
     _dash_timer = dash_duration
 
 func _draw() -> void :
-    draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.15, 0.12, 0.08, 0.85))
-    draw_circle(Vector2.ZERO, body_radius, Color(0.93, 0.86, 0.69, 1.0))
+    if not _visual_has_sprite:
+        draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.15, 0.12, 0.08, 0.85))
+        draw_circle(Vector2.ZERO, body_radius, Color(0.93, 0.86, 0.69, 1.0))
+
+func setup_visual_from_config(config: Dictionary) -> void:
+    _clear_visual_sprite()
+    var sprite_sheet_path: String = str(config.get("sprite_sheet_path", ""))
+    if sprite_sheet_path.is_empty():
+        queue_redraw()
+        return
+    var sprite_texture: Texture2D = _load_texture_with_runtime_fallback(sprite_sheet_path)
+    if sprite_texture == null:
+        queue_redraw()
+        return
+
+    var sprite: Sprite2D = Sprite2D.new()
+    sprite.name = "VisualSprite"
+    sprite.texture = sprite_texture
+    sprite.centered = true
+    sprite.hframes = max(1, int(config.get("hframes", 1)))
+    sprite.vframes = max(1, int(config.get("vframes", 1)))
+    sprite.scale = Vector2.ONE * max(0.01, float(config.get("scale", 1.0)))
+    sprite.z_index = 1
+    add_child(sprite)
+
+    var total_frames: int = max(1, sprite.hframes * sprite.vframes)
+    _visual_move_frames = _sanitize_visual_frames(config.get("move_frames", []), total_frames)
+    if _visual_move_frames.is_empty():
+        _visual_move_frames = [0]
+    _visual_idle_frame = clampi(int(config.get("idle_frame", _visual_move_frames[0])), 0, total_frames - 1)
+    _visual_anim_fps = max(0.0, float(config.get("anim_fps", 0.0)))
+    _visual_flip_with_velocity = bool(config.get("flip_with_velocity", true))
+    _visual_anim_time = 0.0
+    _visual_anim_frame_index = 0
+    _visual_sprite = sprite
+    _visual_has_sprite = true
+    _apply_visual_frame(_visual_idle_frame)
+    queue_redraw()
+
+func _sanitize_visual_frames(raw_frames: Variant, total_frames: int) -> Array[int]:
+    var result: Array[int] = []
+    if raw_frames is Array:
+        var source_frames: Array = raw_frames
+        for frame_value: Variant in source_frames:
+            var frame_index: int = int(frame_value)
+            if frame_index < 0 or frame_index >= total_frames:
+                continue
+            result.append(frame_index)
+    return result
+
+func _tick_visual_animation(delta: float) -> void:
+    if not _visual_has_sprite or _visual_sprite == null:
+        return
+    if _visual_flip_with_velocity and absf(velocity.x) > 0.01:
+        _visual_sprite.flip_h = velocity.x < 0.0
+    if velocity.length_squared() <= 0.01:
+        _visual_anim_time = 0.0
+        _visual_anim_frame_index = 0
+        _apply_visual_frame(_visual_idle_frame)
+        return
+    if _visual_move_frames.is_empty():
+        return
+    if _visual_anim_fps <= 0.0:
+        _apply_visual_frame(_visual_move_frames[0])
+        return
+
+    var frame_step: float = 1.0 / _visual_anim_fps
+    _visual_anim_time += delta
+    while _visual_anim_time >= frame_step:
+        _visual_anim_time -= frame_step
+        _visual_anim_frame_index = (_visual_anim_frame_index + 1) % _visual_move_frames.size()
+    var safe_index: int = clampi(_visual_anim_frame_index, 0, _visual_move_frames.size() - 1)
+    _apply_visual_frame(_visual_move_frames[safe_index])
+
+func _apply_visual_frame(frame_index: int) -> void:
+    if _visual_sprite == null:
+        return
+    _visual_sprite.frame = frame_index
+
+func _clear_visual_sprite() -> void:
+    if _visual_sprite != null and is_instance_valid(_visual_sprite):
+        _visual_sprite.queue_free()
+    _visual_sprite = null
+    _visual_move_frames.clear()
+    _visual_anim_fps = 0.0
+    _visual_flip_with_velocity = true
+    _visual_anim_time = 0.0
+    _visual_anim_frame_index = 0
+    _visual_idle_frame = 0
+    _visual_has_sprite = false
+
+func _load_texture_with_runtime_fallback(path: String) -> Texture2D:
+    if path.is_empty():
+        return null
+    var import_sidecar_path: String = "%s.import" % path
+    if FileAccess.file_exists(import_sidecar_path):
+        var imported_texture: Texture2D = load(path) as Texture2D
+        if imported_texture != null:
+            return imported_texture
+    if not FileAccess.file_exists(path):
+        return null
+    var file: FileAccess = FileAccess.open(path, FileAccess.READ)
+    if file == null:
+        return null
+    var encoded: PackedByteArray = file.get_buffer(file.get_length())
+    if encoded.is_empty():
+        return null
+
+    var image: Image = Image.new()
+    var ext: String = path.get_extension().to_lower()
+    var err: int = ERR_FILE_UNRECOGNIZED
+    match ext:
+        "png":
+            err = image.load_png_from_buffer(encoded)
+        "jpg", "jpeg":
+            err = image.load_jpg_from_buffer(encoded)
+        "webp":
+            err = image.load_webp_from_buffer(encoded)
+        _:
+            err = image.load_png_from_buffer(encoded)
+    if err != OK:
+        return null
+    return ImageTexture.create_from_image(image)
 
 func get_current_target_range() -> float:
     return max(80.0, base_target_range + bonus_target_range)
@@ -243,14 +377,25 @@ func roll_outgoing_damage(base_damage: int, base_crit_chance: float = -1.0, base
 func heal_from_lifesteal(dealt_damage: int, ratio: float = -1.0) -> int:
     if dealt_damage <= 0:
         return 0
-    var lifesteal_ratio: float = lifesteal if ratio < 0.0 else ratio
-    if lifesteal_ratio <= 0.0:
+    var lifesteal_chance: float = lifesteal if ratio < 0.0 else ratio
+    return try_lifesteal_on_hit(lifesteal_chance)
+
+func try_lifesteal_on_hit(lifesteal_chance: float) -> int:
+    if _is_dead:
         return 0
-    var heal_amount: int = int(floor(float(dealt_damage) * lifesteal_ratio))
-    if heal_amount <= 0:
+    if current_hp >= max_hp:
+        return 0
+    if _lifesteal_cooldown_remaining > 0.0:
+        return 0
+    var chance: float = clampf(lifesteal_chance, 0.0, 1.0)
+    if chance <= 0.0:
+        return 0
+    if randf() >= chance:
         return 0
     var hp_before: int = current_hp
-    current_hp = clampi(current_hp + heal_amount, 0, max_hp)
+    current_hp = clampi(current_hp + 1, 0, max_hp)
+    if current_hp > hp_before:
+        _lifesteal_cooldown_remaining = max(0.0, _lifesteal_internal_cooldown_seconds)
     return max(0, current_hp - hp_before)
 
 func export_runtime_stats() -> Dictionary:
@@ -291,17 +436,23 @@ func _tick_hp_regen(delta: float) -> void:
     if hp_regen <= 0.0:
         _hp_regen_elapsed = 0.0
         return
-    var tick_interval: float = max(0.1, _hp_regen_tick_interval_seconds)
+    var hps: float = _resolve_hp_regen_hps()
+    if hps <= 0.0:
+        _hp_regen_elapsed = 0.0
+        return
+    var tick_interval: float = 1.0 / hps
     _hp_regen_elapsed += max(0.0, delta)
     while _hp_regen_elapsed >= tick_interval:
         _hp_regen_elapsed -= tick_interval
-        var heal_amount: int = int(round(max(0.0, hp_regen)))
-        if heal_amount <= 0:
-            return
-        current_hp = clampi(current_hp + heal_amount, 0, max_hp)
+        current_hp = clampi(current_hp + 1, 0, max_hp)
         if current_hp >= max_hp:
             _hp_regen_elapsed = 0.0
             return
+
+func _resolve_hp_regen_hps() -> float:
+    if hp_regen <= 0.0:
+        return 0.0
+    return max(0.0, _hp_regen_first_hps + (hp_regen - 1.0) * _hp_regen_extra_hps_per_point)
 
 func _ensure_collision_shape() -> void:
     for child: Node in get_children():
@@ -331,9 +482,17 @@ func _load_attribute_rules() -> void:
         0.0,
         float(combat_params.get("crit_multiplier_to_crit_chance_ratio", _crit_multiplier_to_crit_chance_ratio))
     )
-    _hp_regen_tick_interval_seconds = max(
-        0.1,
-        float(combat_params.get("hp_regen_tick_interval_seconds", _hp_regen_tick_interval_seconds))
+    _hp_regen_first_hps = max(
+        0.0,
+        float(combat_params.get("hp_regen_first_hps", _hp_regen_first_hps))
+    )
+    _hp_regen_extra_hps_per_point = max(
+        0.0,
+        float(combat_params.get("hp_regen_extra_hps_per_point", _hp_regen_extra_hps_per_point))
+    )
+    _lifesteal_internal_cooldown_seconds = max(
+        0.0,
+        float(combat_params.get("lifesteal_internal_cooldown_seconds", _lifesteal_internal_cooldown_seconds))
     )
 
 func _get_rule_float(rule_key: String, fallback_value: float) -> float:

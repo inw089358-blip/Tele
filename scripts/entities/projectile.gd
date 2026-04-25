@@ -8,7 +8,7 @@ extends Area2D
 @export var life_time: float = 1.6
 @export var crit_chance: float = 0.0
 @export var crit_multiplier: float = 1.5
-@export var lifesteal_ratio: float = 0.0
+@export var lifesteal_chance: float = 0.0
 
 var _target: Node2D
 var owner_player: Player

@@ -12,18 +12,24 @@ const CHARACTER_COLORS: Array[Color] = [
     Color(0.54902, 0.647059, 0.780392, 1),
 ]
 
+const CHARACTER_PORTRAITS: Dictionary[String, String] = {
+    "the_fool": "res://sprite/characters/the_fool/portrait.png",
+}
+
 @onready var left_arrow_button: Button = %LeftArrowButton
 @onready var right_arrow_button: Button = %RightArrowButton
 @onready var select_button: Button = %SelectButton
 @onready var back_button: Button = %BackButton
 @onready var character_name_label: Label = %CharacterNameLabel
 @onready var character_hint_label: Label = %CharacterHintLabel
-@onready var character_silhouette: ColorRect = %CharacterSilhouette
+@onready var character_silhouette: TextureRect = %CharacterSilhouette
 
 var _current_index: int = 0
 var _scene_input_ready: bool = false
 var _queued_action: Callable = Callable()
 var _queued_action_id: String = ""
+var _portrait_cache: Dictionary[String, Texture2D] = {}
+var _placeholder_cache: Dictionary[int, Texture2D] = {}
 
 func _ready() -> void :
     left_arrow_button.pressed.connect(_on_left_arrow_pressed)
@@ -59,7 +65,7 @@ func _refresh_character_view() -> void :
     var character_id: String = CHARACTER_IDS[_current_index]
     character_name_label.text = _tx("data.character.%s.name" % character_id, character_id)
     character_hint_label.text = _tx("data.character.%s.hint" % character_id, character_id)
-    character_silhouette.color = CHARACTER_COLORS[_current_index]
+    character_silhouette.texture = _get_character_portrait(character_id, _current_index)
 
 func _do_left() -> void:
     var character_count: int = CHARACTER_IDS.size()
@@ -120,3 +126,29 @@ func _tx(key: String, fallback: String = "") -> String:
     if fallback.is_empty():
         return key
     return fallback
+
+func _get_character_portrait(character_id: String, color_index: int) -> Texture2D:
+    if _portrait_cache.has(character_id):
+        return _portrait_cache[character_id] as Texture2D
+
+    var portrait_path: String = str(CHARACTER_PORTRAITS.get(character_id, ""))
+    if not portrait_path.is_empty() and ResourceLoader.exists(portrait_path):
+        var portrait: Texture2D = load(portrait_path) as Texture2D
+        if portrait != null:
+            _portrait_cache[character_id] = portrait
+            return portrait
+
+    var placeholder: Texture2D = _get_placeholder_texture(color_index)
+    _portrait_cache[character_id] = placeholder
+    return placeholder
+
+func _get_placeholder_texture(color_index: int) -> Texture2D:
+    var safe_index: int = clampi(color_index, 0, CHARACTER_COLORS.size() - 1)
+    if _placeholder_cache.has(safe_index):
+        return _placeholder_cache[safe_index] as Texture2D
+
+    var image: Image = Image.create(260, 302, false, Image.FORMAT_RGBA8)
+    image.fill(CHARACTER_COLORS[safe_index])
+    var texture: ImageTexture = ImageTexture.create_from_image(image)
+    _placeholder_cache[safe_index] = texture
+    return texture
