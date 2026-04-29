@@ -1,4 +1,4 @@
-﻿class_name TheFool
+class_name TheFool
 extends Player
 
 func _ready() -> void :
@@ -10,10 +10,10 @@ func _ready() -> void :
             "hframes": 6,
             "vframes": 2,
             "idle_frame": 0,
-            "move_frames": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            "anim_fps": 8.0,
+            "move_frames": [0, 1, 2, 3, 4, 5],
+            "anim_fps": 10.0,
             "flip_with_velocity": true,
-            "scale": 1.25,
+            "scale": 1.1,
         }
     )
     super._ready()

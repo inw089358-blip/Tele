@@ -1,4 +1,4 @@
-﻿class_name EliteStaticWarden
+class_name EliteStaticWarden
 extends Enemy
 
 @export var shield_interval: float = 8.0
@@ -29,7 +29,7 @@ func _apply_profile_from_balance() -> void:
     var profile: Dictionary = BalanceService.get_enemy_profile("elite_warden")
     move_speed = float(profile.get("move_speed", move_speed))
     max_hp = int(profile.get("max_hp", max_hp))
-    body_radius = float(profile.get("body_radius", body_radius))
+    body_radius = float(profile.get("body_radius", 22.0))
     xp_drop_amount = int(profile.get("xp_drop", xp_drop_amount))
     shield_interval = float(profile.get("shield_interval", shield_interval))
     shield_duration = float(profile.get("shield_duration", shield_duration))
@@ -96,18 +96,18 @@ func get_display_name() -> String:
     return "Static Warden"
 
 func _draw() -> void :
-    draw_circle(Vector2.ZERO, body_radius + 5.0, Color(0.08, 0.01, 0.02, 0.96))
-    draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.72, 0.08, 0.1, 0.96))
+    draw_circle(Vector2.ZERO, body_radius + 6.0, Color(0.08, 0.01, 0.02, 0.96))
+    draw_circle(Vector2.ZERO, body_radius + 3.0, Color(0.72, 0.08, 0.1, 0.96))
     draw_circle(Vector2.ZERO, body_radius, Color(1.0, 0.22, 0.18, 1.0))
-    draw_arc(Vector2.ZERO, body_radius + 4.0, 0.0, TAU, 48, Color(1.0, 0.72, 0.28, 0.92), 2.0)
+    draw_arc(Vector2.ZERO, body_radius + 5.0, 0.0, TAU, 64, Color(1.0, 0.85, 0.4, 1.0), 3.0)
 
     if _shield_timer > 0.0:
-        draw_arc(Vector2.ZERO, body_radius + 8.0, 0.0, TAU, 48, Color(0.34, 0.95, 1.0, 0.98), 3.0)
+        draw_arc(Vector2.ZERO, body_radius + 10.0, 0.0, TAU, 64, Color(0.34, 0.95, 1.0, 0.98), 4.0)
 
     var hp_ratio: float = float(current_hp) / float(max(max_hp, 1))
-    var bar_width: float = 64.0
-    var bar_height: float = 7.0
-    var bar_pos: Vector2 = Vector2(-bar_width * 0.5, body_radius + 13.0)
+    var bar_width: float = 84.0
+    var bar_height: float = 9.0
+    var bar_pos: Vector2 = Vector2(-bar_width * 0.5, body_radius + 16.0)
     draw_rect(Rect2(bar_pos - Vector2(1.0, 1.0), Vector2(bar_width + 2.0, bar_height + 2.0)), Color(0.02, 0.0, 0.0, 0.96), true)
     draw_rect(Rect2(bar_pos, Vector2(bar_width, bar_height)), Color(0.16, 0.02, 0.03, 0.96), true)
-    draw_rect(Rect2(bar_pos, Vector2(bar_width * hp_ratio, bar_height)), Color(1.0, 0.18, 0.12, 1.0), true)
+    draw_rect(Rect2(bar_pos, Vector2(bar_width * hp_ratio, bar_height)), Color(1.0, 0.3, 0.2, 1.0), true)

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfj13hjeuyhq4"
-path="res://.godot/imported/heavy_wrench.png-f1b5b39d9e0344e30fa71ecf1aa9678a.ctex"
+uid="uid://bvbvevip2pdrb"
+path="res://.godot/imported/portrait.png-d8740dd6fee73ba49dc86bd768d4d3ee.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/heavy_wrench.png"
-dest_files=["res://.godot/imported/heavy_wrench.png-f1b5b39d9e0344e30fa71ecf1aa9678a.ctex"]
+source_file="res://sprite/characters/the_chariot/portrait.png"
+dest_files=["res://.godot/imported/portrait.png-d8740dd6fee73ba49dc86bd768d4d3ee.ctex"]
 
 [params]
 

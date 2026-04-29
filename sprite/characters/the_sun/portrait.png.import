@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b65x3fgxcqcdc"
-path="res://.godot/imported/kunai.png-961f2463e710c2c173d2e3a2475b4a90.ctex"
+uid="uid://cxc8x1x3pd34x"
+path="res://.godot/imported/portrait.png-61a3e912a03991519872e77da485e64a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/kunai.png"
-dest_files=["res://.godot/imported/kunai.png-961f2463e710c2c173d2e3a2475b4a90.ctex"]
+source_file="res://sprite/characters/the_sun/portrait.png"
+dest_files=["res://.godot/imported/portrait.png-61a3e912a03991519872e77da485e64a.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dv1hrr03dd7ny"
-path="res://.godot/imported/drum_mallet.png-777df69b6c9d3e31bd4c45b8014f971d.ctex"
+uid="uid://3wvsx4hfwyqs"
+path="res://.godot/imported/battle_sheet.png-f50bf6b34a5383beca0ad013cd88818c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/drum_mallet.png"
-dest_files=["res://.godot/imported/drum_mallet.png-777df69b6c9d3e31bd4c45b8014f971d.ctex"]
+source_file="res://sprite/characters/the_chariot/battle_sheet.png"
+dest_files=["res://.godot/imported/battle_sheet.png-f50bf6b34a5383beca0ad013cd88818c.ctex"]
 
 [params]
 

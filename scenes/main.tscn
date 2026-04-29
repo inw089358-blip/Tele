@@ -246,7 +246,7 @@ script = ExtResource("3")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 54)
 layout_mode = 2
-text = "Boss Test (Stage 5)"
+text = "Boss Test (Stage 20)"
 script = ExtResource("3")
 
 [node name="ContinueButton" type="Button" parent="ScreenCenter/CRTFrame/UIRoot/MenuPanel/MenuVBox" unique_id=2077236340]

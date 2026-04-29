@@ -1,4 +1,4 @@
-﻿class_name Enemy
+class_name Enemy
 extends CharacterBody2D
 
 static var _runtime_texture_cache: Dictionary = {}
@@ -47,19 +47,37 @@ var _death_hold_seconds: float = 0.1
 
 func _ready() -> void :
     _apply_profile_from_balance()
-    if enemy_type == EnemyType.MELEE:
-        _configure_melee_visual_from_balance()
+    _configure_visual_from_balance()
     process_mode = Node.PROCESS_MODE_PAUSABLE
     current_hp = max_hp
     add_to_group("enemies")
     queue_redraw()
 
 func _apply_profile_from_balance() -> void:
-    var profile: Dictionary = BalanceService.get_enemy_profile("melee")
+    var type_key: String = _get_type_key()
+    var profile: Dictionary = BalanceService.get_enemy_profile(type_key)
     move_speed = float(profile.get("move_speed", move_speed))
     max_hp = int(profile.get("max_hp", max_hp))
     body_radius = float(profile.get("body_radius", body_radius))
     xp_drop_amount = int(profile.get("xp_drop", xp_drop_amount))
+
+func _get_type_key() -> String:
+    match enemy_type:
+        EnemyType.MELEE: return "melee"
+        EnemyType.RANGED: return "ranged"
+        EnemyType.ELITE_WARDEN: return "elite_warden"
+        EnemyType.BARRAGE: return "barrage"
+    return "melee"
+
+func _configure_visual_from_balance() -> void:
+    var type_key: String = _get_type_key()
+    var profile: Dictionary = BalanceService.get_enemy_profile(type_key)
+    var visual_value: Variant = profile.get("visual", {})
+    if not (visual_value is Dictionary):
+        _clear_visual_sprite()
+        return
+    var visual_config: Dictionary = visual_value
+    _setup_visual_from_config(visual_config)
 
 func _physics_process(delta: float) -> void :
     if GameManager.current_state != GameManager.GameState.PLAYING:
@@ -133,15 +151,6 @@ func _draw() -> void :
 func _should_draw_health_bar() -> bool:
     return is_elite or enemy_type == EnemyType.ELITE_WARDEN
 
-func _configure_melee_visual_from_balance() -> void:
-    var profile: Dictionary = BalanceService.get_enemy_profile("melee")
-    var visual_value: Variant = profile.get("visual", {})
-    if not (visual_value is Dictionary):
-        _clear_visual_sprite()
-        return
-    var visual_config: Dictionary = visual_value
-    _setup_visual_from_config(visual_config)
-
 func _setup_visual_from_config(config: Dictionary) -> void:
     _clear_visual_sprite()
     var sprite_sheet_path: String = str(config.get("sprite_sheet_path", ""))
@@ -157,7 +166,14 @@ func _setup_visual_from_config(config: Dictionary) -> void:
     sprite.centered = true
     sprite.hframes = max(1, int(config.get("hframes", 1)))
     sprite.vframes = max(1, int(config.get("vframes", 1)))
-    sprite.scale = Vector2.ONE * max(0.01, float(config.get("scale", 1.0)))
+    
+    var base_scale: float = max(0.01, float(config.get("scale", 1.0)))
+    if is_elite:
+        sprite.scale = Vector2.ONE * base_scale * 1.5
+        sprite.modulate = Color(1.2, 1.1, 0.8, 1.0) # Golden tint
+    else:
+        sprite.scale = Vector2.ONE * base_scale
+        
     sprite.z_index = 1
     add_child(sprite)
 

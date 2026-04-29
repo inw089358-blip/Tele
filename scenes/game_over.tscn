@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bwieh05a0brk1"]
 
-[ext_resource type="Script" path="res://scripts/ui/game_over.gd" id="1"]
+[ext_resource type="Script" uid="uid://dymghw3p7onpb" path="res://scripts/ui/game_over.gd" id="1"]
 [ext_resource type="Shader" uid="uid://rngcbghhe148" path="res://shaders/crt_overlay.gdshader" id="2"]
 [ext_resource type="Script" uid="uid://bluorya04gmv1" path="res://scripts/ui/neon_option_button.gd" id="3"]
 
@@ -48,8 +48,11 @@ shader_parameter/line_density = 420.0
 shader_parameter/line_strength = 0.14
 shader_parameter/vignette_strength = 0.36
 shader_parameter/noise_strength = 0.06
+shader_parameter/postprocess_mode = 0.0
+shader_parameter/curvature = 0.0
+shader_parameter/clamp_edges = 0.0
 
-[node name="GameOver" type="Control"]
+[node name="GameOver" type="Control" unique_id=1359097070]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -58,7 +61,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="BlackBg" type="ColorRect" parent="."]
+[node name="BlackBg" type="ColorRect" parent="." unique_id=1695975670]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -67,7 +70,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.004, 0.02, 0.032, 1)
 
-[node name="ScreenCenter" type="Control" parent="."]
+[node name="ScreenCenter" type="Control" parent="." unique_id=424805272]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -75,7 +78,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CRTFrame" type="PanelContainer" parent="ScreenCenter"]
+[node name="CRTFrame" type="PanelContainer" parent="ScreenCenter" unique_id=392090394]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.14
@@ -86,161 +89,157 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
 
-[node name="MainMargin" type="MarginContainer" parent="ScreenCenter/CRTFrame"]
+[node name="MainMargin" type="MarginContainer" parent="ScreenCenter/CRTFrame" unique_id=1370885898]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 18
 
-[node name="RootVBox" type="VBoxContainer" parent="ScreenCenter/CRTFrame/MainMargin"]
+[node name="RootVBox" type="VBoxContainer" parent="ScreenCenter/CRTFrame/MainMargin" unique_id=1819969633]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="TitleLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox"]
+[node name="TitleLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox" unique_id=882741192]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 1, 0.86, 1)
 theme_override_font_sizes/font_size = 48
-text = ""
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox"]
+[node name="SubtitleLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox" unique_id=690641972]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.95, 1, 0.94)
 theme_override_font_sizes/font_size = 22
-text = ""
 horizontal_alignment = 1
 
-[node name="DividerA" type="HSeparator" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox"]
+[node name="DividerA" type="HSeparator" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox" unique_id=813309709]
 layout_mode = 2
 
-[node name="StatsPanel" type="PanelContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox"]
+[node name="StatsPanel" type="PanelContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox" unique_id=81390737]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="StatsMargin" type="MarginContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel"]
+[node name="StatsMargin" type="MarginContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel" unique_id=1642220475]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="StatsGrid" type="GridContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin"]
+[node name="StatsGrid" type="GridContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin" unique_id=2098063502]
 layout_mode = 2
-columns = 2
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 8
+columns = 2
 
-[node name="StageLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="StageLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=131847939]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.94, 0.95, 0.95)
 theme_override_font_sizes/font_size = 20
 text = "Stage"
 
-[node name="StageValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="StageValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=465912688]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 theme_override_colors/font_color = Color(0.92, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 text = "--"
 
-[node name="WaveLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="WaveLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=407896902]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.94, 0.95, 0.95)
 theme_override_font_sizes/font_size = 20
 text = "Wave"
 
-[node name="WaveValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="WaveValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=1540783317]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 theme_override_colors/font_color = Color(0.92, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 text = "--"
 
-[node name="ModeLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="ModeLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=1217736393]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.94, 0.95, 0.95)
 theme_override_font_sizes/font_size = 20
 text = "Difficulty"
 
-[node name="ModeValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="ModeValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=988337695]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 theme_override_colors/font_color = Color(0.92, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 text = "--"
 
-[node name="BestStageLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="BestStageLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=833347991]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.94, 0.95, 0.95)
 theme_override_font_sizes/font_size = 20
 text = "Best Stage"
 
-[node name="BestStageValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="BestStageValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=293157791]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 theme_override_colors/font_color = Color(0.92, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 text = "--"
 
-[node name="TotalKillsLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="TotalKillsLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=443326425]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.94, 0.95, 0.95)
 theme_override_font_sizes/font_size = 20
 text = "Total Kills"
 
-[node name="TotalKillsValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="TotalKillsValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=1169506862]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 theme_override_colors/font_color = Color(0.92, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 text = "--"
 
-[node name="TotalGoldLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="TotalGoldLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=802471865]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.94, 0.95, 0.95)
 theme_override_font_sizes/font_size = 20
 text = "Total Gold"
 
-[node name="TotalGoldValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid"]
+[node name="TotalGoldValueLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/StatsPanel/StatsMargin/StatsGrid" unique_id=1973703642]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 theme_override_colors/font_color = Color(0.92, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_stat")
 text = "--"
 
-[node name="ButtonRow" type="HBoxContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox"]
+[node name="ButtonRow" type="HBoxContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox" unique_id=1793256896]
 layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 14
+alignment = 1
 
-[node name="RetryButton" type="Button" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/ButtonRow"]
+[node name="RetryButton" type="Button" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/ButtonRow" unique_id=1494042148]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 58)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 script = ExtResource("3")
-text = ""
 
-[node name="BackToMenuButton" type="Button" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/ButtonRow"]
+[node name="BackToMenuButton" type="Button" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/ButtonRow" unique_id=1434924648]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 58)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 script = ExtResource("3")
-text = ""
 
-[node name="CRTOverlay" type="ColorRect" parent="."]
+[node name="CRTOverlay" type="ColorRect" parent="." unique_id=140975924]
 material = SubResource("ShaderMaterial_crt")
 layout_mode = 1
 anchors_preset = 15

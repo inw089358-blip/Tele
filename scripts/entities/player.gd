@@ -3,7 +3,7 @@ extends CharacterBody2D
 
 @export var move_speed: float = 220.0
 @export var max_hp: int = 100
-@export var body_radius: float = 9.0
+@export var body_radius: float = 12.0
 @export var pickup_radius: float = 92.0
 @export var stamina_max: float = 100.0
 @export var stamina_recover_per_sec: float = 26.0
@@ -374,7 +374,21 @@ func roll_outgoing_damage(base_damage: int, base_crit_chance: float = -1.0, base
         damage_value = max(1, int(floor(float(damage_value) * max(1.0, multiplier))))
     return damage_value
 
+func heal(amount: int) -> int:
+    if _is_dead or amount <= 0:
+        return 0
+    var old_hp: int = current_hp
+    current_hp = clampi(current_hp + amount, 0, max_hp)
+    var healed: int = current_hp - old_hp
+    if healed > 0:
+        # Simple health flash using modulate if possible, or just skip visual feedback for now
+        var tween = create_tween()
+        tween.tween_property(self, "modulate", Color(0.5, 1.0, 0.5), 0.1)
+        tween.tween_property(self, "modulate", Color.WHITE, 0.1)
+    return healed
+
 func heal_from_lifesteal(dealt_damage: int, ratio: float = -1.0) -> int:
+
     if dealt_damage <= 0:
         return 0
     var lifesteal_chance: float = lifesteal if ratio < 0.0 else ratio

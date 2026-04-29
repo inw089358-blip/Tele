@@ -17,6 +17,7 @@ func _ready() -> void :
     is_elite = true
     _skill_timers = {}
     _boss_config = {}
+    _update_visual_for_phase()
     super._ready()
 
 func configure_from_stage(config: Dictionary) -> void :
@@ -47,6 +48,7 @@ func set_phase_by_hp() -> void :
         next_phase = 1
     if next_phase != phase:
         phase = next_phase
+        _update_visual_for_phase()
         phase_changed.emit(phase)
 
 func tick_ai(delta: float) -> void :
@@ -129,6 +131,21 @@ func _tick_phase_three() -> void :
             var pulse_dir: Vector2 = Vector2.RIGHT.rotated(float(i) * TAU / 10.0)
             try_fire_projectile(pulse_dir, 275.0, 9, 4.5, 3.5, Color(1.0, 0.3, 0.3, 1.0))
 
+func _update_visual_for_phase() -> void:
+    var path: String = "res://sprite/boss/dream_watcher/battle_sheet.png"
+    
+    _setup_visual_from_config({
+        "sprite_sheet_path": path,
+        "hframes": 6,
+        "vframes": 6,
+        "move_frames": [0, 1, 2, 3, 4, 5],
+        "death_frames": [30, 31, 32, 33, 34, 35],
+        "anim_fps": 10.0,
+        "death_anim_fps": 12.0,
+        "scale": 2.4,
+        "flip_with_velocity": true
+    })
+
 func on_defeated() -> void :
     pass
 
@@ -136,8 +153,9 @@ func get_display_name() -> String:
     return "Dream Watcher"
 
 func _draw() -> void :
-    draw_circle(Vector2.ZERO, body_radius + 4.0, Color(0.16, 0.05, 0.08, 0.95))
-    draw_circle(Vector2.ZERO, body_radius, Color(0.95, 0.18, 0.3, 1.0))
+    if not _visual_has_sprite:
+        draw_circle(Vector2.ZERO, body_radius + 4.0, Color(0.16, 0.05, 0.08, 0.95))
+        draw_circle(Vector2.ZERO, body_radius, Color(0.95, 0.18, 0.3, 1.0))
     var hp_ratio: float = float(current_hp) / float(max(max_hp, 1))
     var bar_width: float = 56.0
     var bar_height: float = 6.0

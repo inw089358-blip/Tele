@@ -1,4 +1,4 @@
-﻿class_name RangedEnemy
+class_name RangedEnemy
 extends Enemy
 
 @export var desired_min_distance: float = 260.0
@@ -9,6 +9,7 @@ extends Enemy
 @export var projectile_speed: float = 260.0
 @export var projectile_radius: float = 5.0
 @export var projectile_life_time: float = 4.0
+@export var projectile_tint: Color = Color("#b3001a")
 
 var _attack_cooldown_timer: float = 0.0
 var _windup_timer: float = 0.0
@@ -33,6 +34,9 @@ func _apply_profile_from_balance() -> void:
     projectile_speed = float(profile.get("projectile_speed", projectile_speed))
     projectile_radius = float(profile.get("projectile_radius", projectile_radius))
     projectile_life_time = float(profile.get("projectile_life_time", projectile_life_time))
+    var tint_raw: Variant = profile.get("projectile_tint", "")
+    if tint_raw is String and not str(tint_raw).is_empty():
+        projectile_tint = Color(str(tint_raw))
 
 func tick_ai(delta: float) -> void :
     if _target == null:
@@ -63,7 +67,7 @@ func tick_ai(delta: float) -> void :
                 attack_damage,
                 projectile_radius,
                 projectile_life_time,
-                Color(1.0, 0.56, 0.42, 1.0)
+                projectile_tint
             )
         return
 
@@ -76,8 +80,9 @@ func get_display_name() -> String:
     return "Static Sprite"
 
 func _draw() -> void :
-    draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.16, 0.06, 0.07, 0.92))
-    draw_circle(Vector2.ZERO, body_radius, Color(0.96, 0.55, 0.46, 1.0))
+    if not _visual_has_sprite:
+        draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.16, 0.06, 0.07, 0.92))
+        draw_circle(Vector2.ZERO, body_radius, Color(0.96, 0.55, 0.46, 1.0))
     if not _should_draw_health_bar():
         return
     var hp_ratio: float = float(current_hp) / float(max(max_hp, 1))

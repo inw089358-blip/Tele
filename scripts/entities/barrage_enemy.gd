@@ -93,9 +93,10 @@ func get_display_name() -> String:
     return "Pulse Idol"
 
 func _draw() -> void :
-    draw_circle(Vector2.ZERO, body_radius + 2.4, Color(0.18, 0.05, 0.09, 0.92))
-    draw_circle(Vector2.ZERO, body_radius, Color(0.84, 0.18, 0.35, 1.0))
-    draw_arc(Vector2.ZERO, body_radius + 4.0, _shot_rotation_rad, _shot_rotation_rad + PI * 1.4, 24, Color(1.0, 0.52, 0.62, 0.78), 1.4)
+    if not _visual_has_sprite:
+        draw_circle(Vector2.ZERO, body_radius + 2.4, Color(0.18, 0.05, 0.09, 0.92))
+        draw_circle(Vector2.ZERO, body_radius, Color(0.84, 0.18, 0.35, 1.0))
+        draw_arc(Vector2.ZERO, body_radius + 4.0, _shot_rotation_rad, _shot_rotation_rad + PI * 1.4, 24, Color(1.0, 0.52, 0.62, 0.78), 1.4)
     if not _should_draw_health_bar():
         return
     var hp_ratio: float = float(current_hp) / float(max(max_hp, 1))

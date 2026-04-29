@@ -1,0 +1,2 @@
+# Placeholder for the_sun sprite sheet.
+# The user provided an image which will be saved as battle_sheet.png in this directory.
