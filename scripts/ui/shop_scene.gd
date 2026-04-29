@@ -17,6 +17,14 @@ const PAUSE_OPEN_DURATION: float = 0.18
 const PAUSE_CLOSE_DURATION: float = 0.13
 const PAUSE_PANEL_POP_SCALE: float = 0.94
 
+const RARITY_COLORS: Dictionary = {
+    "common": Color("#bdc3c7"),    # 银灰色
+    "uncommon": Color("#2ecc71"),  # 翠绿色
+    "rare": Color("#3498db"),      # 蔚蓝色
+    "epic": Color("#9b59b6"),      # 紫罗兰
+    "legendary": Color("#f1c40f")   # 琥珀金
+}
+
 @onready var top_bar: HBoxContainer = get_node_or_null("Root/MainVBox/TopBar") as HBoxContainer
 @onready var top_bar_spacer: Control = get_node_or_null("Root/MainVBox/TopBar/SpacerTop") as Control
 @onready var gold_label: Label = get_node_or_null("Root/MainVBox/TopBar/GoldLabel") as Label
@@ -66,6 +74,10 @@ var _scene_input_ready: bool = false
 var _queued_action: Callable = Callable()
 var _queued_action_id: String = ""
 
+# --- Tooltip System ---
+var _tag_tooltip_container: Control
+var _is_hovering_weapon: bool = false
+
 func _ready() -> void:
     randomize()
     if not _validate_ui_nodes():
@@ -89,6 +101,8 @@ func _ready() -> void:
     _roll_if_needed()
     _apply_responsive_layout(get_viewport_rect().size)
     _rebuild_ui()
+    _add_vignette_background()
+    _create_tag_tooltip_layer()
     _arm_scene_ready_gate()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -730,7 +744,10 @@ func _on_refresh_pressed() -> void:
     var shop_rules: Dictionary = BalanceService.get_shop_catalog().get("shop_rules", {})
     var state: Dictionary = _snapshot.get("shop_runtime_state", {})
     var refresh_count: int = int(state.get("refresh_count", 0))
-    var refresh_price: int = int(shop_rules.get("refresh_base_cost", 20)) + int(shop_rules.get("refresh_cost_step", 10)) * refresh_count
+    var stage_id: String = str(_snapshot.get("stage_id", "stage_001"))
+    var stage_num: int = int(stage_id.split("_")[-1]) if "_" in stage_id else 1
+    
+    var refresh_price: int = _calculate_refresh_price(stage_num, refresh_count)
     var current_gold: int = int(_snapshot.get("current_gold", 0))
     if current_gold < refresh_price:
         hint_label.text = _tx("msg.shop.not_enough_gold_refresh", "Not enough gold for refresh.")
@@ -761,6 +778,13 @@ func _on_next_wave_pressed() -> void:
     _refresh_weapon_tag_state_snapshot()
     _clear_shop_offer_locks_for_transition()
     _snapshot["shop_offers"] = _shop_offers.duplicate(true)
+    
+    # Resolve next stage ID so the game starts the correct next level
+    var current_id: String = str(_snapshot.get("stage_id", "stage_001"))
+    var next_id: String = _resolve_next_stage_id(current_id)
+    if not next_id.is_empty():
+        _snapshot["stage_id"] = next_id
+        
     GameManager.continue_from_shop(_snapshot)
 
 func _on_offer_buy_pressed(offer_id: String) -> void:
@@ -996,18 +1020,47 @@ func _normalize_weapon_slots(raw_slots: Variant) -> Array:
         slots.append({})
     return slots
 
+
+func _calculate_refresh_price(stage_num: int, refresh_count: int) -> int:
+    # Base price starts at current stage index.
+    var base: int = max(1, stage_num)
+    # Inflation: +1G for early stages, scales up every 5 stages.
+    var inflation: int = 1 + int(max(0, stage_num - 1) / 5)
+    return base + (refresh_count * inflation)
+
 func _rebuild_ui() -> void:
     _apply_responsive_layout(get_viewport_rect().size)
-    gold_label.text = _tf("ui.shop.gold_fmt", [int(_snapshot.get("current_gold", 0))], "Gold: %d")
-    wave_label.text = _tf("ui.shop.wave_fmt", [str(_snapshot.get("stage_id", GameManager.current_stage_id))], "Stage %s Shop")
+    gold_label.text = _tf("ui.shop.gold_fmt", [int(_snapshot.get("current_gold", 0))], "金币: %d")
+    wave_label.text = _tf("ui.shop.wave_fmt", [str(_snapshot.get("stage_id", GameManager.current_stage_id))], "关卡 %s 商店")
+    
+    # 样式化全局面板
+    var panel_style: StyleBoxFlat = _build_neon_style(Color(0.04, 0.06, 0.09, 0.94), Color("#1a3a4a"), 2, 8)
+    if right_panel: right_panel.add_theme_stylebox_override("panel", panel_style)
+    if bottom_panel: bottom_panel.add_theme_stylebox_override("panel", panel_style)
+    
+    # 样式化主交互按钮
+    var btn_style: StyleBoxFlat = _build_neon_style(Color(0.1, 0.15, 0.2, 0.9), Color("#00f0ff"), 2, 10)
+    var btn_hover: StyleBoxFlat = btn_style.duplicate()
+    btn_hover.bg_color = Color(0.15, 0.22, 0.3, 0.9)
+    btn_hover.border_width_left = 3
+    btn_hover.border_width_top = 3
+    btn_hover.border_width_right = 3
+    btn_hover.border_width_bottom = 3
+    
+    refresh_button.add_theme_stylebox_override("normal", btn_style)
+    refresh_button.add_theme_stylebox_override("hover", btn_hover)
+    next_wave_button.add_theme_stylebox_override("normal", btn_style)
+    next_wave_button.add_theme_stylebox_override("hover", btn_hover)
+
     var shop_state: Dictionary = _snapshot.get("shop_runtime_state", {})
+    var stage_id: String = str(_snapshot.get("stage_id", "stage_001"))
+    var stage_num: int = int(stage_id.split("_")[-1]) if "_" in stage_id else 1
     var refresh_count: int = int(shop_state.get("refresh_count", 0))
-    var shop_rules: Dictionary = BalanceService.get_shop_catalog().get("shop_rules", {})
-    var refresh_price: int = int(shop_rules.get("refresh_base_cost", 20)) + int(shop_rules.get("refresh_cost_step", 10)) * refresh_count
-    refresh_button.text = _tf("ui.shop.refresh_fmt", [refresh_price], "Refresh (%dG)")
+    var refresh_price: int = _calculate_refresh_price(stage_num, refresh_count)
+    refresh_button.text = _tf("ui.shop.refresh_fmt", [refresh_price], "刷新 (%dG)")
     if lock_button != null:
         lock_button.visible = false
-    next_wave_button.text = _tx("ui.shop.next_stage", "Start Next Stage")
+    next_wave_button.text = _tx("ui.shop.next_stage", "开始下一关")
     next_wave_button.disabled = false
     _rebuild_offer_cards()
     _rebuild_attr_panel()
@@ -1073,13 +1126,24 @@ func _rebuild_offer_cards() -> void:
         var offer: Dictionary = _shop_offers[i]
         var offer_name: String = _resolve_offer_name(offer)
         var offer_desc: String = _resolve_offer_desc(offer)
-        var rarity_label: String = _rarity_label(str(offer.get("rarity", "common")))
+        var rarity_key: String = str(offer.get("rarity", "common"))
+        var rarity_label: String = _rarity_label(rarity_key)
+        var rarity_color: Color = RARITY_COLORS.get(rarity_key, Color.WHITE)
         var is_locked: bool = bool(offer.get("locked", false))
         var sold: bool = bool(offer.get("sold", false))
 
         var card: PanelContainer = PanelContainer.new()
         card.custom_minimum_size = Vector2(210, 198)
-        card.add_theme_stylebox_override("panel", _build_offer_card_style(is_locked, sold))
+        card.pivot_offset = Vector2(105, 99) # 中心点
+        card.add_theme_stylebox_override("panel", _build_offer_card_style(rarity_key, is_locked, sold))
+
+        # --- 动态入场动画 ---
+        card.modulate.a = 0
+        card.scale = Vector2(0.85, 0.85)
+        var tween: Tween = create_tween().set_parallel(true)
+        tween.tween_property(card, "modulate:a", 1.0, 0.25).set_delay(i * 0.04)
+        tween.tween_property(card, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(i * 0.04)
+        # ------------------
 
         var margin: MarginContainer = MarginContainer.new()
         margin.add_theme_constant_override("margin_left", 6)
@@ -1091,8 +1155,11 @@ func _rebuild_offer_cards() -> void:
         vb.add_theme_constant_override("separation", 4)
 
         var title: Label = Label.new()
-        title.text = _tf("ui.shop.offer_title_fmt", [offer_name, rarity_label], "%s [%s]")
+        var prefix: String = "✧ " if rarity_key == "legendary" else "◈ "
+        title.text = prefix + offer_name
         title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        title.add_theme_color_override("font_color", rarity_color) # 标题颜色与品质挂钩
+        title.add_theme_font_size_override("font_size", 18)
 
         var icon_texture: Texture2D = _load_offer_icon(offer)
         var icon_block: Control = _build_icon_block(icon_texture, OFFER_ICON_SIZE, _tx("ui.shop.no_image", "No Image"))
@@ -1100,24 +1167,30 @@ func _rebuild_offer_cards() -> void:
         var desc: Label = Label.new()
         desc.text = offer_desc
         desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        desc.max_lines_visible = 2
-        desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+        desc.max_lines_visible = 4
+        desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
         desc.clip_text = true
+        desc.add_theme_font_size_override("font_size", 14)
 
         var actions_row: HBoxContainer = HBoxContainer.new()
         actions_row.add_theme_constant_override("separation", 4)
 
         var lock_button_local: Button = Button.new()
         lock_button_local.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        lock_button_local.text = _tx("ui.shop.offer_unlock", "Unlock") if is_locked else _tx("ui.shop.offer_lock", "Lock")
+        lock_button_local.text = _tx("ui.shop.offer_unlock", "解锁") if is_locked else _tx("ui.shop.offer_lock", "锁定")
         lock_button_local.disabled = sold
         lock_button_local.pressed.connect(_on_offer_lock_pressed.bind(str(offer.get("offer_id", ""))))
 
         var buy_button: Button = Button.new()
         buy_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        buy_button.text = _tx("ui.shop.sold_out", "Sold Out") if sold else _tf("ui.shop.buy_fmt", [int(offer.get("price", 0))], "Buy - %dG")
+        buy_button.text = _tx("ui.shop.sold_out", "已售罄") if sold else _tf("ui.shop.buy_fmt", [int(offer.get("price", 0))], "购买 - %dG")
         buy_button.disabled = sold or current_gold < int(offer.get("price", 0))
         buy_button.pressed.connect(_on_offer_buy_pressed.bind(str(offer.get("offer_id", ""))))
+        
+        # 按钮样式
+        var buy_btn_style: StyleBoxFlat = _build_neon_style(Color(0.12, 0.18, 0.24, 0.9), Color("#00f0ff"), 1, 6)
+        buy_button.add_theme_stylebox_override("normal", buy_btn_style)
+        lock_button_local.add_theme_stylebox_override("normal", buy_btn_style)
 
         actions_row.add_child(lock_button_local)
         actions_row.add_child(buy_button)
@@ -1129,43 +1202,99 @@ func _rebuild_offer_cards() -> void:
 
         margin.add_child(vb)
         card.add_child(margin)
+        
+        # 绑定悬停事件显示标签详情
+        card.mouse_entered.connect(_on_weapon_card_hover_start.bind(offer, card))
+        card.mouse_exited.connect(_on_weapon_hover_end)
         offers_grid.add_child(card)
 
-func _build_offer_card_style(locked: bool, sold: bool) -> StyleBoxFlat:
+func _build_neon_style(bg_color: Color, border_color: Color, border_width: int = 2, shadow_size: int = 10) -> StyleBoxFlat:
     var style: StyleBoxFlat = StyleBoxFlat.new()
-    style.bg_color = Color(0.07, 0.1, 0.14, 0.95)
-    style.border_width_left = 2
-    style.border_width_top = 2
-    style.border_width_right = 2
-    style.border_width_bottom = 2
-    style.border_color = Color(0.18, 0.42, 0.58, 0.95)
-    if locked:
-        style.border_color = Color(0.95, 0.82, 0.32, 1.0)
-    if sold:
-        style.bg_color = Color(0.08, 0.08, 0.08, 0.96)
-        style.border_color = Color(0.3, 0.3, 0.3, 0.95)
+    style.bg_color = bg_color
+    style.border_color = border_color
+    style.border_width_left = border_width
+    style.border_width_top = border_width
+    style.border_width_right = border_width
+    style.border_width_bottom = border_width
     style.corner_radius_top_left = 6
     style.corner_radius_top_right = 6
     style.corner_radius_bottom_left = 6
     style.corner_radius_bottom_right = 6
+    style.shadow_color = border_color
+    style.shadow_color.a = 0.25
+    style.shadow_size = shadow_size
     return style
+
+func _build_offer_card_style(rarity: String, locked: bool, sold: bool) -> StyleBoxFlat:
+    var rarity_color: Color = RARITY_COLORS.get(rarity.to_lower(), Color("#bdc3c7"))
+    
+    # 高级感背景：为高品质道具添加微弱的色彩倾向
+    var bg: Color = Color(0.05, 0.07, 0.1, 0.96)
+    if rarity == "legendary": bg = Color(0.12, 0.09, 0.05, 0.98)
+    elif rarity == "epic": bg = Color(0.09, 0.06, 0.11, 0.98)
+    
+    var style: StyleBoxFlat = _build_neon_style(
+        bg, 
+        rarity_color, 
+        2, 
+        14 if not sold else 0
+    )
+    
+    if locked:
+        style.border_color = Color("#f1c40f")
+        style.shadow_color = Color("#f1c40f")
+        style.shadow_color.a = 0.45
+        style.border_width_left = 3 # 锁定状态加粗边框
+        style.border_width_top = 3
+        style.border_width_right = 3
+        style.border_width_bottom = 3
+    if sold:
+        style.bg_color = Color(0.06, 0.06, 0.06, 0.98)
+        style.border_color = Color(0.25, 0.25, 0.25, 0.6)
+        style.shadow_size = 0
+    
+    return style
+
+func _add_vignette_background() -> void:
+    var vignette: TextureRect = TextureRect.new()
+    vignette.name = "VignetteOverlay"
+    vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    
+    var mat: CanvasItemMaterial = CanvasItemMaterial.new()
+    vignette.material = mat
+    
+    # 使用渐变背景模拟暗角
+    var grad: Gradient = Gradient.new()
+    grad.set_color(0, Color(0, 0, 0, 0))
+    grad.set_color(1, Color(0, 0, 0, 0.45))
+    
+    var fill: GradientTexture2D = GradientTexture2D.new()
+    fill.gradient = grad
+    fill.fill = GradientTexture2D.FILL_RADIAL
+    fill.fill_from = Vector2(0.5, 0.5)
+    fill.fill_to = Vector2(1.0, 1.0)
+    
+    vignette.texture = fill
+    add_child(vignette)
+    move_child(vignette, 0) # 放在最底层
 
 func _build_icon_block(texture: Texture2D, icon_size: Vector2, no_image_text: String) -> Control:
     var panel: PanelContainer = PanelContainer.new()
     panel.custom_minimum_size = icon_size + Vector2(8, 8)
-
-    var style: StyleBoxFlat = StyleBoxFlat.new()
-    style.bg_color = Color(0.05, 0.07, 0.1, 0.92)
-    style.border_width_left = 1
-    style.border_width_top = 1
-    style.border_width_right = 1
-    style.border_width_bottom = 1
-    style.border_color = Color(0.45, 0.55, 0.65, 0.9)
-    style.corner_radius_top_left = 4
-    style.corner_radius_top_right = 4
-    style.corner_radius_bottom_left = 4
-    style.corner_radius_bottom_right = 4
-    panel.add_theme_stylebox_override("panel", style)
+    
+    var icon_style: StyleBoxFlat = StyleBoxFlat.new()
+    icon_style.bg_color = Color(1, 1, 1, 0.04)
+    icon_style.border_width_left = 1
+    icon_style.border_width_top = 1
+    icon_style.border_width_right = 1
+    icon_style.border_width_bottom = 1
+    icon_style.border_color = Color(0.4, 0.5, 0.6, 0.4)
+    icon_style.corner_radius_top_left = 4
+    icon_style.corner_radius_top_right = 4
+    icon_style.corner_radius_bottom_left = 4
+    icon_style.corner_radius_bottom_right = 4
+    panel.add_theme_stylebox_override("panel", icon_style)
 
     var center: CenterContainer = CenterContainer.new()
     center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1186,6 +1315,7 @@ func _build_icon_block(texture: Texture2D, icon_size: Vector2, no_image_text: St
         placeholder_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
         placeholder_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
         placeholder_label.custom_minimum_size = icon_size
+        placeholder_label.add_theme_font_size_override("font_size", 12)
         center.add_child(placeholder_label)
     return panel
 
@@ -1206,24 +1336,44 @@ func _rebuild_attr_panel() -> void:
         tag_state = (tag_state_raw as Dictionary).duplicate(true)
     if tag_state.is_empty() and _shop_system != null:
         tag_state = _shop_system.resolve_weapon_tag_state(shop_state)
+    
     var lines: Array[String] = []
-    lines.append(_tx("ui.shop.stats_title_bb", "[b]Stats[/b]"))
-    lines.append(_tf("ui.shop.stat_max_hp", [int(_snapshot.get("player_max_hp", 100))], "Max HP: %d"))
-    lines.append(_tf("ui.shop.stat_hp_regen", [float(stats.get("hp_regen", 0.0))], "HP Regen: %.1f"))
-    lines.append(_tf("ui.shop.stat_global_atk_percent", [float(stats.get("global_attack_percent", 0.0))], "Global ATK: %.1f%%"))
-    lines.append(_tf("ui.shop.stat_melee_bonus", [int(stats.get("bonus_melee_attack_damage", 0))], "Melee ATK+: %d"))
-    lines.append(_tf("ui.shop.stat_ranged_bonus", [int(stats.get("bonus_ranged_attack_damage", 0))], "Ranged ATK+: %d"))
-    lines.append(_tf("ui.shop.stat_luck", [float(stats.get("luck", 0.0))], "Luck: %.1f"))
-    lines.append(_tf("ui.shop.stat_harvest", [float(stats.get("harvest", 0.0))], "Harvest: %.1f"))
-    lines.append(_tf("ui.shop.stat_range_bonus", [float(_snapshot.get("bonus_target_range", 0.0))], "Attack Range: %.0f"))
-    lines.append(_tf("ui.shop.stat_extra_move_speed", [extra_move_speed], "Bonus Move Speed: %+.0f"))
-    lines.append(_tf("ui.shop.stat_armor", [float(stats.get("armor", 0.0))], "Armor: %.1f"))
-    lines.append(_tf("ui.shop.stat_dodge", [(float(stats.get("dodge_chance", 0.0)) * 100.0)], "Dodge: %.1f%%"))
-    lines.append(_tf("ui.shop.stat_extra_atk_speed", [extra_attack_speed_percent], "Bonus Atk Speed: %+.1f%%"))
-    lines.append(_tf("ui.shop.stat_crit", [(float(stats.get("crit_chance", 0.05)) * 100.0)], "Crit: %.1f%%"))
-    lines.append(_tf("ui.shop.stat_lifesteal", [(float(stats.get("lifesteal", 0.0)) * 100.0)], "Lifesteal: %.1f%%"))
-    _append_weapon_tag_lines(lines, tag_state)
+    lines.append("[center][b][color=#00f0ff]属性状态[/color][/b][/center]")
+    lines.append("") # 留空行增加透气感
+    
+    lines.append("[table=2]")
+    _add_stat_line(lines, "生命上限", int(_snapshot.get("player_max_hp", 100)), "", 0, true)
+    _add_stat_line(lines, "生命回复", float(stats.get("hp_regen", 0.0)), "", 0, true)
+    _add_stat_line(lines, "攻击加成", float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
+    _add_stat_line(lines, "近战加成", int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, "远程加成", int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, "幸运值", float(stats.get("luck", 0.0)), "", 0, true)
+    _add_stat_line(lines, "收益收获", float(stats.get("harvest", 0.0)), "", 0, true)
+    _add_stat_line(lines, "攻击范围", float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    _add_stat_line(lines, "移动速度", extra_move_speed, "", 0, true)
+    _add_stat_line(lines, "护甲防御", float(stats.get("armor", 0.0)), "", 0, true)
+    _add_stat_line(lines, "闪避概率", (float(stats.get("dodge_chance", 0.0)) * 100.0), "%", 0, true)
+    _add_stat_line(lines, "攻击频率", extra_attack_speed_percent, "%", 0, true)
+    _add_stat_line(lines, "暴击概率", (float(stats.get("crit_chance", 0.05)) * 100.0), "%", 0, true)
+    _add_stat_line(lines, "生命吸取", (float(stats.get("lifesteal", 0.0)) * 100.0), "%", 0, true)
+    lines.append("[/table]")
+    
     attr_label.text = "\n".join(lines)
+
+func _add_stat_line(lines: Array[String], label: String, val: Variant, unit: String, base: float, color_logic: bool) -> void:
+    var color: String = "#ffffff"
+    var f_val: float = float(val)
+    if color_logic:
+        if f_val > 0.0001: color = "#2ecc71" # 正数绿色
+        elif f_val < -0.0001: color = "#e74c3c" # 负数红色
+    
+    var val_str: String = ""
+    if val is float:
+        val_str = "%.1f" % val
+    else:
+        val_str = str(val)
+        
+    lines.append("[cell][color=#95a5a6]%s:[/color][/cell] [cell][color=%s]%s%s[/color][/cell]" % [label, color, val_str, unit])
 
 func _resolve_snapshot_character_id() -> String:
     var character_id: String = str(_snapshot.get("selected_character", ""))
@@ -1370,15 +1520,19 @@ func _rebuild_weapon_slots_grid() -> void:
         button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
         button.expand_icon = true
         button.add_theme_constant_override("icon_max_width", 46)
-        button.disabled = _pending_replace_offer_id.is_empty()
-
+        
+        # 移除 disabled 状态，防止图标变暗蒙层
+        button.disabled = false 
+        
         var has_weapon: bool = slot_weapon is Dictionary and not str((slot_weapon as Dictionary).get("weapon_id", "")).is_empty()
+        var rarity_key: String = "common"
         if has_weapon:
             var weapon: Dictionary = slot_weapon
+            rarity_key = str(weapon.get("rarity", "common"))
             var weapon_id: String = str(weapon.get("weapon_id", "weapon"))
             var weapon_name: String = LocaleService.t_data("weapon", weapon_id, "name", weapon_id)
-            var rarity_label: String = _rarity_label(str(weapon.get("rarity", "common")))
-            button.tooltip_text = "%d: %s [%s]" % [i + 1, weapon_name, rarity_label]
+            var rarity_label: String = _rarity_label(rarity_key)
+            button.tooltip_text = "%d: %s" % [i + 1, weapon_name]
             var icon_path: String = _resolve_weapon_icon_path(weapon_id)
             var icon: Texture2D = _load_texture_cached(icon_path, _weapon_icon_cache)
             if icon != null:
@@ -1387,8 +1541,27 @@ func _rebuild_weapon_slots_grid() -> void:
             else:
                 button.text = _tx("ui.shop.no_image", "No Image")
         else:
-            button.tooltip_text = _tf("ui.shop.weapon_slot_empty", [i + 1], "%d: Empty")
-            button.text = _tf("ui.shop.weapon_slot_empty", [i + 1], "%d: Empty")
+            button.tooltip_text = _tf("ui.shop.weapon_slot_empty", [i + 1], "%d: 空位")
+            button.text = "" # 空位保持简洁
+
+        # 为已装备武器添加品质边框风格
+        var style: StyleBoxFlat = _build_offer_card_style(rarity_key, false, false)
+        # 稍微调暗背景色，以区分于待购商品
+        style.bg_color = Color(0.05, 0.07, 0.1, 0.9)
+        button.add_theme_stylebox_override("normal", style)
+        button.add_theme_stylebox_override("hover", style)
+        button.add_theme_stylebox_override("pressed", style)
+        button.add_theme_stylebox_override("disabled", style)
+        
+        if has_weapon:
+            button.mouse_entered.connect(_on_weapon_card_hover_start.bind(slot_weapon, button))
+            button.mouse_exited.connect(_on_weapon_hover_end)
+
+        # 如果处于替换模式，增加一个闪烁或者明显的提示（此处先让其可点击）
+        if not _pending_replace_offer_id.is_empty():
+            var highlight: StyleBoxFlat = style.duplicate()
+            highlight.border_color = Color.WHITE
+            button.add_theme_stylebox_override("normal", highlight)
 
         button.pressed.connect(_on_weapon_slot_pressed.bind(i))
         _equipped_weapons_grid.add_child(button)
@@ -1399,31 +1572,30 @@ func _rebuild_elite_hint() -> void:
     var start_stage_id: String = str(_snapshot.get("stage_id", GameManager.current_stage_id))
     var elite_info: Dictionary = _find_nearest_future_elite_stage(start_stage_id)
     if elite_info.is_empty():
-        _elite_hint_label.text = _tx("ui.shop.elite_hint_none", "No elite warning in upcoming stages.")
+        _elite_hint_label.text = ""
+        _elite_hint_label.visible = false
         return
     var stage_no: int = int(elite_info.get("stage_no", 0))
     if stage_no <= 0:
-        _elite_hint_label.text = _tx("ui.shop.elite_hint_none", "No elite warning in upcoming stages.")
+        _elite_hint_label.text = ""
+        _elite_hint_label.visible = false
         return
+    _elite_hint_label.visible = true
     _elite_hint_label.text = _tf(
         "ui.shop.elite_hint_fmt",
         [stage_no],
-        "An elite enemy will appear in stage %d."
+        "⚠ An elite enemy will appear in stage %d!"
     )
 
 func _find_nearest_future_elite_stage(start_stage_id: String) -> Dictionary:
     var start_stage_no: int = _extract_stage_number(start_stage_id)
     if start_stage_no <= 0:
         return {}
-    var miss_count: int = 0
-    for stage_no: int in range(start_stage_no, start_stage_no + 200):
+    # User requested: only warn if elite appears in the immediate next stage.
+    for stage_no: int in range(start_stage_no, start_stage_no + 1):
         var stage_id: String = "stage_%03d" % stage_no
         if not BalanceService.has_stage_profile(stage_id):
-            miss_count += 1
-            if miss_count >= 2:
-                break
             continue
-        miss_count = 0
         var stage_profile: Dictionary = BalanceService.get_stage_profile(stage_id)
         var elite_schedule_value: Variant = stage_profile.get("elite_schedule", {})
         if not (elite_schedule_value is Dictionary):
@@ -1454,11 +1626,33 @@ func _resolve_offer_name(offer: Dictionary) -> String:
 
 func _resolve_offer_desc(offer: Dictionary) -> String:
     var kind: String = str(offer.get("kind", "item"))
+    var base_desc: String = ""
     if kind == "weapon":
         var weapon_id: String = _extract_offer_weapon_id(offer)
-        return LocaleService.t_data("weapon", weapon_id, "desc", str(offer.get("description", "")))
-    var item_id: String = str(offer.get("item_id", ""))
-    return LocaleService.t_data("item", item_id, "desc", str(offer.get("description", "")))
+        base_desc = LocaleService.t_data("weapon", weapon_id, "desc", str(offer.get("description", "")))
+        
+        # 动态生成武器数值描述 (类似土豆兄弟)
+        var weapon_data: Dictionary = offer.get("weapon", {})
+        var profile: Dictionary = weapon_data.get("attack_profile", {})
+        if not profile.is_empty():
+            var dmg: float = float(profile.get("base_damage", 0.0))
+            var interval: float = float(profile.get("interval", 1.0))
+            var w_range: float = float(profile.get("range", 0.0))
+            var stats_line: String = "\n伤害:%d 频率:%.2fs 范围:%d" % [dmg, interval, w_range]
+            base_desc += stats_line
+    else:
+        var item_id: String = str(offer.get("item_id", ""))
+        base_desc = LocaleService.t_data("item", item_id, "desc", str(offer.get("description", "")))
+        
+        # 如果描述依然为空，则自动列出效果
+        if base_desc.is_empty():
+            var effects: Dictionary = offer.get("effects", {})
+            var parts: Array[String] = []
+            for key in effects.keys():
+                parts.append("%s: %s" % [key, str(effects[key])])
+            base_desc = ", ".join(parts)
+            
+    return base_desc
 
 func _load_offer_icon(offer: Dictionary) -> Texture2D:
     var icon_path: String = str(offer.get("icon_path", ""))
@@ -1525,3 +1719,152 @@ func _tf(key: String, args: Array, fallback: String = "") -> String:
         return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
     var base: String = fallback if not fallback.is_empty() else key
     return base % args
+
+# --- Tag Tooltip Logic ---
+
+func _create_tag_tooltip_layer() -> void:
+    _tag_tooltip_container = Control.new()
+    _tag_tooltip_container.name = "TagTooltipContainer"
+    _tag_tooltip_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(_tag_tooltip_container)
+
+func _on_weapon_card_hover_start(offer_or_weapon: Dictionary, anchor: Control) -> void:
+    _on_weapon_hover_end() # 清除旧的
+    
+    var tags: Array = _extract_offer_tags(offer_or_weapon)
+    if tags.is_empty():
+        return
+        
+    _is_hovering_weapon = true
+    if _tag_tooltip_container:
+        _tag_tooltip_container.move_to_front() # 确保在最上层
+    _spawn_tag_tooltips(tags, anchor)
+
+func _on_weapon_hover_end() -> void:
+    _is_hovering_weapon = false
+    if _tag_tooltip_container:
+        for child in _tag_tooltip_container.get_children():
+            child.queue_free()
+
+func _extract_offer_tags(offer_or_weapon: Dictionary) -> Array:
+    var tags: Array = []
+    # 如果是 offer (包含武器字典)
+    if offer_or_weapon.has("weapon"):
+        var w_data = offer_or_weapon.get("weapon", {})
+        if w_data is Dictionary:
+            tags = (w_data as Dictionary).get("build_tags", [])
+    # 如果是直接的 weapon 字典
+    elif offer_or_weapon.has("build_tags"):
+        tags = offer_or_weapon.get("build_tags", [])
+    return tags
+
+func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
+    var catalog: Dictionary = BalanceService.get_shop_catalog()
+    var tag_rules: Dictionary = catalog.get("weapon_tag_bonus_rules", {})
+    var tag_defs: Dictionary = tag_rules.get("tag_defs", {})
+    var tier_steps: Array = tag_rules.get("tier_steps", [2, 3, 4, 5, 6])
+    
+    # 获取当前的羁绊状态以显示进度
+    var shop_state: Dictionary = _snapshot.get("shop_runtime_state", {})
+    var tag_state: Dictionary = _shop_system.resolve_weapon_tag_state(shop_state)
+    var counts: Dictionary = tag_state.get("counts", {})
+    var screen_size: Vector2 = get_viewport_rect().size
+    var tooltip_w: float = 240.0
+    var spacing: float = 10.0
+    
+    # 智能定位：优先右侧，如果右侧出界则显示在左侧
+    var anchor_pos: Vector2 = anchor.get_screen_position()
+    var target_x: float = anchor_pos.x + anchor.size.x + spacing
+    if target_x + tooltip_w > screen_size.x - 20:
+        target_x = anchor_pos.x - tooltip_w - spacing
+    
+    var start_y: float = anchor_pos.y
+    
+    for i in range(tag_ids.size()):
+        var tag_id: String = tag_ids[i]
+        var tag_def: Dictionary = tag_defs.get(tag_id, {})
+        var tag_name: String = tag_def.get("name", tag_id)
+        
+        var panel: PanelContainer = PanelContainer.new()
+        panel.custom_minimum_size = Vector2(240, 0)
+        # 使用霓虹风格
+        panel.add_theme_stylebox_override("panel", _build_neon_style(Color(0.08, 0.1, 0.12, 0.96), Color(0.0, 0.94, 1.0, 0.6), 1, 6))
+        _tag_tooltip_container.add_child(panel)
+        
+        # 垂直堆叠定位，并防止底部出界
+        var panel_y: float = start_y + (i * 145)
+        # 如果整组太长，整体向上偏移
+        var total_height_needed: float = tag_ids.size() * 145
+        if start_y + total_height_needed > screen_size.y - 20:
+             panel_y -= (start_y + total_height_needed - (screen_size.y - 20))
+        
+        panel.global_position = Vector2(target_x, max(10, panel_y))
+        
+        var margin: MarginContainer = MarginContainer.new()
+        margin.add_theme_constant_override("margin_left", 14)
+        margin.add_theme_constant_override("margin_top", 12)
+        margin.add_theme_constant_override("margin_right", 14)
+        margin.add_theme_constant_override("margin_bottom", 12)
+        panel.add_child(margin)
+        
+        var vb: VBoxContainer = VBoxContainer.new()
+        vb.add_theme_constant_override("separation", 6)
+        margin.add_child(vb)
+        
+        # 标题：标签名 + 当前拥有数量
+        var title_lbl: Label = Label.new()
+        var current_count: int = int(counts.get(tag_id, 0))
+        title_lbl.text = "%s (%d)" % [tag_name, current_count]
+        title_lbl.add_theme_color_override("font_color", Color("#00f0ff"))
+        title_lbl.add_theme_font_size_override("font_size", 18)
+        vb.add_child(title_lbl)
+        
+        # 分割线
+        var separator: ColorRect = ColorRect.new()
+        separator.custom_minimum_size = Vector2(0, 1)
+        separator.color = Color(0.0, 0.94, 1.0, 0.3)
+        vb.add_child(separator)
+        
+        # 奖励进度列表
+        var tiers_data: Dictionary = tag_def.get("tiers", {})
+        for step_idx in range(tier_steps.size()):
+            var step_count: int = int(tier_steps[step_idx])
+            var step_tier: int = step_idx + 1
+            var tier_info: Dictionary = tiers_data.get(str(step_tier), {})
+            
+            var tier_lbl: Label = Label.new()
+            var is_active: bool = current_count >= step_count
+            
+            var bonus_text: String = tier_info.get("note", "Bonus T%d" % step_tier)
+            # 翻译（如果可用）
+            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_tier], bonus_text)
+            
+            tier_lbl.text = "(%d) %s" % [step_count, bonus_text]
+            if is_active:
+                tier_lbl.add_theme_color_override("font_color", Color.WHITE)
+            else:
+                tier_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 0.6))
+            
+            tier_lbl.add_theme_font_size_override("font_size", 14)
+            vb.add_child(tier_lbl)
+
+func _resolve_next_stage_id(current_stage_id: String) -> String:
+    if current_stage_id.is_empty():
+        return ""
+    var stage_profile: Dictionary = BalanceService.get_stage_profile(current_stage_id)
+    var config_next_stage: String = str(stage_profile.get("next_stage_id", ""))
+    if not config_next_stage.is_empty() and BalanceService.has_stage_profile(config_next_stage):
+        return config_next_stage
+
+    if not current_stage_id.begins_with("stage_"):
+        return ""
+    var suffix: String = current_stage_id.substr(6)
+    if suffix.is_empty():
+        return ""
+    var stage_no: int = int(suffix)
+    if stage_no <= 0:
+        return ""
+    var inferred_next_stage_id: String = "stage_%03d" % (stage_no + 1)
+    if BalanceService.has_stage_profile(inferred_next_stage_id):
+        return inferred_next_stage_id
+    return ""

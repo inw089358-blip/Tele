@@ -2,7 +2,7 @@ class_name ShopSystem
 extends RefCounted
 
 const WEAPON_SLOT_COUNT: int = 6
-const DEFAULT_RARITY_ORDER: PackedStringArray = ["common", "uncommon", "rare", "epic", "legendary"]
+const DEFAULT_RARITY_ORDER: PackedStringArray = ["common", "rare", "epic", "legendary"]
 const DEFAULT_WEAPON_TAG_MAX_STACK: int = 6
 const DEFAULT_WEAPON_TAG_TIER_STEPS: Array[int] = [2, 3, 4, 5, 6]
 const LUCK_RARITY_STEP_DEFAULT: float = 0.012
@@ -81,7 +81,8 @@ func roll_shop_offers(context: Dictionary) -> Array[Dictionary]:
     var shop_rules: Dictionary = _catalog.get("shop_rules", {})
     var offer_count: int = max(1, int(shop_rules.get("offers_per_wave", 4)))
     var weapon_chance: float = clampf(float(shop_rules.get("weapon_chance", 0.5)), 0.0, 1.0)
-    var wave_index: int = max(1, int(context.get("wave", 1)))
+    var stage_id: String = str(context.get("stage_id", "stage_001"))
+    var wave_index: int = int(stage_id.split("_")[-1]) if "_" in stage_id else 1
     var luck_value: float = _get_context_luck(context)
     var locked_by_slot: Dictionary = _build_locked_offer_by_slot(
         shop_state.get("locked_shop_offers", []),
@@ -240,9 +241,9 @@ func _roll_item_offer(wave_index: int) -> Dictionary:
         fallback_offer["icon_path"] = _resolve_offer_icon_path(fallback_offer)
         return fallback_offer
     var template: Dictionary = _pick_weighted(item_pool)
-    var price_scale: float = float(template.get("price_wave_scale", 1.05))
+    var wave_inflation: float = 1.0 + (max(0, wave_index - 1) * 0.06)
     var base_price: int = max(1, int(template.get("base_price", 20)))
-    var final_price: int = max(1, int(round(base_price * pow(price_scale, max(0, wave_index - 1)))))
+    var final_price: int = max(1, int(round(base_price * wave_inflation)))
     var offer: Dictionary = {
         "kind": "item",
         "item_id": str(template.get("item_id", "")),
@@ -283,8 +284,8 @@ func _roll_weapon_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
     var rarity: String = _roll_rarity(template.get("rarity_weights", {}), luck_value)
     var base_price: int = max(1, int(template.get("base_price", 35)))
     var rarity_multiplier: float = _rarity_price_multiplier(rarity)
-    var wave_scale: float = float(template.get("price_wave_scale", 1.06))
-    var final_price: int = max(1, int(round(base_price * rarity_multiplier * pow(wave_scale, max(0, wave_index - 1)))))
+    var wave_inflation: float = 1.0 + (max(0, wave_index - 1) * 0.06)
+    var final_price: int = max(1, int(round(base_price * rarity_multiplier * wave_inflation)))
     var weapon: Dictionary = {
         "weapon_id": str(template.get("weapon_id", "weapon_unknown")),
         "rarity": rarity,
@@ -323,11 +324,8 @@ func _add_weapon_to_slots(weapon_payload: Variant, shop_state: Dictionary, repla
     var merge_result: Dictionary = _try_merge_for_weapon(equipped, weapon)
     equipped = merge_result.get("equipped", equipped)
     if bool(merge_result.get("merged", false)):
-        var post_merge_slot: int = _find_empty_slot(equipped)
-        if post_merge_slot >= 0:
-            equipped[post_merge_slot] = weapon
-            shop_state["equipped_weapons"] = equipped
-            return {"shop_state": shop_state, "needs_replace": false}
+        shop_state["equipped_weapons"] = equipped
+        return {"shop_state": shop_state, "needs_replace": false}
 
     if replace_slot_index >= 0 and replace_slot_index < equipped.size():
         equipped[replace_slot_index] = weapon
@@ -489,6 +487,10 @@ func _apply_item_effect(runtime: Dictionary, effects_raw: Variant) -> void:
         stats["lifesteal"] = float(stats.get("lifesteal", 0.0)) + float(effects.get("lifesteal", 0.0))
     if effects.has("gold_gain_multiplier"):
         runtime["gold_gain_multiplier"] = max(0.1, float(runtime.get("gold_gain_multiplier", 1.0)) * float(effects.get("gold_gain_multiplier", 1.0)))
+    if effects.has("pickup_radius"):
+        runtime["pickup_radius"] = float(runtime.get("pickup_radius", 92.0)) + float(effects.get("pickup_radius", 0.0))
+    if effects.has("xp_gain_mult"):
+        runtime["xp_gain_mult"] = max(0.1, float(runtime.get("xp_gain_mult", 1.0)) * float(effects.get("xp_gain_mult", 1.0)))
     runtime["player_stats"] = stats
 
 func _roll_rarity(weights_raw: Variant, luck_value: float = 0.0) -> String:
@@ -526,14 +528,12 @@ func _rarity_tier_index(rarity_tier: String) -> int:
     match rarity_tier:
         "common":
             return 0
-        "uncommon":
-            return 1
         "rare":
-            return 2
+            return 1
         "epic":
-            return 3
+            return 2
         "legendary":
-            return 4
+            return 3
         _:
             return 0
 
@@ -563,14 +563,12 @@ func _get_crit_multiplier_to_crit_chance_ratio() -> float:
 
 func _rarity_price_multiplier(rarity: String) -> float:
     match rarity:
-        "uncommon":
-            return 1.35
         "rare":
             return 1.8
         "epic":
             return 2.5
         "legendary":
-            return 3.4
+            return 3.5
         _:
             return 1.0
 

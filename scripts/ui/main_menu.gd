@@ -195,13 +195,13 @@ func _do_start() -> void:
     GameManager.go_to_character_select()
 
 func _do_boss_test() -> void:
-    notice_label.text = _tx("msg.main.jump_stage_015", "Jump to stage_015 (Final boss test)")
+    notice_label.text = _tx("msg.main.jump_stage_020", "Jump to stage_020 (Final boss test)")
     AudioManager.play_prepare_bgm()
     if GameManager.selected_character.is_empty():
         GameManager.selected_character = "the_fool"
     if GameManager.current_difficulty.is_empty():
         GameManager.current_difficulty = "normal"
-    GameManager.start_game("stage_015")
+    GameManager.start_game("stage_020")
 
 func _do_settings() -> void:
     notice_label.text = _tx("msg.main.open_settings", "Open settings")

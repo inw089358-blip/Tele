@@ -1,10 +1,10 @@
-﻿key,zh_CN,en_US
+key,zh_CN,en_US
 data.character.the_fool.name,愚者,The Fool
 data.character.the_fool.hint,高机动，容错较低,High mobility and risky defense
 data.character.the_chariot.name,战车,The Chariot
 data.character.the_chariot.hint,高生存，稳健推进,High survivability and steady push
-data.character.the_hanged_man.name,倒吊人,The Hanged Man
-data.character.the_hanged_man.hint,均衡属性，节奏控制,Balanced stats with tempo control
+data.character.the_sun.name,太阳,The Sun
+data.character.the_sun.hint,均衡属性，节奏控制,Balanced stats with tempo control
 data.item.item_damage_chip.name,伤害芯片,Damage Chip
 data.item.item_damage_chip.desc,攻击伤害 +1,Attack damage +1
 data.item.item_attack_speed.name,超频触发器,Overclock Trigger
@@ -41,8 +41,6 @@ data.weapon.rebar_spear.name,钢筋矛,Rebar Spear
 data.weapon.rebar_spear.desc,强线性穿刺，突进能力突出。,Piercing melee thrust with strong linear reach.
 data.weapon.mechanical_crossbow.name,机械弩,Mechanical Crossbow
 data.weapon.mechanical_crossbow.desc,稳定节奏的远程输出武器。,Stable ranged output with good tempo.
-data.weapon.drum_mallet.name,鼓槌,Drum Mallet
-data.weapon.drum_mallet.desc,节奏型近战连击武器。,Rhythmic melee strikes with consistent chains.
 data.weapon.meteor_hammer.name,流星锤,Meteor Hammer
 data.weapon.meteor_hammer.desc,高风险高回报的重型近战武器。,High-risk high-reward heavy melee weapon.
 data.reward.atk_flat_1.name,攻击 +1,Attack +1

@@ -1,4 +1,4 @@
-{
+﻿{
     "shop_rules":  {
                        "offers_per_wave":  4,
                        "weapon_chance":  0.55,
@@ -9,679 +9,74 @@
                         "rule":  "2_to_1_same_weapon_same_rarity",
                         "rarity_order":  [
                                              "common",
+                                             "uncommon",
                                              "rare",
                                              "epic",
                                              "legendary"
                                          ]
                     },
-    "item_pool": [
-        {
-            "item_id": "item_bible_old",
-            "name": "破旧的圣经",
-            "description": "+3 护甲, -4% 移速",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "armor": 3,
-                "player_move_speed": -9
-            }
-        },
-        {
-            "item_id": "item_dagger_rusty",
-            "name": "生锈的匕首",
-            "description": "+5% 攻速, -3 最大生命",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "attack_speed_mult": 1.05,
-                "max_hp_flat": -3
-            }
-        },
-        {
-            "item_id": "item_lantern_apprentice",
-            "name": "学徒提灯",
-            "description": "+20 拾取范围, -2 幸运",
-            "rarity": "common",
-            "base_price": 22,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "pickup_radius": 20,
-                "luck": -2
-            }
-        },
-        {
-            "item_id": "item_herb_dry",
-            "name": "干燥草药",
-            "description": "+1 生命回复, -3% 伤害",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "hp_regen": 1,
-                "global_attack_percent": -3
-            }
-        },
-        {
-            "item_id": "item_mirror_crude",
-            "name": "粗制护心镜",
-            "description": "+2 护甲, -1% 闪避",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "armor": 2,
-                "dodge_chance": -0.01
-            }
-        },
-        {
-            "item_id": "item_bullet_lead",
-            "name": "铅制子弹",
-            "description": "+3 远程伤害, -2% 攻速",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "ranged_damage_flat": 3,
-                "attack_speed_mult": 0.98
-            }
-        },
-        {
-            "item_id": "item_whetstone_heavy",
-            "name": "沉重磨刀石",
-            "description": "+3 近战伤害, -2% 攻速",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "melee_damage_flat": 3,
-                "attack_speed_mult": 0.98
-            }
-        },
-        {
-            "item_id": "item_coin_broken",
-            "name": "破碎古币",
-            "description": "+8 收获, -2% 闪避",
-            "rarity": "common",
-            "base_price": 20,
-            "price_wave_scale": 1.04,
-            "weight": 1.1,
-            "effects": {
-                "harvest": 8,
-                "dodge_chance": -0.02
-            }
-        },
-        {
-            "item_id": "item_rabbit_foot",
-            "name": "幸运兔脚",
-            "description": "+10 幸运, -3 最大生命",
-            "rarity": "common",
-            "base_price": 22,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "luck": 10,
-                "max_hp_flat": -3
-            }
-        },
-        {
-            "item_id": "item_feather_light",
-            "name": "轻快羽毛",
-            "description": "+5% 移速, -1 护甲",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "player_move_speed": 11,
-                "armor": -1
-            }
-        },
-        {
-            "item_id": "item_tarot_fragment",
-            "name": "塔罗残页",
-            "description": "+5% 经验获取, -2 幸运",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "xp_gain_mult": 1.05,
-                "luck": -2
-            }
-        },
-        {
-            "item_id": "item_lens_shard",
-            "name": "透镜碎片",
-            "description": "+10% 攻击范围, -3% 攻速",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "bonus_target_range": 32,
-                "attack_speed_mult": 0.97
-            }
-        },
-        {
-            "item_id": "item_bandage_bloody",
-            "name": "带血绷带",
-            "description": "+1% 吸血, -2 护甲",
-            "rarity": "common",
-            "base_price": 28,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "lifesteal": 0.01,
-                "armor": -2
-            }
-        },
-        {
-            "item_id": "item_alchemist_coin",
-            "name": "炼金金币",
-            "description": "+12 收获, -3% 移速",
-            "rarity": "common",
-            "base_price": 28,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "harvest": 12,
-                "player_move_speed": -7
-            }
-        },
-        {
-            "item_id": "item_shield_wood",
-            "name": "木制圆盾",
-            "description": "+5% 闪避, -3% 伤害",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "dodge_chance": 0.05,
-                "global_attack_percent": -3
-            }
-        },
-        {
-            "item_id": "item_beads_meditation",
-            "name": "冥想念珠",
-            "description": "+2 生命回复, -5% 攻速",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "hp_regen": 2,
-                "attack_speed_mult": 0.95
-            }
-        },
-        {
-            "item_id": "item_potion_strange",
-            "name": "怪味药水",
-            "description": "+10% 伤害, -5 最大生命",
-            "rarity": "common",
-            "base_price": 30,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "global_attack_percent": 10,
-                "max_hp_flat": -5
-            }
-        },
-        {
-            "item_id": "item_bottle_empty",
-            "name": "空酒瓶",
-            "description": "+5% 攻速, +5% 移速, -3 护甲",
-            "rarity": "common",
-            "base_price": 28,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "attack_speed_mult": 1.05,
-                "player_move_speed": 11,
-                "armor": -3
-            }
-        },
-        {
-            "item_id": "item_candle_ritual",
-            "name": "仪式蜡烛",
-            "description": "+5% 暴击率, -2 护甲",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "crit_chance": 0.05,
-                "armor": -2
-            }
-        },
-        {
-            "item_id": "item_boots_iron",
-            "name": "沉重铁靴",
-            "description": "+5 护甲, -8% 移速",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "armor": 5,
-                "player_move_speed": -18
-            }
-        },
-        {
-            "item_id": "item_pope_robe",
-            "name": "教皇法袍",
-            "description": "+5 护甲, +10 最大生命, -5% 移速",
-            "rarity": "rare",
-            "base_price": 55,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "armor": 5,
-                "max_hp_flat": 10,
-                "player_move_speed": -11
-            }
-        },
-        {
-            "item_id": "item_magician_poker",
-            "name": "魔术师扑克",
-            "description": "+10% 暴击率, +10% 暴击伤害, -5 最大生命",
-            "rarity": "rare",
-            "base_price": 60,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "crit_chance": 0.10,
-                "crit_multiplier_flat": 0.10,
-                "max_hp_flat": -5
-            }
-        },
-        {
-            "item_id": "item_chariot_wheel",
-            "name": "战车轮毂",
-            "description": "+15% 移速, +15 拾取范围, -2 护甲",
-            "rarity": "rare",
-            "base_price": 50,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "player_move_speed": 33,
-                "pickup_radius": 15,
-                "armor": -2
-            }
-        },
-        {
-            "item_id": "item_priestess_mercy",
-            "name": "女祭司慈悲",
-            "description": "+3% 吸血, +2 生命回复, -5% 伤害",
-            "rarity": "rare",
-            "base_price": 58,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "lifesteal": 0.03,
-                "hp_regen": 2,
-                "global_attack_percent": -5
-            }
-        },
-        {
-            "item_id": "item_hermit_candle",
-            "name": "隐者蜡烛",
-            "description": "+20% 伤害, -10% 攻速",
-            "rarity": "rare",
-            "base_price": 65,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "global_attack_percent": 20,
-                "attack_speed_mult": 0.90
-            }
-        },
-        {
-            "item_id": "item_piggy_bank",
-            "name": "储蓄罐",
-            "description": "+20 每波利息(以收获体现), -5% 伤害",
-            "rarity": "rare",
-            "base_price": 45,
-            "price_wave_scale": 1.06,
-            "weight": 0.9,
-            "effects": {
-                "harvest": 20,
-                "global_attack_percent": -5
-            }
-        },
-        {
-            "item_id": "item_merchant_scale",
-            "name": "商人的天平",
-            "description": "+25 收获, -10% 伤害",
-            "rarity": "rare",
-            "base_price": 48,
-            "price_wave_scale": 1.06,
-            "weight": 0.9,
-            "effects": {
-                "harvest": 25,
-                "global_attack_percent": -10
-            }
-        },
-        {
-            "item_id": "item_revenge_arrow",
-            "name": "复仇之箭",
-            "description": "+5 远程伤害, -5% 闪避",
-            "rarity": "rare",
-            "base_price": 52,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "ranged_damage_flat": 5,
-                "dodge_chance": -0.05
-            }
-        },
-        {
-            "item_id": "item_cursed_eye",
-            "name": "诅咒之眼",
-            "description": "+15% 伤害, +10% 攻速, -20 幸运",
-            "rarity": "rare",
-            "base_price": 70,
-            "price_wave_scale": 1.06,
-            "weight": 0.7,
-            "effects": {
-                "global_attack_percent": 15,
-                "attack_speed_mult": 1.10,
-                "luck": -20
-            }
-        },
-        {
-            "item_id": "item_star_dust",
-            "name": "星辰之尘",
-            "description": "+20% 经验获取, +10 幸运, -5% 伤害",
-            "rarity": "rare",
-            "base_price": 60,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "xp_gain_mult": 1.20,
-                "luck": 10,
-                "global_attack_percent": -5
-            }
-        },
-        {
-            "item_id": "item_stake_tough",
-            "name": "坚韧木桩",
-            "description": "+20 最大生命, -5% 移速",
-            "rarity": "rare",
-            "base_price": 55,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "max_hp_flat": 20,
-                "player_move_speed": -11
-            }
-        },
-        {
-            "item_id": "item_razor_sharp",
-            "name": "锋利剃刀",
-            "description": "+8 近战伤害, +8% 攻速, -5 护甲",
-            "rarity": "rare",
-            "base_price": 62,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "melee_damage_flat": 8,
-                "attack_speed_mult": 1.08,
-                "armor": -5
-            }
-        },
-        {
-            "item_id": "item_telescope",
-            "name": "望远镜",
-            "description": "+25% 攻击范围, +5 远程伤害, -5% 闪避",
-            "rarity": "rare",
-            "base_price": 58,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "bonus_target_range": 80,
-                "ranged_damage_flat": 5,
-                "dodge_chance": -0.05
-            }
-        },
-        {
-            "item_id": "item_watch_magnetic",
-            "name": "磁力怀表",
-            "description": "+100 拾取范围, -8% 伤害",
-            "rarity": "rare",
-            "base_price": 50,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "pickup_radius": 100,
-                "global_attack_percent": -8
-            }
-        },
-        {
-            "item_id": "item_crown_thorn",
-            "name": "荆棘王冠",
-            "description": "+15% 伤害, -15 最大生命",
-            "rarity": "rare",
-            "base_price": 60,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "global_attack_percent": 15,
-                "max_hp_flat": -15
-            }
-        },
-        {
-            "item_id": "item_death_scythe",
-            "name": "死神权能",
-            "description": "+15% 暴击率, -10 生命回复",
-            "rarity": "epic",
-            "base_price": 110,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "crit_chance": 0.15,
-                "hp_regen": -10
-            }
-        },
-        {
-            "item_id": "item_wheel_fortune",
-            "name": "命运之轮",
-            "description": "+30 幸运, -10 护甲",
-            "rarity": "epic",
-            "base_price": 100,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "luck": 30,
-                "armor": -10
-            }
-        },
-        {
-            "item_id": "item_inquisitor_chain",
-            "name": "审判官锁链",
-            "description": "+20% 伤害, -10% 攻速",
-            "rarity": "epic",
-            "base_price": 115,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "global_attack_percent": 20,
-                "attack_speed_mult": 0.90
-            }
-        },
-        {
-            "item_id": "item_temperance_sacrament",
-            "name": "节制圣餐",
-            "description": "+5 生命回复, -35% 移速",
-            "rarity": "epic",
-            "base_price": 105,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "hp_regen": 5,
-                "player_move_speed": -77
-            }
-        },
-        {
-            "item_id": "item_demon_contract",
-            "name": "恶魔契约",
-            "description": "+50% 伤害, +20 收获",
-            "rarity": "epic",
-            "base_price": 130,
-            "price_wave_scale": 1.08,
-            "weight": 0.4,
-            "effects": {
-                "global_attack_percent": 50,
-                "harvest": 20
-            }
-        },
-        {
-            "item_id": "item_alchemist_crucible",
-            "name": "炼金坩埚",
-            "description": "+15% 金币收益, +5 伤害, -10 护甲",
-            "rarity": "epic",
-            "base_price": 120,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "gold_gain_multiplier": 1.15,
-                "attack_damage_flat": 5,
-                "armor": -10
-            }
-        },
-        {
-            "item_id": "item_moon_veil",
-            "name": "月之纱幔",
-            "description": "+20% 闪避, -10 最大生命",
-            "rarity": "epic",
-            "base_price": 115,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "dodge_chance": 0.20,
-                "max_hp_flat": -10
-            }
-        },
-        {
-            "item_id": "item_justice_guillotine",
-            "name": "正义断头台",
-            "description": "+25% 伤害, -5 护甲",
-            "rarity": "epic",
-            "base_price": 120,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "global_attack_percent": 25,
-                "armor": -5
-            }
-        },
-        {
-            "item_id": "item_world_tree_sapling",
-            "name": "世界树幼苗",
-            "description": "+100 最大生命, -30% 伤害",
-            "rarity": "epic",
-            "base_price": 140,
-            "price_wave_scale": 1.08,
-            "weight": 0.4,
-            "effects": {
-                "max_hp_flat": 100,
-                "global_attack_percent": -30
-            }
-        },
-        {
-            "item_id": "item_glutton_greed",
-            "name": "暴食者贪婪",
-            "description": "+20 收获, -10% 闪避",
-            "rarity": "epic",
-            "base_price": 100,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "harvest": 20,
-                "dodge_chance": -0.10
-            }
-        },
-        {
-            "item_id": "item_emperor_throne",
-            "name": "皇帝至尊宝座",
-            "description": "+40% 伤害, +40% 攻速, -25% 移速",
-            "rarity": "legendary",
-            "base_price": 220,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "global_attack_percent": 40,
-                "attack_speed_mult": 1.40,
-                "player_move_speed": -55
-            }
-        },
-        {
-            "item_id": "item_astronomy_orb",
-            "name": "全知星象仪",
-            "description": "+25 幸运, +25 收获, +25% 经验",
-            "rarity": "legendary",
-            "base_price": 200,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "luck": 25,
-                "harvest": 25,
-                "xp_gain_mult": 1.25
-            }
-        },
-        {
-            "item_id": "item_fool_pocket",
-            "name": "愚者万能口袋",
-            "description": "+20% 攻速, +20% 金币收益",
-            "rarity": "legendary",
-            "base_price": 210,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "attack_speed_mult": 1.20,
-                "gold_gain_multiplier": 1.20
-            }
-        },
-        {
-            "item_id": "item_star_source",
-            "name": "星辰之源",
-            "description": "+15% 经验, +15 幸运",
-            "rarity": "legendary",
-            "base_price": 180,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "xp_gain_mult": 1.15,
-                "luck": 15
-            }
-        },
-        {
-            "item_id": "item_world_omni",
-            "name": "世界·全知全能",
-            "description": "+20 生命, +10 护甲, +10% 闪避, +10% 暴击, +10 幸运, +10 收获",
-            "rarity": "legendary",
-            "base_price": 250,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "max_hp_flat": 20,
-                "armor": 10,
-                "dodge_chance": 0.10,
-                "crit_chance": 0.10,
-                "luck": 10,
-                "harvest": 10
-            }
-        }
-    ],
+    "item_pool":  [
+                      {
+                          "item_id":  "item_damage_chip",
+                          "name":  "Damage Chip",
+                          "description":  "Attack damage +1",
+                          "rarity":  "common",
+                          "base_price":  24,
+                          "price_wave_scale":  1.04,
+                          "weight":  1.05,
+                          "effects":  {
+                                          "bonus_attack_damage":  1
+                                      }
+                      },
+                      {
+                          "item_id":  "item_attack_speed",
+                          "name":  "Overclock Trigger",
+                          "description":  "Attack speed +8%",
+                          "rarity":  "uncommon",
+                          "base_price":  38,
+                          "price_wave_scale":  1.05,
+                          "weight":  0.78,
+                          "effects":  {
+                                          "attack_speed_mult":  1.08
+                                      }
+                      },
+                      {
+                          "item_id":  "item_armor_plate",
+                          "name":  "Armor Plate",
+                          "description":  "Armor +1.5",
+                          "rarity":  "common",
+                          "base_price":  30,
+                          "price_wave_scale":  1.04,
+                          "weight":  1.12,
+                          "effects":  {
+                                          "armor":  1.5
+                                      }
+                      },
+                      {
+                          "item_id":  "item_crit_lens",
+                          "name":  "Crit Lens",
+                          "description":  "Crit chance +3%",
+                          "rarity":  "uncommon",
+                          "base_price":  36,
+                          "price_wave_scale":  1.05,
+                          "weight":  0.74,
+                          "effects":  {
+                                          "crit_chance":  0.03
+                                      }
+                      },
+                      {
+                          "item_id":  "item_vampire_fang",
+                          "name":  "Vampire Fang",
+                          "description":  "Lifesteal +2%",
+                          "rarity":  "rare",
+                          "base_price":  46,
+                          "price_wave_scale":  1.06,
+                          "weight":  0.42,
+                          "effects":  {
+                                          "lifesteal":  0.02
+                                      }
+                      }
+                  ],
     "weapon_pool":  [
                         {
                             "weapon_id":  "kunai",
@@ -707,7 +102,8 @@
                                             "bonus_attack_damage":  0
                                         },
                             "rarity_weights":  {
-                                                   "common":  94,
+                                                   "common":  70,
+                                                   "uncommon":  24,
                                                    "rare":  6
                                                },
                             "build_tags":  [
@@ -739,7 +135,8 @@
                                             "bonus_attack_damage":  1
                                         },
                             "rarity_weights":  {
-                                                   "common":  88,
+                                                   "common":  60,
+                                                   "uncommon":  28,
                                                    "rare":  10,
                                                    "epic":  2
                                                },
@@ -775,7 +172,8 @@
                                             "bonus_target_range":  8
                                         },
                             "rarity_weights":  {
-                                                   "common":  90,
+                                                   "common":  62,
+                                                   "uncommon":  28,
                                                    "rare":  8,
                                                    "epic":  2
                                                },
@@ -795,7 +193,7 @@
                                      ],
                             "base_price":  46,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "chain_whip",
                             "level":  1,
                             "attack_profile":  {
@@ -808,7 +206,8 @@
                                             "bonus_attack_damage":  0
                                         },
                             "rarity_weights":  {
-                                                   "common":  92,
+                                                   "common":  66,
+                                                   "uncommon":  26,
                                                    "rare":  8
                                                },
                             "build_tags":  [
@@ -827,7 +226,7 @@
                                      ],
                             "base_price":  60,
                             "price_wave_scale":  1.07,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "circular_saw",
                             "level":  1,
                             "attack_profile":  {
@@ -842,7 +241,8 @@
                                             "bonus_attack_damage":  1
                                         },
                             "rarity_weights":  {
-                                                   "common":  85,
+                                                   "common":  55,
+                                                   "uncommon":  30,
                                                    "rare":  12,
                                                    "epic":  3
                                                },
@@ -862,7 +262,7 @@
                                      ],
                             "base_price":  52,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "flare_launcher",
                             "level":  1,
                             "attack_profile":  {
@@ -877,7 +277,8 @@
                                             "bonus_attack_damage":  0
                                         },
                             "rarity_weights":  {
-                                                   "common":  90,
+                                                   "common":  60,
+                                                   "uncommon":  30,
                                                    "rare":  8,
                                                    "epic":  2
                                                },
@@ -897,7 +298,7 @@
                                      ],
                             "base_price":  56,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "traffic_cone",
                             "level":  1,
                             "attack_profile":  {
@@ -912,7 +313,8 @@
                                             "bonus_attack_damage":  1
                                         },
                             "rarity_weights":  {
-                                                   "common":  88,
+                                                   "common":  58,
+                                                   "uncommon":  30,
                                                    "rare":  10,
                                                    "epic":  2
                                                },
@@ -932,7 +334,7 @@
                                      ],
                             "base_price":  55,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "heavy_wrench",
                             "level":  1,
                             "attack_profile":  {
@@ -945,7 +347,8 @@
                                             "bonus_attack_damage":  1
                                         },
                             "rarity_weights":  {
-                                                   "common":  88,
+                                                   "common":  60,
+                                                   "uncommon":  28,
                                                    "rare":  10,
                                                    "epic":  2
                                                },
@@ -965,7 +368,7 @@
                                      ],
                             "base_price":  51,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "molotov",
                             "level":  1,
                             "attack_profile":  {
@@ -980,7 +383,8 @@
                                             "bonus_attack_damage":  0
                                         },
                             "rarity_weights":  {
-                                                   "common":  90,
+                                                   "common":  62,
+                                                   "uncommon":  28,
                                                    "rare":  8,
                                                    "epic":  2
                                                },
@@ -1000,7 +404,7 @@
                                      ],
                             "base_price":  49,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "shuriken_ring",
                             "level":  1,
                             "attack_profile":  {
@@ -1015,7 +419,8 @@
                                             "bonus_attack_damage":  0
                                         },
                             "rarity_weights":  {
-                                                   "common":  90,
+                                                   "common":  64,
+                                                   "uncommon":  26,
                                                    "rare":  8,
                                                    "epic":  2
                                                },
@@ -1035,7 +440,7 @@
                                      ],
                             "base_price":  42,
                             "price_wave_scale":  1.05,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "steel_pipe",
                             "level":  1,
                             "attack_profile":  {
@@ -1048,7 +453,8 @@
                                             "bonus_attack_damage":  0
                                         },
                             "rarity_weights":  {
-                                                   "common":  92,
+                                                   "common":  70,
+                                                   "uncommon":  22,
                                                    "rare":  8
                                                },
                             "build_tags":  [
@@ -1067,7 +473,7 @@
                                      ],
                             "base_price":  54,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "rebar_spear",
                             "level":  1,
                             "attack_profile":  {
@@ -1080,7 +486,8 @@
                                             "bonus_attack_damage":  1
                                         },
                             "rarity_weights":  {
-                                                   "common":  90,
+                                                   "common":  62,
+                                                   "uncommon":  28,
                                                    "rare":  8,
                                                    "epic":  2
                                                },
@@ -1100,7 +507,7 @@
                                      ],
                             "base_price":  53,
                             "price_wave_scale":  1.06,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "mechanical_crossbow",
                             "level":  1,
                             "attack_profile":  {
@@ -1116,13 +523,47 @@
                                             "bonus_target_range":  10
                                         },
                             "rarity_weights":  {
-                                                   "common":  90,
+                                                   "common":  60,
+                                                   "uncommon":  30,
                                                    "rare":  8,
                                                    "epic":  2
                                                },
                             "build_tags":  [
                                                "eagle_eye",
                                                "rapid"
+                                           ]
+                        },
+                        {
+                            "weapon_id":  "drum_mallet",
+                            "name":  "Drum Mallet",
+                            "description":  "Rhythmic melee strikes with consistent chains.",
+                            "starter":  true,
+                            "tags":  [
+                                         "melee",
+                                         "tempo"
+                                     ],
+                            "base_price":  47,
+                            "price_wave_scale":  1.05,
+                            "weight":  0,
+                            "stack_key":  "drum_mallet",
+                            "level":  1,
+                            "attack_profile":  {
+                                                   "mode":  "melee_arc",
+                                                   "base_damage":  10,
+                                                   "interval":  0.4,
+                                                   "range":  98
+                                               },
+                            "effects":  {
+                                            "bonus_attack_damage":  0
+                                        },
+                            "rarity_weights":  {
+                                                   "common":  68,
+                                                   "uncommon":  24,
+                                                   "rare":  8
+                                               },
+                            "build_tags":  [
+                                               "rapid",
+                                               "sustain"
                                            ]
                         },
                         {
@@ -1136,7 +577,7 @@
                                      ],
                             "base_price":  59,
                             "price_wave_scale":  1.07,
-                            "weight":  1.0,
+                            "weight":  0,
                             "stack_key":  "meteor_hammer",
                             "level":  1,
                             "attack_profile":  {
@@ -1149,7 +590,8 @@
                                             "bonus_attack_damage":  1
                                         },
                             "rarity_weights":  {
-                                                   "common":  86,
+                                                   "common":  56,
+                                                   "uncommon":  30,
                                                    "rare":  10,
                                                    "epic":  4
                                                },

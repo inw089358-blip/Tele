@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "id":  "1",
         "name":  "契约胜利之剑印",
@@ -29,7 +29,7 @@
         "slot":  "徽章",
         "effect":  "队友每存活1人，技能伤害+4%",
         "build":  "圣誓爆发",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "5",
@@ -61,7 +61,7 @@
         "slot":  "冠饰",
         "effect":  "清除控制后伤害减免+25%（3秒）",
         "build":  "圣誓爆发",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "9",
@@ -109,7 +109,7 @@
         "slot":  "粉末",
         "effect":  "低光区域命中率+15%",
         "build":  "深渊余烬",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "15",
@@ -125,7 +125,7 @@
         "slot":  "徽章",
         "effect":  "闪避后3秒移速+30%",
         "build":  "深渊余烬",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "17",
@@ -157,7 +157,7 @@
         "slot":  "针具",
         "effect":  "站桩3秒后每秒回蓝2%",
         "build":  "深渊余烬",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "21",
@@ -205,7 +205,7 @@
         "slot":  "羽饰",
         "effect":  "背击伤害+25%",
         "build":  "血祭收割",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "27",
@@ -221,7 +221,7 @@
         "slot":  "绷带",
         "effect":  "生命低于50%时吸血提升至2倍",
         "build":  "血祭收割",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "29",
@@ -237,7 +237,7 @@
         "slot":  "古币",
         "effect":  "暴击造成额外真实伤害（基于层数）",
         "build":  "血祭收割",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "31",
@@ -301,7 +301,7 @@
         "slot":  "墨瓶",
         "effect":  "控制命中后法术暴击+20%（3秒）",
         "build":  "时停连段",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "39",
@@ -317,7 +317,7 @@
         "slot":  "印框",
         "effect":  "召唤物攻击可延长控制0.3秒",
         "build":  "时停连段",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "41",
@@ -349,7 +349,7 @@
         "slot":  "校准器",
         "effect":  "每第7次命中触发一次时间脉冲",
         "build":  "时停连段",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "45",
@@ -365,7 +365,7 @@
         "slot":  "饲印",
         "effect":  "召唤物生命+25%",
         "build":  "召唤军势",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "47",
@@ -381,7 +381,7 @@
         "slot":  "手套",
         "effect":  "每存在1个召唤物，本体减伤+3%",
         "build":  "召唤军势",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "49",
@@ -429,7 +429,7 @@
         "slot":  "旗钉",
         "effect":  "召唤物驻守时获得嘲讽",
         "build":  "召唤军势",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "55",
@@ -461,7 +461,7 @@
         "slot":  "转译器",
         "effect":  "受控期间攻击力不降反升10%",
         "build":  "诅咒反伤",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "59",
@@ -605,7 +605,7 @@
         "slot":  "披饰",
         "effect":  "残血时暴击率翻倍",
         "build":  "暴击赌徒",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "77",
@@ -621,7 +621,7 @@
         "slot":  "核心",
         "effect":  "最大生命+18%",
         "build":  "守护堡垒",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "79",
@@ -637,7 +637,7 @@
         "slot":  "扣件",
         "effect":  "受击后反伤固定值",
         "build":  "守护堡垒",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "81",
@@ -733,7 +733,7 @@
         "slot":  "眼镜",
         "effect":  "卖出道具价格+15%",
         "build":  "财宝增益",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "93",
@@ -781,7 +781,7 @@
         "slot":  "券",
         "effect":  "可一次无损回购已卖出道具",
         "build":  "财宝增益",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "99",
@@ -1021,7 +1021,7 @@
         "slot":  "壶",
         "effect":  "10秒未受击后每秒回复1.2%生命",
         "build":  "续航恢复",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "129",
@@ -1053,7 +1053,7 @@
         "slot":  "铁片",
         "effect":  "护盾存在时暴击伤害+18%",
         "build":  "护盾输出",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "133",
@@ -1069,7 +1069,7 @@
         "slot":  "脚钉",
         "effect":  "被击退后3秒内韧性+40%",
         "build":  "抗控",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "135",
@@ -1085,7 +1085,7 @@
         "slot":  "缝线",
         "effect":  "生命低于40%时移速+20%",
         "build":  "残血拉扯",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "137",
@@ -1117,7 +1117,7 @@
         "slot":  "护符",
         "effect":  "生命高于85%时减伤+12%",
         "build":  "高血坦",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "141",
@@ -1133,7 +1133,7 @@
         "slot":  "徽钉",
         "effect":  "暴击后攻速+8%（可叠3层）",
         "build":  "暴击连打",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "143",
@@ -1149,7 +1149,7 @@
         "slot":  "墨章",
         "effect":  "对精英单位伤害+14%",
         "build":  "精英猎手",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "145",
@@ -1165,7 +1165,7 @@
         "slot":  "布鞋",
         "effect":  "闪避后2秒内无法被减速",
         "build":  "机动",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "147",
@@ -1181,7 +1181,7 @@
         "slot":  "目印",
         "effect":  "对同一目标连续命中时伤害递增（最高+20%）",
         "build":  "单体压制",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "149",
@@ -1197,7 +1197,7 @@
         "slot":  "印鉴",
         "effect":  "静止1.5秒后获得10%护盾",
         "build":  "阵地战",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "151",
@@ -1213,7 +1213,7 @@
         "slot":  "骰筒",
         "effect":  "击杀有15%概率掉落临时攻速球",
         "build":  "经济战斗",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "153",
@@ -1229,7 +1229,7 @@
         "slot":  "账绳",
         "effect":  "每通关1房间，最大生命+1%（上限20%）",
         "build":  "发育",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "155",
@@ -1245,7 +1245,7 @@
         "slot":  "徽",
         "effect":  "未使用消耗品每多1个，减伤+2%",
         "build":  "囤积收益",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "157",
@@ -1261,7 +1261,7 @@
         "slot":  "商签",
         "effect":  "商店刷新免费1次/层",
         "build":  "经济",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "159",
@@ -1277,7 +1277,7 @@
         "slot":  "存钱罐",
         "effect":  "受击时掉少量金币并回复等量生命",
         "build":  "金血互换",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "161",
@@ -1293,7 +1293,7 @@
         "slot":  "黑册",
         "effect":  "对欠血（生命低于50%）敌人伤害+16%",
         "build":  "收割",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "163",
@@ -1309,7 +1309,7 @@
         "slot":  "香包",
         "effect":  "每20秒清除1层负面状态",
         "build":  "净化",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "165",
@@ -1325,7 +1325,7 @@
         "slot":  "袖章",
         "effect":  "你周围友军/召唤物伤害+6%",
         "build":  "团队增益",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "167",
@@ -1341,7 +1341,7 @@
         "slot":  "铜哨",
         "effect":  "近战命中有10%概率造成短暂僵直",
         "build":  "控制",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "169",
@@ -1357,7 +1357,7 @@
         "slot":  "旗钉",
         "effect":  "首次命中精英时使其伤害-12%（10秒）",
         "build":  "压制精英",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "171",
@@ -1373,7 +1373,7 @@
         "slot":  "绑腿",
         "effect":  "同时被3名以上敌人盯上时减伤+18%",
         "build":  "反围殴",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "173",
@@ -1389,7 +1389,7 @@
         "slot":  "战靴",
         "effect":  "击退抗性+60%",
         "build":  "稳定站桩",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "175",
@@ -1405,7 +1405,7 @@
         "slot":  "面罩",
         "effect":  "脱离战斗后首次命中必暴击",
         "build":  "先手",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "177",
@@ -1421,7 +1421,7 @@
         "slot":  "沙囊",
         "effect":  "生命每下降10%，攻速+3%",
         "build":  "残血攻势",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "179",
@@ -1437,7 +1437,7 @@
         "slot":  "刻尺",
         "effect":  "远距离命中伤害+18%",
         "build":  "远程压制",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "181",
@@ -1453,7 +1453,7 @@
         "slot":  "牌穗",
         "effect":  "对满血敌人造成额外真实伤害",
         "build":  "开局爆发",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "183",
@@ -1469,7 +1469,7 @@
         "slot":  "压片",
         "effect":  "生命保持在60%-90%区间时伤害+12%",
         "build":  "中血运营",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "185",
@@ -1485,7 +1485,7 @@
         "slot":  "札记",
         "effect":  "对同名敌人每次击杀永久+1%伤害（本局）",
         "build":  "目标学习",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "187",
@@ -1501,7 +1501,7 @@
         "slot":  "绳标",
         "effect":  "标记目标后，对其普攻伤害+20%（8秒）",
         "build":  "单点",
-        "rarity":  "uncommon"
+        "rarity":  "rare"
     },
     {
         "id":  "189",

@@ -33,6 +33,7 @@ var current_difficulty: String = "normal"
 var current_stage_id: String = "stage_001"
 var current_wave: int = 0
 var selected_starter_weapon_id: String = ""
+var recycling_bag_amount: int = 0
 var _pending_slot_data: Dictionary = {}
 var _pending_shop_snapshot: Dictionary = {}
 var _scene_transition_busy: bool = false
@@ -180,6 +181,7 @@ func start_game(stage_id: String = "stage_001") -> void :
         selected_starter_weapon_id = _resolve_default_starter_weapon_id()
     _pending_slot_data = {}
     _pending_shop_snapshot = {}
+    recycling_bag_amount = 0
     _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 
 func start_game_with_runtime(stage_id: String, runtime_data: Dictionary) -> void:
@@ -239,6 +241,13 @@ func continue_from_shop(snapshot: Dictionary) -> void:
     _pending_slot_data = snapshot.duplicate(true)
     _pending_slot_data["wave"] = 1
     _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
+    
+    # Reset shop refresh count and locking for the next stage.
+    var shop_state: Dictionary = _pending_slot_data.get("shop_runtime_state", {})
+    shop_state["refresh_count"] = 0
+    shop_state["shop_locked"] = false
+    _pending_slot_data["shop_runtime_state"] = shop_state
+    
     _pending_shop_snapshot = {}
     _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 

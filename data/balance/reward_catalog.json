@@ -1,4 +1,4 @@
-﻿{
+{
     "rules":  {
                   "same_category_max_streak":  2,
                   "no_output_soft_pity":  3,
@@ -7,88 +7,73 @@
               },
     "rarity_weights_by_stage":  {
                                     "stage_001":  {
-                                                      "common":  0.82,
-                                                      "uncommon":  0.17,
-                                                      "rare":  0.01
+                                                      "common":  0.92,
+                                                      "rare":  0.08
                                                   },
                                     "stage_002":  {
-                                                      "common":  0.75,
-                                                      "uncommon":  0.22,
-                                                      "rare":  0.03
-                                                  },
-                                    "stage_003":  {
-                                                      "common":  0.64,
-                                                      "uncommon":  0.30,
-                                                      "rare":  0.06
-                                                  },
-                                    "stage_004":  {
-                                                      "common":  0.56,
-                                                      "uncommon":  0.34,
-                                                      "rare":  0.10
-                                                  },
-                                    "stage_005":  {
-                                                      "common":  0.46,
-                                                      "uncommon":  0.40,
+                                                      "common":  0.86,
                                                       "rare":  0.14
                                                   },
+                                    "stage_003":  {
+                                                      "common":  0.79,
+                                                      "rare":  0.21
+                                                  },
+                                    "stage_004":  {
+                                                      "common":  0.73,
+                                                      "rare":  0.27
+                                                  },
+                                    "stage_005":  {
+                                                      "common":  0.66,
+                                                      "rare":  0.34
+                                                  },
                                     "stage_006":  {
-                                                      "common":  0.40,
-                                                      "uncommon":  0.44,
-                                                      "rare":  0.14,
+                                                      "common":  0.62,
+                                                      "rare":  0.36,
                                                       "epic":  0.02
                                                   },
                                     "stage_007":  {
-                                                      "common":  0.36,
-                                                      "uncommon":  0.45,
-                                                      "rare":  0.16,
+                                                      "common":  0.58,
+                                                      "rare":  0.39,
                                                       "epic":  0.03
                                                   },
                                     "stage_008":  {
-                                                      "common":  0.33,
-                                                      "uncommon":  0.45,
-                                                      "rare":  0.18,
+                                                      "common":  0.55,
+                                                      "rare":  0.41,
                                                       "epic":  0.04
                                                   },
                                     "stage_009":  {
-                                                      "common":  0.30,
-                                                      "uncommon":  0.45,
-                                                      "rare":  0.20,
+                                                      "common":  0.52,
+                                                      "rare":  0.43,
                                                       "epic":  0.05
                                                   },
                                     "stage_010":  {
-                                                      "common":  0.28,
-                                                      "uncommon":  0.44,
-                                                      "rare":  0.22,
+                                                      "common":  0.50,
+                                                      "rare":  0.44,
                                                       "epic":  0.06
                                                   },
                                     "stage_011":  {
-                                                      "common":  0.26,
-                                                      "uncommon":  0.42,
-                                                      "rare":  0.24,
+                                                      "common":  0.47,
+                                                      "rare":  0.45,
                                                       "epic":  0.08
                                                   },
                                     "stage_012":  {
-                                                      "common":  0.24,
-                                                      "uncommon":  0.40,
-                                                      "rare":  0.26,
+                                                      "common":  0.44,
+                                                      "rare":  0.46,
                                                       "epic":  0.10
                                                   },
                                     "stage_013":  {
-                                                      "common":  0.22,
-                                                      "uncommon":  0.38,
-                                                      "rare":  0.28,
+                                                      "common":  0.41,
+                                                      "rare":  0.47,
                                                       "epic":  0.12
                                                   },
                                     "stage_014":  {
-                                                      "common":  0.20,
-                                                      "uncommon":  0.36,
-                                                      "rare":  0.30,
+                                                      "common":  0.38,
+                                                      "rare":  0.48,
                                                       "epic":  0.14
                                                   },
                                     "stage_015":  {
-                                                      "common":  0.18,
-                                                      "uncommon":  0.34,
-                                                      "rare":  0.32,
+                                                      "common":  0.35,
+                                                      "rare":  0.49,
                                                       "epic":  0.16
                                                   }
                                 },
@@ -131,13 +116,11 @@
                         "max_stacks":  6,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -160,13 +143,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -190,13 +171,11 @@
                         "max_stacks":  5,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -223,13 +202,11 @@
                         "max_stacks":  5,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -239,7 +216,7 @@
                         "name":  "护甲 +2",
                         "desc":  "减少受到的伤害",
                         "category":  "survival_counter",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "survival"
                                  ],
@@ -252,13 +229,11 @@
                         "max_stacks":  6,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -268,7 +243,7 @@
                         "name":  "闪避 +5%",
                         "desc":  "5% 概率完全免伤",
                         "category":  "survival_counter",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "survival",
                                      "utility"
@@ -282,13 +257,11 @@
                         "max_stacks":  5,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -298,7 +271,7 @@
                         "name":  "攻速 +10%",
                         "desc":  "自动攻击间隔 -7%",
                         "category":  "weapon_behavior",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "output"
                                  ],
@@ -311,13 +284,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -340,13 +311,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -356,7 +325,7 @@
                         "name":  "暴击率 +8%",
                         "desc":  "更容易触发暴击",
                         "category":  "weapon_behavior",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "output"
                                  ],
@@ -369,13 +338,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -385,7 +352,7 @@
                         "name":  "暴击率 +2.2%",
                         "desc":  "提升暴击触发概率",
                         "category":  "weapon_behavior",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "output"
                                  ],
@@ -398,13 +365,11 @@
                         "max_stacks":  3,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -430,13 +395,11 @@
                                         "min_level":  3
                                     },
                         "rarity_tiers":  [
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -459,13 +422,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -475,7 +436,7 @@
                         "name":  "经验收益 +10%",
                         "desc":  "经验获取倍率 +10%",
                         "category":  "economy_ops",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "economy",
                                      "utility"
@@ -489,13 +450,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -505,7 +464,7 @@
                         "name":  "金币收益 +10%",
                         "desc":  "金币获取倍率 +10%",
                         "category":  "economy_ops",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "economy"
                                  ],
@@ -518,13 +477,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -534,7 +491,7 @@
                         "name":  "幸运 +8",
                         "desc":  "提升高价值奖励出现倾向",
                         "category":  "economy_ops",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "tags":  [
                                      "economy",
                                      "utility"
@@ -548,13 +505,11 @@
                         "max_stacks":  4,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -588,13 +543,11 @@
                                         "min_level":  5
                                     },
                         "rarity_tiers":  [
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -627,13 +580,11 @@
                                         "min_level":  5
                                     },
                         "rarity_tiers":  [
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -646,13 +597,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            },
@@ -675,13 +624,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            },
@@ -701,14 +648,12 @@
                         "name":  "冲击矩阵",
                         "desc":  "攻击与暴击率同步提升（随稀有度提升数值）",
                         "category":  "build_core",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "rarity_tiers":  [
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
-                                               "uncommon":  1,
                                                "rare":  1.22,
                                                "epic":  1.46
                                            },
@@ -738,13 +683,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            },
@@ -767,13 +710,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            },
@@ -794,14 +735,12 @@
                         "name":  "汲取回路",
                         "desc":  "吸血提升（随稀有度提升数值）",
                         "category":  "build_core",
-                        "rarity":  "uncommon",
+                        "rarity":  "rare",
                         "rarity_tiers":  [
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
-                                               "uncommon":  1,
                                                "rare":  1.2,
                                                "epic":  1.45
                                            },
@@ -828,13 +767,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.15,
                                                "rare":  1.32,
                                                "epic":  1.5
                                            },
@@ -862,13 +799,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.15,
                                                "rare":  1.3,
                                                "epic":  1.5
                                            },
@@ -895,13 +830,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.15,
                                                "rare":  1.3,
                                                "epic":  1.5
                                            },
@@ -924,13 +857,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.15,
                                                "rare":  1.3,
                                                "epic":  1.5
                                            },
@@ -954,13 +885,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.15,
                                                "rare":  1.32,
                                                "epic":  1.55
                                            },
@@ -984,13 +913,11 @@
                         "rarity":  "common",
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.15,
                                                "rare":  1.3,
                                                "epic":  1.5
                                            },
@@ -1087,13 +1014,11 @@
                         "max_stacks":  6,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -1116,13 +1041,11 @@
                         "max_stacks":  6,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }
@@ -1145,13 +1068,11 @@
                         "max_stacks":  6,
                         "rarity_tiers":  [
                                              "common",
-                                             "uncommon",
                                              "rare",
                                              "epic"
                                          ],
                         "rarity_scaling":  {
                                                "common":  1,
-                                               "uncommon":  1.18,
                                                "rare":  1.4,
                                                "epic":  1.72
                                            }

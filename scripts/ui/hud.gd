@@ -13,7 +13,8 @@ extends CanvasLayer
 @onready var stamina_label: Label = %StaminaLabel
 @onready var stamina_bar: ProgressBar = %StaminaBar
 @onready var dash_hint_label: Label = %DashHintLabel
-@onready var status_items_container: HBoxContainer = %StatusItems
+@onready var recycling_bag_panel: PanelContainer = %RecyclingBagPanel
+@onready var bag_count_label: Label = %BagCountLabel
 
 var _boss_hp_max: float = 100.0
 var _boss_hp_current: float = 100.0
@@ -26,7 +27,7 @@ const BOSS_HP_SMOOTH_SPEED: float = 9.0
 
 func _ready() -> void :
     set_player_stats(100.0, 100.0, 80.0, 100.0, 0.0, 20.0, 1, 0)
-    set_status_entries(_build_preview_status_entries(GameManager.current_wave))
+    refresh_recycling_bag()
     EventBus.wave_started.connect(_on_wave_started)
 
 func _process(delta: float) -> void:
@@ -37,8 +38,8 @@ func _process(delta: float) -> void:
         _boss_hp_display = move_toward(_boss_hp_display, _boss_hp_current, BOSS_HP_SMOOTH_SPEED * delta * max(_boss_hp_max, 1.0))
         boss_hp_bar.value = _boss_hp_display
 
-func _on_wave_started(wave_id: int) -> void :
-    set_status_entries(_build_preview_status_entries(wave_id))
+func _on_wave_started(_wave_id: int) -> void :
+    pass
 
 func set_stage_timer(is_visible: bool, value_text: String = "", tint: Color = Color(0.82, 0.96, 1.0, 0.95)) -> void:
     if stage_timer_label == null:
@@ -60,6 +61,9 @@ func show_boss_bar(boss_name: String, max_hp: float, current_hp: float) -> void 
     boss_bar_root.anchor_right = 0.5
     boss_bar_root.offset_left = 0.0
     boss_bar_root.offset_right = 0.0
+    # Move the boss bar down to avoid overlapping the timer
+    boss_bar_root.offset_top = 50.0
+    boss_bar_root.offset_bottom = 90.0
     _update_boss_bar_value()
 
     var tween: Tween = create_tween()
@@ -122,13 +126,19 @@ func set_player_stats(
     stamina_label.text = _tf("ui.hud.stamina_fmt", [int(round(stamina_safe)), int(round(stamina_max_safe))], "Stamina %d/%d")
     dash_hint_label.text = _tx("ui.hud.dash_ready", "Dash: Ready") if stamina_safe > 0.0 else _tx("ui.hud.dash_empty", "Dash: Empty")
     dash_hint_label.modulate = Color(0.65, 1.0, 0.65, 1.0) if stamina_safe > 0.0 else Color(1.0, 0.48, 0.48, 1.0)
+    refresh_recycling_bag()
 
-func set_status_entries(entries: Array[Dictionary]) -> void :
-    for child: Node in status_items_container.get_children():
-        child.queue_free()
+func refresh_recycling_bag() -> void:
+    if recycling_bag_panel == null or bag_count_label == null:
+        return
+    var amount: int = GameManager.recycling_bag_amount
+    recycling_bag_panel.visible = true
+    bag_count_label.text = str(amount)
+    # Optional: Dim if 0
+    recycling_bag_panel.modulate.a = 1.0 if amount > 0 else 0.5
 
-    for entry: Dictionary in entries:
-        status_items_container.add_child(_build_status_chip(entry))
+func set_status_entries(_entries: Array[Dictionary]) -> void :
+    pass
 
 func _update_boss_bar_value() -> void :
     boss_hp_bar.max_value = _boss_hp_max

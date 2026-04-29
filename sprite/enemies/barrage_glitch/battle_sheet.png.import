@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://n72fedi2hf1a"
-path="res://.godot/imported/road_sign.png-d4dbd5a6f587a73971c759411c91fe3c.ctex"
+uid="uid://y6puk25hbgmc"
+path="res://.godot/imported/battle_sheet.png-0d4c41e03aba371ff50095547fc3b8c7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/road_sign.png"
-dest_files=["res://.godot/imported/road_sign.png-d4dbd5a6f587a73971c759411c91fe3c.ctex"]
+source_file="res://sprite/enemies/barrage_glitch/battle_sheet.png"
+dest_files=["res://.godot/imported/battle_sheet.png-0d4c41e03aba371ff50095547fc3b8c7.ctex"]
 
 [params]
 
