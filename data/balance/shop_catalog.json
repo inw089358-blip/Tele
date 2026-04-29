@@ -731,8 +731,8 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "melee_arc",
-                                                   "base_damage":  14,
-                                                   "interval":  0.74,
+                                                   "base_damage":  16,
+                                                   "interval":  0.68,
                                                    "range":  105
                                                },
                             "effects":  {
@@ -766,8 +766,8 @@
                                                    "mode":  "ranged_homing",
                                                    "base_damage":  9,
                                                    "interval":  0.36,
-                                                   "range":  340,
-                                                   "projectile_speed":  560,
+                                                   "range":  360,
+                                                   "projectile_speed":  600,
                                                    "projectile_radius":  4
                                                },
                             "effects":  {
@@ -800,8 +800,8 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "melee_arc",
-                                                   "base_damage":  11,
-                                                   "interval":  0.48,
+                                                   "base_damage":  12,
+                                                   "interval":  0.44,
                                                    "range":  115
                                                },
                             "effects":  {
@@ -832,10 +832,10 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "ranged_heavy",
-                                                   "base_damage":  17,
-                                                   "interval":  0.72,
+                                                   "base_damage":  18,
+                                                   "interval":  0.70,
                                                    "range":  420,
-                                                   "projectile_speed":  700,
+                                                   "projectile_speed":  720,
                                                    "projectile_radius":  6
                                                },
                             "effects":  {
@@ -867,10 +867,10 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "ranged_homing",
-                                                   "base_damage":  10,
-                                                   "interval":  0.44,
+                                                   "base_damage":  11,
+                                                   "interval":  0.42,
                                                    "range":  350,
-                                                   "projectile_speed":  540,
+                                                   "projectile_speed":  580,
                                                    "projectile_radius":  5
                                                },
                             "effects":  {
@@ -902,10 +902,10 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "ranged_heavy",
-                                                   "base_damage":  15,
-                                                   "interval":  0.66,
+                                                   "base_damage":  16,
+                                                   "interval":  0.62,
                                                    "range":  390,
-                                                   "projectile_speed":  660,
+                                                   "projectile_speed":  700,
                                                    "projectile_radius":  6
                                                },
                             "effects":  {
@@ -937,8 +937,8 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "melee_arc",
-                                                   "base_damage":  13,
-                                                   "interval":  0.7,
+                                                   "base_damage":  15,
+                                                   "interval":  0.64,
                                                    "range":  102
                                                },
                             "effects":  {
@@ -970,10 +970,10 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "ranged_homing",
-                                                   "base_damage":  10,
-                                                   "interval":  0.46,
+                                                   "base_damage":  11,
+                                                   "interval":  0.43,
                                                    "range":  340,
-                                                   "projectile_speed":  520,
+                                                   "projectile_speed":  560,
                                                    "projectile_radius":  5
                                                },
                             "effects":  {
@@ -1040,8 +1040,8 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "melee_arc",
-                                                   "base_damage":  11,
-                                                   "interval":  0.58,
+                                                   "base_damage":  12,
+                                                   "interval":  0.54,
                                                    "range":  100
                                                },
                             "effects":  {
@@ -1072,8 +1072,8 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "melee_arc",
-                                                   "base_damage":  12,
-                                                   "interval":  0.52,
+                                                   "base_damage":  13,
+                                                   "interval":  0.48,
                                                    "range":  118
                                                },
                             "effects":  {
@@ -1107,8 +1107,8 @@
                                                    "mode":  "ranged_homing",
                                                    "base_damage":  11,
                                                    "interval":  0.42,
-                                                   "range":  360,
-                                                   "projectile_speed":  620,
+                                                   "range":  380,
+                                                   "projectile_speed":  650,
                                                    "projectile_radius":  4
                                                },
                             "effects":  {
@@ -1141,8 +1141,8 @@
                             "level":  1,
                             "attack_profile":  {
                                                    "mode":  "melee_arc",
-                                                   "base_damage":  15,
-                                                   "interval":  0.79,
+                                                   "base_damage":  18,
+                                                   "interval":  0.72,
                                                    "range":  112
                                                },
                             "effects":  {

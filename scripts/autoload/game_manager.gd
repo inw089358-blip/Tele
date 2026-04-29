@@ -242,7 +242,7 @@ func continue_from_shop(snapshot: Dictionary) -> void:
     _pending_slot_data["wave"] = 1
     _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
     
-    # Reset shop refresh count and locking for the next stage.
+    # Reset per-shop refresh cost for the next stage while preserving locked offers.
     var shop_state: Dictionary = _pending_slot_data.get("shop_runtime_state", {})
     shop_state["refresh_count"] = 0
     shop_state["shop_locked"] = false

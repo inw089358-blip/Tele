@@ -16,6 +16,8 @@ const GRID_ICON_SIZE: Vector2 = Vector2(54, 54)
 const PAUSE_OPEN_DURATION: float = 0.18
 const PAUSE_CLOSE_DURATION: float = 0.13
 const PAUSE_PANEL_POP_SCALE: float = 0.94
+const PAUSE_OVERLAY_Z_INDEX: int = 1000
+const FLOATING_DETAIL_Z_INDEX: int = 100
 
 const RARITY_COLORS: Dictionary = {
     "common": Color("#bdc3c7"),    # 银灰色
@@ -73,6 +75,16 @@ var _pause_transition_tween: Tween
 var _scene_input_ready: bool = false
 var _queued_action: Callable = Callable()
 var _queued_action_id: String = ""
+var _selected_weapon_slot_index: int = -1
+var _weapon_action_panel: Control
+var _weapon_action_icon: TextureRect
+var _weapon_action_title: Label
+var _weapon_action_subtitle: Label
+var _weapon_action_detail: RichTextLabel
+var _weapon_action_tags: RichTextLabel
+var _weapon_combine_button: Button
+var _weapon_recycle_button: Button
+var _weapon_cancel_button: Button
 
 # --- Tooltip System ---
 var _tag_tooltip_container: Control
@@ -180,6 +192,7 @@ func _create_pause_overlay() -> void:
     _pause_overlay.name = "PauseOverlay"
     _pause_overlay.visible = false
     _pause_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+    _pause_overlay.z_index = PAUSE_OVERLAY_Z_INDEX
     _pause_overlay.anchors_preset = Control.PRESET_FULL_RECT
     _pause_overlay.anchor_right = 1.0
     _pause_overlay.anchor_bottom = 1.0
@@ -308,12 +321,15 @@ func _add_pause_sub_panel(panel: Control) -> void:
     _pause_overlay.add_child(panel)
     var panel_index: int = max(0, _pause_overlay.get_child_count() - 2)
     _pause_overlay.move_child(panel, panel_index)
+    panel.z_index = PAUSE_OVERLAY_Z_INDEX + 1
 
 func _open_pause_menu() -> void:
     if _is_scene_transition_pending():
         return
     _pause_opened = true
     _hide_pause_sub_panels()
+    if _pause_overlay != null:
+        _pause_overlay.move_to_front()
     _play_pause_overlay_open_transition()
 
 func _resume_shop_from_pause() -> void:
@@ -327,6 +343,8 @@ func _set_pause_overlay_visible(is_visible: bool) -> void:
         return
     _pause_overlay.visible = is_visible
     _pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP if is_visible else Control.MOUSE_FILTER_IGNORE
+    if is_visible:
+        _pause_overlay.move_to_front()
     if _pause_dimmer != null:
         _pause_dimmer.modulate.a = 1.0 if is_visible else 0.0
     if _pause_panel != null:
@@ -343,6 +361,7 @@ func _play_pause_overlay_open_transition() -> void:
     _stop_pause_transition_tween()
     _pause_overlay.visible = true
     _pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+    _pause_overlay.move_to_front()
     _pause_panel.visible = true
     _pause_panel.pivot_offset = _pause_panel.size * 0.5
     _pause_panel.scale = Vector2(PAUSE_PANEL_POP_SCALE, PAUSE_PANEL_POP_SCALE)
@@ -428,6 +447,9 @@ func _show_slot_panel(mode: String) -> void:
         _settings_panel.visible = false
     _slot_panel.setup(mode)
     _slot_panel.visible = true
+    _slot_panel.move_to_front()
+    if _pause_overlay != null:
+        _pause_overlay.move_to_front()
     if _pause_panel != null:
         _pause_panel.visible = false
 
@@ -437,6 +459,9 @@ func _show_settings_panel() -> void:
     if _slot_panel != null:
         _slot_panel.visible = false
     _settings_panel.visible = true
+    _settings_panel.move_to_front()
+    if _pause_overlay != null:
+        _pause_overlay.move_to_front()
     if _pause_panel != null:
         _pause_panel.visible = false
 
@@ -538,6 +563,7 @@ func _build_runtime_save_payload() -> Dictionary:
         "reward_owned": _snapshot.get("reward_owned", {}),
         "auto_attack_interval_multiplier": float(_snapshot.get("auto_attack_interval_multiplier", 1.0)),
         "gold_gain_multiplier": float(_snapshot.get("gold_gain_multiplier", 1.0)),
+        "run_survival_time": max(0.0, float(_snapshot.get("run_survival_time", 0.0))),
         "xp_to_next_level": max(1, int(_snapshot.get("xp_to_next_level", 20))),
         "player_pos_x": float(_snapshot.get("player_pos_x", 0.0)),
         "player_pos_y": float(_snapshot.get("player_pos_y", 0.0)),
@@ -698,6 +724,9 @@ func _build_dynamic_bottom_sections() -> void:
     _equipped_weapons_grid.columns = WEAPON_GRID_COLUMNS
     _equipped_weapons_grid.add_theme_constant_override("h_separation", 6)
     _equipped_weapons_grid.add_theme_constant_override("v_separation", 6)
+    _build_weapon_action_panel()
+    add_child(_weapon_action_panel)
+    _weapon_action_panel.move_to_front()
     weapons_panel.add_child(_equipped_weapons_title_label)
     weapons_panel.add_child(_equipped_weapons_grid)
 
@@ -724,6 +753,132 @@ func _build_dynamic_bottom_sections() -> void:
     next_wave_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     next_wave_button.custom_minimum_size = Vector2(220, 56)
 
+func _build_weapon_action_panel() -> void:
+    _weapon_action_panel = HBoxContainer.new()
+    _weapon_action_panel.custom_minimum_size = Vector2(560, 300)
+    _weapon_action_panel.size = _weapon_action_panel.custom_minimum_size
+    _weapon_action_panel.z_index = FLOATING_DETAIL_Z_INDEX
+    _weapon_action_panel.visible = false
+    (_weapon_action_panel as HBoxContainer).add_theme_constant_override("separation", 8)
+
+    var weapon_panel: PanelContainer = PanelContainer.new()
+    weapon_panel.custom_minimum_size = Vector2(312, 300)
+    weapon_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    weapon_panel.add_theme_stylebox_override(
+        "panel",
+        _make_brotato_panel_style(Color(0.02, 0.02, 0.02, 0.94), Color(0.28, 0.28, 0.28, 1.0), 2, 5)
+    )
+    _weapon_action_panel.add_child(weapon_panel)
+
+    var margin: MarginContainer = MarginContainer.new()
+    margin.add_theme_constant_override("margin_left", 8)
+    margin.add_theme_constant_override("margin_top", 6)
+    margin.add_theme_constant_override("margin_right", 8)
+    margin.add_theme_constant_override("margin_bottom", 6)
+    weapon_panel.add_child(margin)
+
+    var root: VBoxContainer = VBoxContainer.new()
+    root.add_theme_constant_override("separation", 8)
+    margin.add_child(root)
+
+    var main_col: VBoxContainer = VBoxContainer.new()
+    main_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    main_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    main_col.add_theme_constant_override("separation", 8)
+    root.add_child(main_col)
+
+    var header: HBoxContainer = HBoxContainer.new()
+    header.add_theme_constant_override("separation", 10)
+    main_col.add_child(header)
+
+    var icon_frame: PanelContainer = PanelContainer.new()
+    icon_frame.custom_minimum_size = Vector2(70, 70)
+    icon_frame.add_theme_stylebox_override(
+        "panel",
+        _make_brotato_panel_style(Color(0.06, 0.06, 0.06, 1.0), Color(0.22, 0.22, 0.22, 1.0), 1, 4)
+    )
+    header.add_child(icon_frame)
+
+    _weapon_action_icon = TextureRect.new()
+    _weapon_action_icon.custom_minimum_size = Vector2(64, 64)
+    _weapon_action_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    _weapon_action_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    icon_frame.add_child(_weapon_action_icon)
+
+    var title_box: VBoxContainer = VBoxContainer.new()
+    title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    title_box.add_theme_constant_override("separation", 2)
+    header.add_child(title_box)
+
+    _weapon_action_title = Label.new()
+    _weapon_action_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _weapon_action_title.add_theme_font_size_override("font_size", 19)
+    _weapon_action_title.add_theme_color_override("font_color", Color(0.96, 0.96, 0.9, 1.0))
+    title_box.add_child(_weapon_action_title)
+
+    _weapon_action_subtitle = Label.new()
+    _weapon_action_subtitle.add_theme_font_size_override("font_size", 14)
+    _weapon_action_subtitle.add_theme_color_override("font_color", Color(0.82, 0.78, 0.62, 1.0))
+    title_box.add_child(_weapon_action_subtitle)
+
+    _weapon_action_detail = RichTextLabel.new()
+    _weapon_action_detail.bbcode_enabled = true
+    _weapon_action_detail.fit_content = false
+    _weapon_action_detail.scroll_active = false
+    _weapon_action_detail.custom_minimum_size = Vector2(0, 108)
+    _weapon_action_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    main_col.add_child(_weapon_action_detail)
+
+    var actions: HBoxContainer = HBoxContainer.new()
+    actions.add_theme_constant_override("separation", 6)
+    root.add_child(actions)
+
+    _weapon_combine_button = _make_shop_action_button(_tx("ui.shop.combine", "Combine"))
+    _weapon_recycle_button = _make_shop_action_button(_tx("ui.shop.recycle", "Recycle"))
+    _weapon_cancel_button = _make_shop_action_button(_tx("ui.common.cancel", "Cancel"))
+    _weapon_combine_button.pressed.connect(_on_weapon_combine_pressed)
+    _weapon_recycle_button.pressed.connect(_on_weapon_recycle_pressed)
+    _weapon_cancel_button.pressed.connect(_on_weapon_cancel_pressed)
+    actions.add_child(_weapon_combine_button)
+    actions.add_child(_weapon_recycle_button)
+    actions.add_child(_weapon_cancel_button)
+
+    var tags_panel: PanelContainer = PanelContainer.new()
+    tags_panel.custom_minimum_size = Vector2(240, 300)
+    tags_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    tags_panel.add_theme_stylebox_override(
+        "panel",
+        _make_brotato_panel_style(Color(0.02, 0.02, 0.02, 0.94), Color(0.28, 0.28, 0.28, 1.0), 2, 5)
+    )
+    _weapon_action_panel.add_child(tags_panel)
+
+    var tags_margin: MarginContainer = MarginContainer.new()
+    tags_margin.add_theme_constant_override("margin_left", 8)
+    tags_margin.add_theme_constant_override("margin_top", 8)
+    tags_margin.add_theme_constant_override("margin_right", 8)
+    tags_margin.add_theme_constant_override("margin_bottom", 8)
+    tags_panel.add_child(tags_margin)
+
+    _weapon_action_tags = RichTextLabel.new()
+    _weapon_action_tags.bbcode_enabled = true
+    _weapon_action_tags.fit_content = false
+    _weapon_action_tags.scroll_active = true
+    _weapon_action_tags.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _weapon_action_tags.add_theme_font_size_override("normal_font_size", 11)
+    _weapon_action_tags.add_theme_font_size_override("bold_font_size", 12)
+    _weapon_action_tags.add_theme_constant_override("line_separation", 0)
+    tags_margin.add_child(_weapon_action_tags)
+
+func _make_shop_action_button(text_value: String) -> Button:
+    var button: Button = Button.new()
+    button.text = text_value
+    button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    button.custom_minimum_size = Vector2(0, 36)
+    button.add_theme_font_size_override("font_size", 14)
+    button.add_theme_stylebox_override("normal", _make_brotato_panel_style(Color(0.08, 0.08, 0.08, 1.0), Color(0.18, 0.18, 0.18, 1.0), 1, 4))
+    button.add_theme_stylebox_override("hover", _make_brotato_panel_style(Color(0.13, 0.13, 0.13, 1.0), Color(0.55, 0.55, 0.48, 1.0), 1, 4))
+    return button
+
 func _roll_if_needed() -> void:
     var existing: Array[Dictionary] = _normalize_offer_list(_snapshot.get("shop_offers", []))
     if not existing.is_empty():
@@ -741,7 +896,6 @@ func _on_refresh_pressed() -> void:
     if not _pending_replace_offer_id.is_empty():
         hint_label.text = _tx("msg.shop.finish_replacement_first", "Please finish weapon replacement first.")
         return
-    var shop_rules: Dictionary = BalanceService.get_shop_catalog().get("shop_rules", {})
     var state: Dictionary = _snapshot.get("shop_runtime_state", {})
     var refresh_count: int = int(state.get("refresh_count", 0))
     var stage_id: String = str(_snapshot.get("stage_id", "stage_001"))
@@ -776,8 +930,7 @@ func _on_next_wave_pressed() -> void:
     _snapshot["shop_runtime_state"] = state
     _synchronize_locked_offers_state(false)
     _refresh_weapon_tag_state_snapshot()
-    _clear_shop_offer_locks_for_transition()
-    _snapshot["shop_offers"] = _shop_offers.duplicate(true)
+    _snapshot["shop_offers"] = []
     
     # Resolve next stage ID so the game starts the correct next level
     var current_id: String = str(_snapshot.get("stage_id", "stage_001"))
@@ -848,6 +1001,7 @@ func _on_weapon_slot_pressed(slot_index: int) -> void:
     if _is_shop_interaction_blocked():
         return
     if _pending_replace_offer_id.is_empty():
+        _select_weapon_slot(slot_index)
         return
     _snapshot["replace_slot_index"] = slot_index
     _snapshot["shop_offers"] = _shop_offers.duplicate(true)
@@ -867,6 +1021,57 @@ func _on_weapon_slot_pressed(slot_index: int) -> void:
         hint_label.text = _tx(str(result.get("message", "msg.shop.replace_failed")), "Replace failed")
     _rebuild_ui()
 
+func _select_weapon_slot(slot_index: int) -> void:
+    var shop_state: Dictionary = _snapshot.get("shop_runtime_state", {})
+    var slots: Array = _normalize_weapon_slots(shop_state.get("equipped_weapons", []))
+    if slot_index < 0 or slot_index >= slots.size():
+        _selected_weapon_slot_index = -1
+        _rebuild_ui()
+        return
+    if not (slots[slot_index] is Dictionary) or str((slots[slot_index] as Dictionary).get("weapon_id", "")).is_empty():
+        _selected_weapon_slot_index = -1
+        hint_label.text = _tx("msg.shop.weapon_slot_empty", "Empty weapon slot.")
+        _rebuild_ui()
+        return
+    _selected_weapon_slot_index = slot_index
+    hint_label.text = _tx("msg.shop.weapon_selected", "Weapon selected.")
+    _rebuild_ui()
+
+func _on_weapon_combine_pressed() -> void:
+    if _is_shop_interaction_blocked():
+        return
+    if _selected_weapon_slot_index < 0:
+        return
+    _snapshot["shop_offers"] = _shop_offers.duplicate(true)
+    _synchronize_locked_offers_state(false)
+    var result: Dictionary = _shop_system.combine_weapon_slot(_selected_weapon_slot_index, _snapshot)
+    _snapshot = result.get("state", _snapshot)
+    _ensure_shop_state()
+    _selected_weapon_slot_index = -1
+    hint_label.text = _tx(str(result.get("message", "msg.shop.combine_failed")), "Combine failed.")
+    _rebuild_ui()
+
+func _on_weapon_recycle_pressed() -> void:
+    if _is_shop_interaction_blocked():
+        return
+    if _selected_weapon_slot_index < 0:
+        return
+    _snapshot["shop_offers"] = _shop_offers.duplicate(true)
+    _synchronize_locked_offers_state(false)
+    var result: Dictionary = _shop_system.recycle_weapon_slot(_selected_weapon_slot_index, _snapshot)
+    _snapshot = result.get("state", _snapshot)
+    _ensure_shop_state()
+    _selected_weapon_slot_index = -1
+    if bool(result.get("ok", false)):
+        hint_label.text = _tf("msg.shop.recycle_success_fmt", [int(result.get("refund", 0))], "Recycled for %dG.")
+    else:
+        hint_label.text = _tx(str(result.get("message", "msg.shop.recycle_failed")), "Recycle failed.")
+    _rebuild_ui()
+
+func _on_weapon_cancel_pressed() -> void:
+    _selected_weapon_slot_index = -1
+    _rebuild_ui()
+
 func _synchronize_locked_offers_state(sync_snapshot_offers: bool) -> void:
     var state: Dictionary = _snapshot.get("shop_runtime_state", {})
     if not (state is Dictionary):
@@ -883,6 +1088,7 @@ func _synchronize_locked_offers_state(sync_snapshot_offers: bool) -> void:
     state["shop_locked"] = false
     state["owned_items"] = _normalize_owned_items(state.get("owned_items", []))
     _snapshot["shop_runtime_state"] = state
+    _snapshot["locked_shop_offers"] = locked_subset.duplicate(true)
     if sync_snapshot_offers:
         _snapshot["shop_offers"] = _shop_offers.duplicate(true)
 
@@ -1062,8 +1268,8 @@ func _rebuild_ui() -> void:
         lock_button.visible = false
     next_wave_button.text = _tx("ui.shop.next_stage", "开始下一关")
     next_wave_button.disabled = false
-    _rebuild_offer_cards()
-    _rebuild_attr_panel()
+    _rebuild_offer_cards_brotato()
+    _rebuild_attr_panel_brotato()
     _rebuild_owned_items_grid()
     _rebuild_weapon_slots_grid()
     _rebuild_elite_hint()
@@ -1104,9 +1310,9 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
     if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
         return
     if bottom_panel != null:
-        bottom_panel.custom_minimum_size = Vector2(0, clampf(viewport_size.y * 0.34, 208.0, 320.0))
+        bottom_panel.custom_minimum_size = Vector2(0, clampf(viewport_size.y * 0.30, 208.0, 280.0))
     if mid_row != null:
-        mid_row.custom_minimum_size = Vector2(0, clampf(viewport_size.y * 0.36, 220.0, 360.0))
+        mid_row.custom_minimum_size = Vector2(0, clampf(viewport_size.y * 0.43, 286.0, 390.0))
     if right_panel != null:
         right_panel.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.23, 260.0, 360.0), 0)
     if attr_label != null:
@@ -1127,7 +1333,6 @@ func _rebuild_offer_cards() -> void:
         var offer_name: String = _resolve_offer_name(offer)
         var offer_desc: String = _resolve_offer_desc(offer)
         var rarity_key: String = str(offer.get("rarity", "common"))
-        var rarity_label: String = _rarity_label(rarity_key)
         var rarity_color: Color = RARITY_COLORS.get(rarity_key, Color.WHITE)
         var is_locked: bool = bool(offer.get("locked", false))
         var sold: bool = bool(offer.get("sold", false))
@@ -1208,6 +1413,118 @@ func _rebuild_offer_cards() -> void:
         card.mouse_exited.connect(_on_weapon_hover_end)
         offers_grid.add_child(card)
 
+func _rebuild_offer_cards_brotato() -> void:
+    for child: Node in offers_grid.get_children():
+        child.queue_free()
+    var current_gold: int = int(_snapshot.get("current_gold", 0))
+    for i: int in range(_shop_offers.size()):
+        var offer: Dictionary = _shop_offers[i]
+        var offer_name: String = _resolve_offer_name(offer)
+        var offer_desc: String = _resolve_offer_desc(offer)
+        var rarity_key: String = str(offer.get("rarity", "common"))
+        var rarity_label: String = _rarity_label(rarity_key)
+        var rarity_color: Color = RARITY_COLORS.get(rarity_key, Color.WHITE)
+        var is_locked: bool = bool(offer.get("locked", false))
+        var sold: bool = bool(offer.get("sold", false))
+        var kind: String = str(offer.get("kind", "item"))
+
+        var card: PanelContainer = PanelContainer.new()
+        card.custom_minimum_size = Vector2(224, 260)
+        card.pivot_offset = Vector2(112, 130)
+        card.add_theme_stylebox_override("panel", _build_offer_card_style_brotato(rarity_key, is_locked, sold))
+
+        var margin: MarginContainer = MarginContainer.new()
+        margin.add_theme_constant_override("margin_left", 8)
+        margin.add_theme_constant_override("margin_top", 8)
+        margin.add_theme_constant_override("margin_right", 8)
+        margin.add_theme_constant_override("margin_bottom", 8)
+
+        var vb: VBoxContainer = VBoxContainer.new()
+        vb.add_theme_constant_override("separation", 6)
+
+        var icon_row: CenterContainer = CenterContainer.new()
+        icon_row.add_child(_build_icon_block(_load_offer_icon(offer), OFFER_ICON_SIZE, _tx("ui.shop.no_image", "No Image")))
+
+        var title: Label = Label.new()
+        title.text = offer_name
+        title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+        title.add_theme_color_override("font_color", Color(0.94, 0.94, 0.88, 1.0))
+        title.add_theme_font_size_override("font_size", 17)
+
+        var subtitle: Label = Label.new()
+        subtitle.text = "%s / %s" % [rarity_label, _tx("ui.shop.kind_weapon", "Weapon") if kind == "weapon" else _tx("ui.shop.kind_item", "Item")]
+        subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+        subtitle.add_theme_color_override("font_color", rarity_color)
+        subtitle.add_theme_font_size_override("font_size", 13)
+
+        var desc: Label = Label.new()
+        desc.text = offer_desc
+        desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        desc.custom_minimum_size = Vector2(0, 84)
+        desc.max_lines_visible = 5
+        desc.clip_text = true
+        desc.add_theme_font_size_override("font_size", 13)
+        desc.add_theme_color_override("font_color", Color(0.86, 0.86, 0.78, 1.0))
+
+        var actions_row: HBoxContainer = HBoxContainer.new()
+        actions_row.add_theme_constant_override("separation", 6)
+        var lock_button_local: Button = Button.new()
+        lock_button_local.custom_minimum_size = Vector2(74, 34)
+        lock_button_local.text = _tx("ui.shop.offer_unlock", "解锁") if is_locked else _tx("ui.shop.offer_lock", "锁定")
+        lock_button_local.disabled = sold
+        lock_button_local.pressed.connect(_on_offer_lock_pressed.bind(str(offer.get("offer_id", ""))))
+
+        var buy_button: Button = Button.new()
+        buy_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        buy_button.text = _tx("ui.shop.sold_out", "Sold Out") if sold else _tf("ui.shop.buy_fmt", [int(offer.get("price", 0))], "Buy - %dG")
+        buy_button.disabled = sold or current_gold < int(offer.get("price", 0))
+        buy_button.pressed.connect(_on_offer_buy_pressed.bind(str(offer.get("offer_id", ""))))
+        var normal_button_style: StyleBoxFlat = _make_brotato_panel_style(Color(0.08, 0.08, 0.08, 1.0), Color(0.16, 0.16, 0.16, 1.0), 1, 5)
+        var hover_button_style: StyleBoxFlat = _make_brotato_panel_style(Color(0.13, 0.13, 0.13, 1.0), Color(0.58, 0.58, 0.48, 1.0), 1, 5)
+        buy_button.add_theme_stylebox_override("normal", normal_button_style)
+        buy_button.add_theme_stylebox_override("hover", hover_button_style)
+        lock_button_local.add_theme_stylebox_override("normal", normal_button_style)
+        lock_button_local.add_theme_stylebox_override("hover", hover_button_style)
+        actions_row.add_child(lock_button_local)
+        actions_row.add_child(buy_button)
+
+        var spacer: Control = Control.new()
+        spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+        vb.add_child(icon_row)
+        vb.add_child(title)
+        vb.add_child(subtitle)
+        vb.add_child(desc)
+        vb.add_child(spacer)
+        vb.add_child(actions_row)
+        margin.add_child(vb)
+        card.add_child(margin)
+        card.mouse_entered.connect(_on_weapon_card_hover_start.bind(offer, card))
+        card.mouse_exited.connect(_on_weapon_hover_end)
+        offers_grid.add_child(card)
+
+func _build_offer_card_style_brotato(rarity: String, locked: bool, sold: bool) -> StyleBoxFlat:
+    var rarity_color: Color = RARITY_COLORS.get(rarity.to_lower(), Color("#bdc3c7"))
+    var bg: Color = Color(0.015, 0.015, 0.015, 0.96)
+    if rarity == "legendary":
+        bg = Color(0.09, 0.07, 0.03, 0.98)
+    elif rarity == "epic":
+        bg = Color(0.06, 0.04, 0.08, 0.98)
+    var style: StyleBoxFlat = _make_brotato_panel_style(bg, rarity_color.darkened(0.25), 2, 5)
+    if locked:
+        style.border_color = Color(0.95, 0.78, 0.18, 1.0)
+        style.shadow_color = Color(0.95, 0.78, 0.18, 0.34)
+        style.border_width_left = 3
+        style.border_width_top = 3
+        style.border_width_right = 3
+        style.border_width_bottom = 3
+    if sold:
+        style.bg_color = Color(0.035, 0.035, 0.035, 0.94)
+        style.border_color = Color(0.25, 0.25, 0.25, 0.6)
+        style.shadow_size = 0
+    return style
+
 func _build_neon_style(bg_color: Color, border_color: Color, border_width: int = 2, shadow_size: int = 10) -> StyleBoxFlat:
     var style: StyleBoxFlat = StyleBoxFlat.new()
     style.bg_color = bg_color
@@ -1223,6 +1540,22 @@ func _build_neon_style(bg_color: Color, border_color: Color, border_width: int =
     style.shadow_color = border_color
     style.shadow_color.a = 0.25
     style.shadow_size = shadow_size
+    return style
+
+func _make_brotato_panel_style(bg_color: Color, border_color: Color, border_width: int = 1, radius: int = 4) -> StyleBoxFlat:
+    var style: StyleBoxFlat = StyleBoxFlat.new()
+    style.bg_color = bg_color
+    style.border_color = border_color
+    style.border_width_left = border_width
+    style.border_width_top = border_width
+    style.border_width_right = border_width
+    style.border_width_bottom = border_width
+    style.corner_radius_top_left = radius
+    style.corner_radius_top_right = radius
+    style.corner_radius_bottom_left = radius
+    style.corner_radius_bottom_right = radius
+    style.shadow_color = Color(0.0, 0.0, 0.0, 0.32)
+    style.shadow_size = 3
     return style
 
 func _build_offer_card_style(rarity: String, locked: bool, sold: bool) -> StyleBoxFlat:
@@ -1360,7 +1693,7 @@ func _rebuild_attr_panel() -> void:
     
     attr_label.text = "\n".join(lines)
 
-func _add_stat_line(lines: Array[String], label: String, val: Variant, unit: String, base: float, color_logic: bool) -> void:
+func _add_stat_line(lines: Array[String], label: String, val: Variant, unit: String, _base: float, color_logic: bool) -> void:
     var color: String = "#ffffff"
     var f_val: float = float(val)
     if color_logic:
@@ -1374,6 +1707,42 @@ func _add_stat_line(lines: Array[String], label: String, val: Variant, unit: Str
         val_str = str(val)
         
     lines.append("[cell][color=#95a5a6]%s:[/color][/cell] [cell][color=%s]%s%s[/color][/cell]" % [label, color, val_str, unit])
+
+func _rebuild_attr_panel_brotato() -> void:
+    var stats: Dictionary = _snapshot.get("player_stats", {})
+    var character_id: String = _resolve_snapshot_character_id()
+    var base_move_speed: float = _resolve_character_base_move_speed(character_id)
+    var current_move_speed: float = float(_snapshot.get("player_move_speed", base_move_speed))
+    var extra_move_speed: float = current_move_speed - base_move_speed
+    var base_attack_speed_mult: float = max(0.01, _resolve_character_base_attack_speed_mult(character_id))
+    var current_attack_speed_mult: float = float(stats.get("attack_speed_mult", base_attack_speed_mult))
+    var extra_attack_speed_percent: float = (current_attack_speed_mult / base_attack_speed_mult - 1.0) * 100.0
+
+    var lines: Array[String] = []
+    lines.append("[center][b][color=#f1f1e8]属性[/color][/b][/center]")
+    lines.append("")
+    lines.append("[b][color=#d8d8cf]主要[/color][/b]")
+    lines.append("[table=2]")
+    _add_stat_line(lines, "最大生命值", int(_snapshot.get("player_max_hp", 100)), "", 0, true)
+    _add_stat_line(lines, "伤害", float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
+    _add_stat_line(lines, "近战伤害", int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, "远程伤害", int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, "攻击速度", extra_attack_speed_percent, "%", 0, true)
+    _add_stat_line(lines, "范围", float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    lines.append("[/table]")
+    lines.append("")
+    lines.append("[b][color=#d8d8cf]次要[/color][/b]")
+    lines.append("[table=2]")
+    _add_stat_line(lines, "生命再生", float(stats.get("hp_regen", 0.0)), "", 0, true)
+    _add_stat_line(lines, "护甲", float(stats.get("armor", 0.0)), "", 0, true)
+    _add_stat_line(lines, "闪避", float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, "暴击率", float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, "生命窃取", float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, "速度", extra_move_speed, "", 0, true)
+    _add_stat_line(lines, "幸运", float(stats.get("luck", 0.0)), "", 0, true)
+    _add_stat_line(lines, "收获", float(stats.get("harvest", 0.0)), "", 0, true)
+    lines.append("[/table]")
+    attr_label.text = "\n".join(lines)
 
 func _resolve_snapshot_character_id() -> String:
     var character_id: String = str(_snapshot.get("selected_character", ""))
@@ -1531,8 +1900,7 @@ func _rebuild_weapon_slots_grid() -> void:
             rarity_key = str(weapon.get("rarity", "common"))
             var weapon_id: String = str(weapon.get("weapon_id", "weapon"))
             var weapon_name: String = LocaleService.t_data("weapon", weapon_id, "name", weapon_id)
-            var rarity_label: String = _rarity_label(rarity_key)
-            button.tooltip_text = "%d: %s" % [i + 1, weapon_name]
+            button.tooltip_text = ""
             var icon_path: String = _resolve_weapon_icon_path(weapon_id)
             var icon: Texture2D = _load_texture_cached(icon_path, _weapon_icon_cache)
             if icon != null:
@@ -1541,13 +1909,19 @@ func _rebuild_weapon_slots_grid() -> void:
             else:
                 button.text = _tx("ui.shop.no_image", "No Image")
         else:
-            button.tooltip_text = _tf("ui.shop.weapon_slot_empty", [i + 1], "%d: 空位")
+            button.tooltip_text = ""
             button.text = "" # 空位保持简洁
 
         # 为已装备武器添加品质边框风格
         var style: StyleBoxFlat = _build_offer_card_style(rarity_key, false, false)
         # 稍微调暗背景色，以区分于待购商品
         style.bg_color = Color(0.05, 0.07, 0.1, 0.9)
+        if i == _selected_weapon_slot_index and has_weapon:
+            style.border_color = Color(0.95, 0.78, 0.18, 1.0)
+            style.border_width_left = 3
+            style.border_width_top = 3
+            style.border_width_right = 3
+            style.border_width_bottom = 3
         button.add_theme_stylebox_override("normal", style)
         button.add_theme_stylebox_override("hover", style)
         button.add_theme_stylebox_override("pressed", style)
@@ -1565,6 +1939,160 @@ func _rebuild_weapon_slots_grid() -> void:
 
         button.pressed.connect(_on_weapon_slot_pressed.bind(i))
         _equipped_weapons_grid.add_child(button)
+    _refresh_weapon_action_panel(slots)
+
+func _refresh_weapon_action_panel(slots: Array) -> void:
+    if _weapon_action_panel == null:
+        return
+    if _selected_weapon_slot_index < 0 or _selected_weapon_slot_index >= slots.size():
+        _weapon_action_panel.visible = false
+        return
+    var slot_value: Variant = slots[_selected_weapon_slot_index]
+    if not (slot_value is Dictionary) or str((slot_value as Dictionary).get("weapon_id", "")).is_empty():
+        _selected_weapon_slot_index = -1
+        _weapon_action_panel.visible = false
+        return
+    var weapon: Dictionary = slot_value
+    var weapon_id: String = str(weapon.get("weapon_id", "weapon"))
+    var weapon_name: String = LocaleService.t_data("weapon", weapon_id, "name", weapon_id)
+    var rarity: String = str(weapon.get("rarity", "common"))
+    var rarity_label: String = _rarity_label(rarity)
+    var can_combine: bool = _find_merge_partner_for_slot(slots, _selected_weapon_slot_index) >= 0
+    var recycle_value: int = max(1, int(weapon.get("recycle_value", _estimate_weapon_recycle_value_ui(weapon))))
+    var icon: Texture2D = _load_texture_cached(_resolve_weapon_icon_path(weapon_id), _weapon_icon_cache)
+
+    _weapon_action_panel.visible = true
+    _position_weapon_action_panel()
+    _weapon_action_icon.texture = icon
+    _weapon_action_title.text = "%d. %s" % [_selected_weapon_slot_index + 1, weapon_name]
+    _weapon_action_subtitle.text = "%s / %s" % [rarity_label, _tx("ui.shop.kind_weapon", "武器")]
+    _weapon_action_subtitle.add_theme_color_override("font_color", RARITY_COLORS.get(rarity, Color(0.82, 0.78, 0.62, 1.0)))
+    _weapon_action_detail.text = _build_weapon_action_detail(weapon)
+    _weapon_action_tags.text = _build_weapon_action_tags(weapon)
+    _weapon_combine_button.disabled = not can_combine
+    _weapon_recycle_button.text = _tf("ui.shop.recycle_fmt", [recycle_value], "Recycle +%dG")
+    _weapon_cancel_button.text = _tx("ui.common.cancel", "Cancel")
+
+func _position_weapon_action_panel() -> void:
+    if _weapon_action_panel == null:
+        return
+    var panel_size: Vector2 = _weapon_action_panel.custom_minimum_size
+    _weapon_action_panel.size = panel_size
+    var viewport_size: Vector2 = get_viewport_rect().size
+    var anchor_rect: Rect2 = Rect2(Vector2.ZERO, viewport_size)
+    if _equipped_weapons_grid != null:
+        anchor_rect = _equipped_weapons_grid.get_global_rect()
+    elif bottom_panel != null:
+        anchor_rect = bottom_panel.get_global_rect()
+
+    var target_x: float = anchor_rect.position.x + (anchor_rect.size.x - panel_size.x) * 0.5
+    var target_y: float = anchor_rect.position.y - panel_size.y - 10.0
+    if target_y < 56.0:
+        target_y = anchor_rect.position.y + 10.0
+    target_x = clampf(target_x, 10.0, max(10.0, viewport_size.x - panel_size.x - 10.0))
+    target_y = clampf(target_y, 56.0, max(56.0, viewport_size.y - panel_size.y - 10.0))
+    _weapon_action_panel.global_position = Vector2(target_x, target_y)
+    _weapon_action_panel.move_to_front()
+
+func _build_weapon_action_detail(weapon: Dictionary) -> String:
+    var profile: Dictionary = weapon.get("attack_profile", {})
+    var parts: Array[String] = []
+    if not profile.is_empty():
+        parts.append("[color=#f1f1e8]伤害:[/color] %s" % str(profile.get("base_damage", "-")))
+        parts.append("[color=#f1f1e8]冷却:[/color] %.2fs" % float(profile.get("interval", 0.0)))
+        parts.append("[color=#f1f1e8]范围:[/color] %s" % str(profile.get("range", "-")))
+        if profile.has("crit_chance"):
+            parts.append("[color=#f1f1e8]暴击:[/color] %.0f%%" % (float(profile.get("crit_chance", 0.0)) * 100.0))
+    var effects: Dictionary = weapon.get("effects", {})
+    for key: Variant in effects.keys():
+        if parts.size() >= 5:
+            break
+        var key_text: String = str(key)
+        if key_text.begins_with("bonus_"):
+            continue
+        var value: Variant = effects[key]
+        if value is int or value is float:
+            var numeric_value: float = float(value)
+            if is_zero_approx(numeric_value):
+                continue
+            var sign: String = "+" if numeric_value >= 0.0 else ""
+            parts.append("[color=#f1f1e8]%s:[/color] %s%.1f" % [key_text, sign, numeric_value])
+    var stat_text: String = "[color=#aeb6b8]暂无武器属性[/color]"
+    if not parts.is_empty():
+        stat_text = "\n".join(parts)
+    return "[font_size=18]%s[/font_size]" % stat_text
+
+func _build_weapon_action_tags(weapon: Dictionary) -> String:
+    var tags: Array = _extract_offer_tags(weapon)
+    if tags.is_empty():
+        tags = weapon.get("tags", []) if weapon.get("tags", []) is Array else []
+    var catalog: Dictionary = BalanceService.get_shop_catalog()
+    var tag_rules: Dictionary = catalog.get("weapon_tag_bonus_rules", {})
+    var tag_defs: Dictionary = tag_rules.get("tag_defs", {})
+    var tier_steps: Array = tag_rules.get("tier_steps", [2, 3, 4, 5, 6])
+    var shop_state: Dictionary = _snapshot.get("shop_runtime_state", {})
+    var tag_state: Dictionary = _shop_system.resolve_weapon_tag_state(shop_state)
+    var counts: Dictionary = tag_state.get("counts", {})
+
+    var lines: Array[String] = []
+    if tags.is_empty():
+        return "[center][b][color=#f1f1e8]标签[/color][/b][/center]\n[color=#7f8c8d]无标签[/color]"
+
+    for tag_value: Variant in tags:
+        var tag_id: String = str(tag_value)
+        if tag_id.is_empty():
+            continue
+        var tag_name: String = tag_id
+        var tiers_data: Dictionary = {}
+        var tag_def_raw: Variant = tag_defs.get(tag_id, {})
+        if tag_def_raw is Dictionary:
+            var tag_def: Dictionary = tag_def_raw
+            tag_name = str(tag_def.get("name", tag_id))
+            tiers_data = tag_def.get("tiers", {})
+        var current_count: int = int(counts.get(tag_id, 0))
+        if not lines.is_empty():
+            lines.append("")
+        lines.append("[font_size=15][b][color=#00f0ff]%s (%d)[/color][/b][/font_size]" % [tag_name, current_count])
+        lines.append("[font_size=9][color=#1f6f78]────────────[/color][/font_size]")
+        for step_idx: int in range(tier_steps.size()):
+            var step_count: int = int(tier_steps[step_idx])
+            var step_tier: int = step_idx + 1
+            var tier_info: Dictionary = tiers_data.get(str(step_tier), {})
+            var bonus_text: String = str(tier_info.get("note", "Bonus T%d" % step_tier))
+            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_tier], bonus_text)
+            var line_color: String = "#f1f1e8" if current_count >= step_count else "#6f7678"
+            lines.append("[font_size=13][color=%s](%d) %s[/color][/font_size]" % [line_color, step_count, bonus_text])
+    return "\n".join(lines)
+
+func _find_merge_partner_for_slot(slots: Array, source_index: int) -> int:
+    if source_index < 0 or source_index >= slots.size():
+        return -1
+    var source_value: Variant = slots[source_index]
+    if not (source_value is Dictionary):
+        return -1
+    var source: Dictionary = source_value
+    var source_stack: String = str(source.get("stack_key", source.get("weapon_id", "")))
+    var source_rarity: String = str(source.get("rarity", "common"))
+    if source_stack.is_empty() or source_rarity == "legendary":
+        return -1
+    for i: int in range(slots.size()):
+        if i == source_index:
+            continue
+        var other_value: Variant = slots[i]
+        if not (other_value is Dictionary):
+            continue
+        var other: Dictionary = other_value
+        if str(other.get("weapon_id", "")).is_empty():
+            continue
+        if str(other.get("stack_key", other.get("weapon_id", ""))) == source_stack and str(other.get("rarity", "common")) == source_rarity:
+            return i
+    return -1
+
+func _estimate_weapon_recycle_value_ui(weapon: Dictionary) -> int:
+    var acquired_price: int = int(weapon.get("acquired_price", 0))
+    if acquired_price <= 0:
+        acquired_price = int(weapon.get("base_price", 35))
+    return max(1, int(round(float(acquired_price) * 0.25)))
 
 func _rebuild_elite_hint() -> void:
     if _elite_hint_label == null:

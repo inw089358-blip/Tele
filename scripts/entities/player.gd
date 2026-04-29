@@ -49,6 +49,9 @@ var _visual_anim_time: float = 0.0
 var _visual_anim_frame_index: int = 0
 var _visual_idle_frame: int = 0
 var _visual_has_sprite: bool = false
+var _visual_directional_move_frames: Dictionary = {}
+var _visual_directional_idle_frames: Dictionary = {}
+var _visual_direction_key: String = "down"
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -152,13 +155,22 @@ func setup_visual_from_config(config: Dictionary) -> void:
     if _visual_move_frames.is_empty():
         _visual_move_frames = [0]
     _visual_idle_frame = clampi(int(config.get("idle_frame", _visual_move_frames[0])), 0, total_frames - 1)
+    _visual_directional_move_frames = _sanitize_directional_visual_frames(
+        config.get("directional_move_frames", {}),
+        total_frames
+    )
+    _visual_directional_idle_frames = _sanitize_directional_idle_frames(
+        config.get("directional_idle_frames", {}),
+        total_frames
+    )
     _visual_anim_fps = max(0.0, float(config.get("anim_fps", 0.0)))
     _visual_flip_with_velocity = bool(config.get("flip_with_velocity", true))
     _visual_anim_time = 0.0
     _visual_anim_frame_index = 0
+    _visual_direction_key = str(config.get("default_direction", "down"))
     _visual_sprite = sprite
     _visual_has_sprite = true
-    _apply_visual_frame(_visual_idle_frame)
+    _apply_visual_frame(_get_visual_idle_frame(_visual_direction_key))
     queue_redraw()
 
 func _sanitize_visual_frames(raw_frames: Variant, total_frames: int) -> Array[int]:
@@ -172,29 +184,95 @@ func _sanitize_visual_frames(raw_frames: Variant, total_frames: int) -> Array[in
             result.append(frame_index)
     return result
 
+func _sanitize_directional_visual_frames(raw_frames: Variant, total_frames: int) -> Dictionary:
+    var result: Dictionary = {}
+    if not (raw_frames is Dictionary):
+        return result
+    var source_frames: Dictionary = raw_frames
+    for direction_key: Variant in source_frames.keys():
+        var direction_name: String = str(direction_key)
+        var frames: Array[int] = _sanitize_visual_frames(source_frames[direction_key], total_frames)
+        if frames.is_empty():
+            continue
+        result[direction_name] = frames
+    return result
+
+func _sanitize_directional_idle_frames(raw_frames: Variant, total_frames: int) -> Dictionary:
+    var result: Dictionary = {}
+    if not (raw_frames is Dictionary):
+        return result
+    var source_frames: Dictionary = raw_frames
+    for direction_key: Variant in source_frames.keys():
+        var direction_name: String = str(direction_key)
+        result[direction_name] = clampi(int(source_frames[direction_key]), 0, total_frames - 1)
+    return result
+
 func _tick_visual_animation(delta: float) -> void:
     if not _visual_has_sprite or _visual_sprite == null:
         return
-    if _visual_flip_with_velocity and absf(velocity.x) > 0.01:
+    var uses_directional_frames: bool = not _visual_directional_move_frames.is_empty()
+    if uses_directional_frames:
+        var next_direction_key: String = _resolve_visual_direction_key()
+        if next_direction_key != _visual_direction_key:
+            _visual_direction_key = next_direction_key
+            _visual_anim_time = 0.0
+            _visual_anim_frame_index = 0
+        if _visual_flip_with_velocity and next_direction_key == "side" and absf(velocity.x) > 0.01:
+            _visual_sprite.flip_h = velocity.x < 0.0
+        elif next_direction_key != "side":
+            _visual_sprite.flip_h = false
+    elif _visual_flip_with_velocity and absf(velocity.x) > 0.01:
         _visual_sprite.flip_h = velocity.x < 0.0
     if velocity.length_squared() <= 0.01:
         _visual_anim_time = 0.0
         _visual_anim_frame_index = 0
-        _apply_visual_frame(_visual_idle_frame)
+        _apply_visual_frame(_get_visual_idle_frame(_visual_direction_key))
         return
-    if _visual_move_frames.is_empty():
+    var active_move_frames: Array[int] = _get_visual_move_frames(_visual_direction_key)
+    if active_move_frames.is_empty():
         return
     if _visual_anim_fps <= 0.0:
-        _apply_visual_frame(_visual_move_frames[0])
+        _apply_visual_frame(active_move_frames[0])
         return
 
     var frame_step: float = 1.0 / _visual_anim_fps
     _visual_anim_time += delta
     while _visual_anim_time >= frame_step:
         _visual_anim_time -= frame_step
-        _visual_anim_frame_index = (_visual_anim_frame_index + 1) % _visual_move_frames.size()
-    var safe_index: int = clampi(_visual_anim_frame_index, 0, _visual_move_frames.size() - 1)
-    _apply_visual_frame(_visual_move_frames[safe_index])
+        _visual_anim_frame_index = (_visual_anim_frame_index + 1) % active_move_frames.size()
+    var safe_index: int = clampi(_visual_anim_frame_index, 0, active_move_frames.size() - 1)
+    _apply_visual_frame(active_move_frames[safe_index])
+
+func _resolve_visual_direction_key() -> String:
+    if velocity.length_squared() <= 0.01:
+        return _visual_direction_key
+    if absf(velocity.x) >= absf(velocity.y):
+        return "side"
+    if velocity.y < 0.0:
+        return "up"
+    return "down"
+
+func _get_visual_move_frames(direction_key: String) -> Array[int]:
+    if _visual_directional_move_frames.has(direction_key):
+        return _copy_visual_frame_array(_visual_directional_move_frames[direction_key])
+    if _visual_directional_move_frames.has("down"):
+        return _copy_visual_frame_array(_visual_directional_move_frames["down"])
+    return _visual_move_frames
+
+func _copy_visual_frame_array(raw_frames: Variant) -> Array[int]:
+    var result: Array[int] = []
+    if raw_frames is Array:
+        var frames: Array = raw_frames
+        for frame_value: Variant in frames:
+            result.append(int(frame_value))
+    return result
+
+func _get_visual_idle_frame(direction_key: String) -> int:
+    if _visual_directional_idle_frames.has(direction_key):
+        return int(_visual_directional_idle_frames[direction_key])
+    if _visual_directional_idle_frames.has("down"):
+        return int(_visual_directional_idle_frames["down"])
+    return _visual_idle_frame
 
 func _apply_visual_frame(frame_index: int) -> void:
     if _visual_sprite == null:
@@ -212,6 +290,9 @@ func _clear_visual_sprite() -> void:
     _visual_anim_frame_index = 0
     _visual_idle_frame = 0
     _visual_has_sprite = false
+    _visual_directional_move_frames.clear()
+    _visual_directional_idle_frames.clear()
+    _visual_direction_key = "down"
 
 func _load_texture_with_runtime_fallback(path: String) -> Texture2D:
     if path.is_empty():

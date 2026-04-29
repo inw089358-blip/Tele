@@ -24,6 +24,12 @@ const DIFFICULTY_CONFIGS: Dictionary = {
     9: {"name": "Danger 9", "desc": "The ultimate test.", "mods": ["All Stats Up for Enemies"]},
 }
 
+const CHARACTER_PORTRAITS: Dictionary = {
+    "the_fool": "res://sprite/characters/the_fool/portrait.png",
+    "the_chariot": "res://sprite/characters/the_chariot/portrait.png",
+    "the_sun": "res://sprite/characters/the_sun/portrait.png",
+}
+
 @onready var background: ColorRect = $Background
 @onready var crt_overlay: ColorRect = $CRTOverlay
 
@@ -214,6 +220,13 @@ func _add_summary_panel(parent: HBoxContainer, title: String) -> PanelContainer:
     lbl.add_theme_font_size_override("font_size", 18)
     vbox.add_child(lbl)
 
+    var icon: TextureRect = TextureRect.new()
+    icon.name = "Icon"
+    icon.custom_minimum_size = Vector2(0, 240)
+    icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    vbox.add_child(icon)
+
     var content: RichTextLabel = RichTextLabel.new()
     content.name = "Content"
     content.bbcode_enabled = true
@@ -229,6 +242,15 @@ func _refresh_ui() -> void:
     var char_rt: RichTextLabel = char_panel.find_child("Content", true, false) as RichTextLabel
     if char_rt:
         char_rt.text = "[font_size=28][color=%s]%s[/color][/font_size]\n\n[color=#adC7c2]Selected Hero ready for deployment.[/color]" % [ACCENT_COLOR.to_html(), char_name]
+    
+    var char_icon: TextureRect = char_panel.find_child("Icon", true, false) as TextureRect
+    if char_icon:
+        var portrait_path: String = str(CHARACTER_PORTRAITS.get(char_id, ""))
+        if not portrait_path.is_empty() and ResourceLoader.exists(portrait_path):
+            char_icon.texture = load(portrait_path)
+            char_icon.visible = true
+        else:
+            char_icon.visible = false
 
     # 2. Weapon Summary
     var weapon_id: String = GameManager.selected_starter_weapon_id
@@ -246,6 +268,15 @@ func _refresh_ui() -> void:
     var weapon_rt: RichTextLabel = weapon_panel.find_child("Content", true, false) as RichTextLabel
     if weapon_rt:
         weapon_rt.text = "[font_size=28][color=%s]%s[/color][/font_size]\n\n[color=#adC7c2]%s[/color]" % [ACCENT_COLOR.to_html(), weapon_name, weapon_desc]
+    
+    var weapon_icon: TextureRect = weapon_panel.find_child("Icon", true, false) as TextureRect
+    if weapon_icon:
+        var weapon_icon_path: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/%s.png" % weapon_id
+        if ResourceLoader.exists(weapon_icon_path):
+            weapon_icon.texture = load(weapon_icon_path)
+            weapon_icon.visible = true
+        else:
+            weapon_icon.visible = false
 
     # 3. Difficulty Summary
     var diff_cfg: Dictionary = DIFFICULTY_CONFIGS.get(_selected_danger, {})
@@ -256,6 +287,10 @@ func _refresh_ui() -> void:
         for m in mod_lines:
             mod_text += "• %s\n" % m
         diff_rt.text = "[font_size=28][color=#f2a12e]%s[/color][/font_size]\n\n%s\n\n[color=#adC7c2]%s[/color]" % [str(diff_cfg.get("name")), mod_text, str(diff_cfg.get("desc"))]
+    
+    var diff_icon: TextureRect = diff_panel.find_child("Icon", true, false) as TextureRect
+    if diff_icon:
+        diff_icon.visible = false
 
     # 4. Buttons State
     for i in range(diff_buttons.size()):
