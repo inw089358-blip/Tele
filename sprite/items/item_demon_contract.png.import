@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dv5gbn4nb5ml2"
-path="res://.godot/imported/drum_mallet.png-340d3027e5a4a0d369d2a7a2bc37bde4.ctex"
+uid="uid://blo32k78yaffy"
+path="res://.godot/imported/item_demon_contract.png-4c3f29141001107496e55269efe1b778.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprite/weapons/generated_from_doc_v1_alpha_final/drum_mallet.png"
-dest_files=["res://.godot/imported/drum_mallet.png-340d3027e5a4a0d369d2a7a2bc37bde4.ctex"]
+source_file="res://sprite/items/item_demon_contract.png"
+dest_files=["res://.godot/imported/item_demon_contract.png-4c3f29141001107496e55269efe1b778.ctex"]
 
 [params]
 

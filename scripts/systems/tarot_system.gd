@@ -1,162 +1,169 @@
 class_name TarotSystem
 extends Node
 
+const CARD_IMAGE_DIR: String = "res://sprite/tarot/minor_arcana"
+
 const CARDS: Dictionary = {
-    "the_fool": {
-        "name": "The Fool",
-        "desc": "A new beginning. Luck +15, but Max HP -5.",
+    "pageofcups": {
+        "name": "Page of Cups",
+        "desc": "Max HP +4",
+        "suit": "cups",
+        "rank": "page",
+        "image_path": CARD_IMAGE_DIR + "/pageofcups.png",
         "effects": [
-            {"type": "luck_flat", "value": 15.0},
-            {"type": "max_hp_flat", "value": -5}
+            {"type": "max_hp_flat", "value": 4}
         ]
     },
-    "the_magician": {
-        "name": "The Magician",
-        "desc": "Mastery of tools. All damage +10%.",
+    "knightofcups": {
+        "name": "Knight of Cups",
+        "desc": "Lifesteal +2",
+        "suit": "cups",
+        "rank": "knight",
+        "image_path": CARD_IMAGE_DIR + "/knightofcups.png",
         "effects": [
-            {"type": "attack_damage_flat", "value": 2}
+            {"type": "lifesteal_flat", "value": 2.0}
         ]
     },
-    "the_high_priestess": {
-        "name": "The High Priestess",
-        "desc": "Hidden wisdom. XP Gain +20%.",
+    "queenofcups": {
+        "name": "Queen of Cups",
+        "desc": "HP Regen +1.5",
+        "suit": "cups",
+        "rank": "queen",
+        "image_path": CARD_IMAGE_DIR + "/queenofcups.png",
         "effects": [
-            {"type": "xp_gain_mult", "value": 1.2}
+            {"type": "hp_regen_flat", "value": 1.5}
         ]
     },
-    "the_empress": {
-        "name": "The Empress",
-        "desc": "Abundance. Harvest +20.",
+    "kingofcups": {
+        "name": "King of Cups",
+        "desc": "Max HP +3. Heal +8",
+        "suit": "cups",
+        "rank": "king",
+        "image_path": CARD_IMAGE_DIR + "/kingofcups.png",
         "effects": [
-            {"type": "harvest_flat", "value": 20.0}
+            {"type": "max_hp_flat", "value": 3},
+            {"type": "heal_flat", "value": 8}
         ]
     },
-    "the_emperor": {
-        "name": "The Emperor",
-        "desc": "Authority and structure. Armor +5.",
+    "pageofpentacles": {
+        "name": "Page of Pentacles",
+        "desc": "Luck +8",
+        "suit": "pentacles",
+        "rank": "page",
+        "image_path": CARD_IMAGE_DIR + "/pageofpentacles.png",
         "effects": [
-            {"type": "armor_flat", "value": 5.0}
+            {"type": "luck_flat", "value": 8.0}
         ]
     },
-    "the_hierophant": {
-        "name": "The Hierophant",
-        "desc": "Tradition. Crit Chance +10%.",
+    "knightofpentacles": {
+        "name": "Knight of Pentacles",
+        "desc": "Harvest +10",
+        "suit": "pentacles",
+        "rank": "knight",
+        "image_path": CARD_IMAGE_DIR + "/knightofpentacles.png",
         "effects": [
-            {"type": "crit_chance_flat", "value": 0.1}
+            {"type": "harvest_flat", "value": 10.0}
         ]
     },
-    "the_lovers": {
-        "name": "The Lovers",
-        "desc": "Harmony. Lifesteal +3%.",
+    "queenofpentacles": {
+        "name": "Queen of Pentacles",
+        "desc": "Armor +2",
+        "suit": "pentacles",
+        "rank": "queen",
+        "image_path": CARD_IMAGE_DIR + "/queenofpentacles.png",
         "effects": [
-            {"type": "lifesteal_flat", "value": 3.0}
+            {"type": "armor_flat", "value": 2.0}
         ]
     },
-    "the_chariot": {
-        "name": "The Chariot",
-        "desc": "Determination. Move Speed +15.",
+    "kingofpentacles": {
+        "name": "King of Pentacles",
+        "desc": "XP Gain x1.12",
+        "suit": "pentacles",
+        "rank": "king",
+        "image_path": CARD_IMAGE_DIR + "/kingofpentacles.png",
         "effects": [
-            {"type": "move_speed_flat", "value": 15.0}
+            {"type": "xp_gain_mult", "value": 1.12}
         ]
     },
-    "strength": {
-        "name": "Strength",
-        "desc": "Inner power. Melee Damage +5.",
+    "pageofsword": {
+        "name": "Page of Swords",
+        "desc": "Attack +1",
+        "suit": "swords",
+        "rank": "page",
+        "image_path": CARD_IMAGE_DIR + "/pageofsword.png",
         "effects": [
-            {"type": "melee_damage_flat", "value": 5.0}
+            {"type": "attack_damage_flat", "value": 1}
         ]
     },
-    "the_hermit": {
-        "name": "The Hermit",
-        "desc": "Solitude. Range +40.",
+    "knightofsword": {
+        "name": "Knight of Swords",
+        "desc": "Attack Speed x1.08",
+        "suit": "swords",
+        "rank": "knight",
+        "image_path": CARD_IMAGE_DIR + "/knightofsword.png",
         "effects": [
-            {"type": "target_range_flat", "value": 40.0}
+            {"type": "attack_speed_mult", "value": 1.08}
         ]
     },
-    "wheel_of_fortune": {
-        "name": "Wheel of Fortune",
-        "desc": "Destiny. Random stat boost: Luck +30 or Gold +100.",
+    "queenofsword": {
+        "name": "Queen of Swords",
+        "desc": "Crit Chance +6%",
+        "suit": "swords",
+        "rank": "queen",
+        "image_path": CARD_IMAGE_DIR + "/queenofsword.png",
         "effects": [
-            {"type": "luck_flat", "value": 30.0} # Simplified for now
+            {"type": "crit_chance_flat", "value": 0.06}
         ]
     },
-    "justice": {
-        "name": "Justice",
-        "desc": "Balance. Dodge Chance +8%.",
+    "kingofsword": {
+        "name": "King of Swords",
+        "desc": "Global Attack +10%",
+        "suit": "swords",
+        "rank": "king",
+        "image_path": CARD_IMAGE_DIR + "/kingofsword.png",
         "effects": [
-            {"type": "dodge_chance_flat", "value": 8.0}
+            {"type": "global_attack_percent_flat", "value": 0.10}
         ]
     },
-    "the_hanged_man": {
-        "name": "The Hanged Man",
-        "desc": "Perspective. Dodge +15%, but Move Speed -10.",
+    "pageofwands": {
+        "name": "Page of Wands",
+        "desc": "Move Speed +8",
+        "suit": "wands",
+        "rank": "page",
+        "image_path": CARD_IMAGE_DIR + "/pageofwands.png",
         "effects": [
-            {"type": "dodge_chance_flat", "value": 15.0},
-            {"type": "move_speed_flat", "value": -10.0}
+            {"type": "move_speed_flat", "value": 8.0}
         ]
     },
-    "death": {
-        "name": "Death",
-        "desc": "Transformation. Damage +25%, but Max HP -10.",
+    "knightofwands": {
+        "name": "Knight of Wands",
+        "desc": "Range +35",
+        "suit": "wands",
+        "rank": "knight",
+        "image_path": CARD_IMAGE_DIR + "/knightofwands.png",
         "effects": [
-            {"type": "attack_damage_flat", "value": 5},
-            {"type": "max_hp_flat", "value": -10}
+            {"type": "target_range_flat", "value": 35.0}
         ]
     },
-    "temperance": {
-        "name": "Temperance",
-        "desc": "Moderation. HP Regen +2.",
+    "queenofwands": {
+        "name": "Queen of Wands",
+        "desc": "Attack Speed x1.12",
+        "suit": "wands",
+        "rank": "queen",
+        "image_path": CARD_IMAGE_DIR + "/queenofwands.png",
         "effects": [
-            {"type": "hp_regen_flat", "value": 2.0}
+            {"type": "attack_speed_mult", "value": 1.12}
         ]
     },
-    "the_devil": {
-        "name": "The Devil",
-        "desc": "Temptation. Damage +40%, but take 1 damage every 5 seconds.",
+    "kingofwands": {
+        "name": "King of Wands",
+        "desc": "Attack +2. Move Speed +4",
+        "suit": "wands",
+        "rank": "king",
+        "image_path": CARD_IMAGE_DIR + "/kingofwands.png",
         "effects": [
-            {"type": "attack_damage_flat", "value": 8}
-        ]
-    },
-    "the_tower": {
-        "name": "The Tower",
-        "desc": "Upheaval. Explosion radius +30%.",
-        "effects": [
-            {"type": "explosion_radius_mult", "value": 1.3}
-        ]
-    },
-    "the_star": {
-        "name": "The Star",
-        "desc": "Hope. Crit Multiplier +50%.",
-        "effects": [
-            {"type": "crit_multiplier_flat", "value": 0.5}
-        ]
-    },
-    "the_moon": {
-        "name": "The Moon",
-        "desc": "Intuition. Dodge +10%.",
-        "effects": [
-            {"type": "dodge_chance_flat", "value": 10.0}
-        ]
-    },
-    "the_sun": {
-        "name": "The Sun",
-        "desc": "Success. All stats +5%.",
-        "effects": [
-            {"type": "all_stats_mult", "value": 1.05}
-        ]
-    },
-    "judgement": {
-        "name": "Judgement",
-        "desc": "Rebirth. Revive once with 50% HP.",
-        "effects": [
-            {"type": "revive_count_flat", "value": 1}
-        ]
-    },
-    "the_world": {
-        "name": "The World",
-        "desc": "Completion. All enemies slow down by 10%.",
-        "effects": [
-            {"type": "enemy_speed_mult", "value": 0.9}
+            {"type": "attack_damage_flat", "value": 2},
+            {"type": "move_speed_flat", "value": 4.0}
         ]
     }
 }

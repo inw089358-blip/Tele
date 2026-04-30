@@ -81,6 +81,4 @@ func _rebuild_wave_definitions() -> void:
             "wave_index": i + 1,
             "duration": target_duration,
             "shop_enabled": i < total_waves - 1,
-            "reward_gold": 0,
-            "reward_xp": 0,
         })

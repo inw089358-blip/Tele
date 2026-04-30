@@ -170,6 +170,7 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
     normalized["total_kills"] = int(input_data.get("total_kills", 0))
     normalized["total_gold"] = int(input_data.get("total_gold", 0))
     normalized["total_play_time"] = float(input_data.get("total_play_time", 0.0))
+    normalized["run_survival_time"] = max(0.0, float(input_data.get("run_survival_time", 0.0)))
     normalized["selected_character"] = str(input_data.get("selected_character", default_character))
     normalized["selected_starter_weapon_id"] = str(input_data.get("selected_starter_weapon_id", ""))
     normalized["difficulty"] = _normalize_difficulty(str(input_data.get("difficulty", "normal")))
@@ -379,6 +380,7 @@ func _default_save() -> Dictionary:
         "total_kills": 0, 
         "total_gold": 0, 
         "total_play_time": 0.0, 
+        "run_survival_time": 0.0,
         "selected_character": "the_fool", 
         "selected_starter_weapon_id": "",
         "difficulty": "normal", 

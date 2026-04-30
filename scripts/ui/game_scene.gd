@@ -24,6 +24,7 @@ const BG_TUTORIAL_TEXTURE: Texture2D = preload("res://sprite/maps/map_tutorial_d
 const BG_COMBAT_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_combat_default.png")
 const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_arena.png")
 const MELEE_ARC_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_arc_effect.gd")
+const MELEE_HIT_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_hit_effect.gd")
 const ShopSystemScript: Script = preload("res://scripts/systems/shop_system.gd")
 const WEAPON_ORBIT_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/"
 const WEAPON_ORBIT_ICON_TARGET_WIDTH: float = 22.0
@@ -36,6 +37,86 @@ const WEAPON_ORBIT_FLASH_TINT: Color = Color(1.0, 1.0, 1.0, 1.0)
 const WEAPON_ORBIT_ROTATION_SPEED: float = 0.6
 const WEAPON_ORBIT_SMOOTHING_SPEED: float = 16.0
 const WEAPON_ORBIT_MUZZLE_OFFSET: float = 16.0
+const MELEE_ATTACK_FAMILY_BY_WEAPON_ID: Dictionary = {
+    "kunai": "thrust",
+    "rebar_spear": "thrust",
+    "steel_pipe": "sweep",
+    "chain_whip": "sweep",
+    "road_sign": "heavy",
+    "heavy_wrench": "heavy",
+    "meteor_hammer": "heavy",
+}
+const MELEE_ATTACK_ACTIVE_Z_INDEX: int = 20
+const MELEE_ATTACK_BASE_TINT: Color = Color(0.88, 0.97, 1.0, 0.96)
+const MELEE_ATTACK_FLASH_TINT: Color = Color(1.0, 1.0, 1.0, 1.0)
+const MELEE_ATTACK_ASSET_FORWARD_ANGLE_BY_WEAPON_ID: Dictionary = {
+    "kunai": -0.92,
+    "rebar_spear": -0.88,
+    "steel_pipe": -0.88,
+    "chain_whip": 0.36,
+    "road_sign": -0.86,
+    "heavy_wrench": -0.92,
+    "meteor_hammer": -2.45,
+}
+const MELEE_ATTACK_ALIGNMENT_BY_FAMILY: Dictionary = {
+    "thrust": {
+        "tip_forward_ratio": 0.96,
+        "grip_back_ratio": 0.34,
+        "lateral_offset": 0.0,
+        "melee_rotation_offset": PI,
+    },
+    "sweep": {
+        "tip_forward_ratio": 0.82,
+        "grip_back_ratio": 0.42,
+        "lateral_offset": 0.0,
+        "melee_rotation_offset": PI,
+    },
+    "heavy": {
+        "tip_forward_ratio": 0.88,
+        "grip_back_ratio": 0.5,
+        "lateral_offset": 0.02,
+        "melee_rotation_offset": PI,
+    },
+}
+const MELEE_ATTACK_ALIGNMENT_BY_WEAPON_ID: Dictionary = {
+    "kunai": {
+        "tip_forward_ratio": 1.08,
+        "grip_back_ratio": 0.24,
+        "lateral_offset": 0.0,
+    },
+    "rebar_spear": {
+        "tip_forward_ratio": 1.16,
+        "grip_back_ratio": 0.22,
+        "lateral_offset": 0.0,
+    },
+    "steel_pipe": {
+        "tip_forward_ratio": 0.9,
+        "grip_back_ratio": 0.36,
+        "lateral_offset": -0.02,
+    },
+    "chain_whip": {
+        "tip_forward_ratio": 1.02,
+        "grip_back_ratio": 0.28,
+        "lateral_offset": 0.0,
+    },
+    "road_sign": {
+        "tip_forward_ratio": 1.02,
+        "grip_back_ratio": 0.3,
+        "lateral_offset": 0.08,
+    },
+    "heavy_wrench": {
+        "tip_forward_ratio": 0.96,
+        "grip_back_ratio": 0.34,
+        "lateral_offset": 0.06,
+    },
+    "meteor_hammer": {
+        "tip_forward_ratio": 1.12,
+        "grip_back_ratio": 0.22,
+        "lateral_offset": 0.0,
+    },
+}
+const MELEE_CAMERA_PUNCH_DAMPING: float = 16.0
+const MELEE_CAMERA_PUNCH_RETURN_SPEED: float = 22.0
 const WEAPON_TAG_ADDITIVE_EFFECT_TYPES: Dictionary = {
     "attack_damage_flat": true,
     "melee_damage_flat": true,
@@ -120,11 +201,16 @@ var _spawn_interval_multiplier: float = 1.0
 var _xp_multiplier: float = 1.0
 var _gold_multiplier: float = 1.0
 var _run_kill_count: int = 0
+var _run_survival_time_runtime: float = 0.0
 var _arena_half_extents: Vector2 = Vector2(620.0, 340.0)
 var _enemy_ranged_weight_runtime: float = ENEMY_RANGED_WEIGHT
 var _enemy_barrage_weight_runtime: float = ENEMY_BARRAGE_WEIGHT
 var _max_enemy_count_runtime: int = MAX_ENEMY_COUNT
 var _initial_enemy_count_runtime: int = INITIAL_ENEMY_COUNT
+var _enemy_min_spawn_radius_runtime: float = ENEMY_MIN_SPAWN_RADIUS
+var _enemy_max_spawn_radius_runtime: float = ENEMY_MAX_SPAWN_RADIUS
+var _contact_damage_runtime: int = CONTACT_DAMAGE
+var _contact_damage_interval_runtime: float = CONTACT_DAMAGE_INTERVAL
 var _spawn_interval_start_runtime: float = ENEMY_SPAWN_INTERVAL
 var _spawn_interval_end_runtime: float = ENEMY_SPAWN_INTERVAL
 var _auto_attack_interval_multiplier_runtime: float = 1.0
@@ -149,9 +235,13 @@ var _weapon_orbit_angle: float = 0.0
 var _weapon_orbit_aim_direction: Vector2 = Vector2.RIGHT
 var _weapon_orbit_icon_cache: Dictionary = {}
 var _weapon_targets: Dictionary = {}
+var _active_melee_attacks: Dictionary = {}
+var _melee_camera_punch_offset: Vector2 = Vector2.ZERO
+var _melee_camera_punch_velocity: Vector2 = Vector2.ZERO
 var _weapon_orbit_placeholder_texture: Texture2D
 var _tarot_choice_panel: Control
 var _tarot_canvas: CanvasLayer
+var _tarot_card_texture_cache: Dictionary = {}
 var _pending_tarot_choice: bool = false
 var _intro_active: bool = false
 var _pause_transition_tween: Tween
@@ -214,9 +304,6 @@ const XP_REQUIRED_MIN_DEFAULT: int = 1
 const ATTACK_FLAT_TO_GLOBAL_ATTACK_PERCENT_DEFAULT: float = 3.0
 const CRIT_MULTIPLIER_TO_CRIT_CHANCE_RATIO_DEFAULT: float = 0.12
 const HARVEST_WAVE_GOLD_PER_POINT_DEFAULT: float = 1.0
-const HARVEST_KILL_GOLD_CHANCE_PER_POINT_DEFAULT: float = 0.0008
-const HARVEST_KILL_GOLD_MAX_CHANCE_DEFAULT: float = 0.35
-const HARVEST_KILL_GOLD_AMOUNT_DEFAULT: int = 1
 const LEVEL_UP_MAX_HP_BONUS_DEFAULT: int = 1
 const LEVEL_UP_CURRENT_HP_BONUS_DEFAULT: int = 1
 const REWARD_TARGET_RANGE_BONUS: float = 80.0
@@ -339,6 +426,7 @@ func _reset_progress_state() -> void :
     _pending_wave_shop_snapshot = {}
     _battle_elapsed = 0.0
     _run_kill_count = 0
+    _run_survival_time_runtime = 0.0
     _wave_elapsed = 0.0
     _wave_duration_runtime = 30.0
     _wave_progress_index = 0
@@ -361,6 +449,8 @@ func _reset_progress_state() -> void :
     _weapon_cooldown_signatures.clear()
     _weapon_tag_applied_effects.clear()
     _weapon_targets.clear()
+    _clear_active_melee_attacks()
+    _reset_melee_camera_punch()
     _tarot_completed_for_wave = false
     _pending_tarot_choice = false
     _clear_weapon_orbit_runtime()
@@ -408,6 +498,8 @@ func _process(delta: float) -> void :
 
     _try_spawn_elite_by_schedule()
     _tick_equipped_weapon_attacks(delta)
+    _tick_active_melee_attacks(delta)
+    _tick_melee_camera_punch(delta)
     _tick_weapon_orbit_visuals(delta)
     _handle_projectile_hits()
     _flush_pending_enemy_shots()
@@ -454,6 +546,8 @@ func _on_player_died() -> void :
         return
     _is_game_over = true
     _set_combat_simulation_active(false)
+    _clear_active_melee_attacks()
+    _reset_melee_camera_punch()
     _reward_opened = false
     _pending_level_up_rewards = 0
     _wave_end_reward_gate_active = false
@@ -550,7 +644,7 @@ func _show_death_settlement_panel() -> void:
     _death_settlement_panel.visible = true
 
     var stage_text: String = GameManager.current_stage_id
-    var survive_text: String = _format_elapsed_time(_battle_elapsed)
+    var survive_text: String = _format_elapsed_time(_run_survival_time_runtime + _battle_elapsed)
     if _death_settlement_title != null:
         _death_settlement_title.text = _tx("ui.game_over.defeat_title", "Defeat")
     if _death_settlement_subtitle != null:
@@ -657,10 +751,7 @@ func _on_wave_time_up() -> void:
     
     _clear_experience_orbs()
     _clear_all_enemies()
-    var current_wave_profile: Dictionary = wave_manager.get_current_wave_definition()
-    _add_gold(int(current_wave_profile.get("reward_gold", 0)))
     _add_gold(_resolve_wave_harvest_gold())
-    _add_experience(int(current_wave_profile.get("reward_xp", 0)))
     _add_experience(_resolve_wave_harvest_xp())
     _apply_harvest_growth()
     
@@ -747,10 +838,10 @@ func _show_tarot_choice_panel() -> void:
     for child in h_box.get_children():
         child.queue_free()
         
-    var cards = TarotSystem.get_random_choices(3)
+    var cards: Array[String] = TarotSystem.get_random_choices(3)
     for card_id in cards:
-        var card_data = TarotSystem.CARDS[card_id]
-        var btn = Button.new()
+        var card_data: Dictionary = TarotSystem.CARDS[card_id]
+        var btn: Button = Button.new()
         
         # Style Box Normal
         var sb_normal = StyleBoxFlat.new()
@@ -775,20 +866,101 @@ func _show_tarot_choice_panel() -> void:
         btn.add_theme_stylebox_override("pressed", sb_hover)
         btn.add_theme_stylebox_override("focus", sb_hover)
         
-        btn.text = "- %s -\n\n%s" % [card_data.name.to_upper(), card_data.desc]
-        btn.custom_minimum_size = Vector2(220, 320)
-        btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        btn.alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-        
-        btn.add_theme_font_size_override("font_size", 16)
-        
-        btn.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 1.0))
-        btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 1.0))
-        
+        btn.text = ""
+        btn.custom_minimum_size = Vector2(240, 360)
+        btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+        btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
         btn.pressed.connect(_on_tarot_selected.bind(card_id))
+
+        var content_margin: MarginContainer = MarginContainer.new()
+        content_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+        content_margin.add_theme_constant_override("margin_left", 14)
+        content_margin.add_theme_constant_override("margin_top", 14)
+        content_margin.add_theme_constant_override("margin_right", 14)
+        content_margin.add_theme_constant_override("margin_bottom", 14)
+        content_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        btn.add_child(content_margin)
+
+        var card_vbox: VBoxContainer = VBoxContainer.new()
+        card_vbox.add_theme_constant_override("separation", 12)
+        card_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        content_margin.add_child(card_vbox)
+
+        var image_frame: PanelContainer = PanelContainer.new()
+        image_frame.custom_minimum_size = Vector2(212, 170)
+        image_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        image_frame.add_theme_stylebox_override("panel", _build_tarot_image_frame_style())
+        image_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        card_vbox.add_child(image_frame)
+
+        var image_margin: MarginContainer = MarginContainer.new()
+        image_margin.add_theme_constant_override("margin_left", 4)
+        image_margin.add_theme_constant_override("margin_top", 4)
+        image_margin.add_theme_constant_override("margin_right", 4)
+        image_margin.add_theme_constant_override("margin_bottom", 4)
+        image_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        image_frame.add_child(image_margin)
+
+        var image_rect: TextureRect = TextureRect.new()
+        image_rect.texture = _load_tarot_card_texture(str(card_data.get("image_path", "")))
+        image_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+        image_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+        image_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        image_margin.add_child(image_rect)
+
+        var name_label: Label = Label.new()
+        name_label.text = str(card_data.get("name", card_id)).to_upper()
+        name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+        name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        name_label.add_theme_font_size_override("font_size", 17)
+        name_label.add_theme_color_override("font_color", Color(0.96, 0.86, 0.67, 1.0))
+        name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
+        name_label.add_theme_constant_override("outline_size", 4)
+        name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        card_vbox.add_child(name_label)
+
+        var desc_label: Label = Label.new()
+        desc_label.text = str(card_data.get("desc", ""))
+        desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+        desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        desc_label.add_theme_font_size_override("font_size", 15)
+        desc_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 1.0))
+        desc_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        card_vbox.add_child(desc_label)
+
         h_box.add_child(btn)
         
     _tarot_choice_panel.visible = true
+
+func _build_tarot_image_frame_style() -> StyleBoxFlat:
+    var style: StyleBoxFlat = StyleBoxFlat.new()
+    style.bg_color = Color(0.05, 0.06, 0.08, 1.0)
+    style.border_width_left = 1
+    style.border_width_top = 1
+    style.border_width_right = 1
+    style.border_width_bottom = 1
+    style.border_color = Color(0.40, 0.34, 0.25, 1.0)
+    style.corner_radius_top_left = 3
+    style.corner_radius_top_right = 3
+    style.corner_radius_bottom_right = 3
+    style.corner_radius_bottom_left = 3
+    return style
+
+func _load_tarot_card_texture(path: String) -> Texture2D:
+    if path.is_empty():
+        return null
+    if _tarot_card_texture_cache.has(path):
+        return _tarot_card_texture_cache[path] as Texture2D
+
+    var texture: Texture2D = load(path) as Texture2D
+    if texture == null and FileAccess.file_exists(path):
+        var image: Image = Image.new()
+        if image.load(path) == OK:
+            texture = ImageTexture.create_from_image(image)
+
+    if texture != null:
+        _tarot_card_texture_cache[path] = texture
+    return texture
 
 func _on_tarot_selected(card_id: String) -> void:
     if _player != null:
@@ -829,6 +1001,8 @@ func _complete_stage_by_timer() -> void:
     if _is_game_over:
         return
     _stage_clear_triggered = true
+    _clear_active_melee_attacks()
+    _reset_melee_camera_punch()
     _pause_opened = false
     _reward_opened = false
     _pending_level_up_rewards = 0
@@ -924,7 +1098,7 @@ func _try_spawn_enemy() -> void :
     if _player == null or not is_instance_valid(_player):
         return
     _cleanup_dead_enemies()
-    if _count_active_enemies() >= MAX_ENEMY_COUNT:
+    if _count_active_enemies() >= _max_enemy_count_runtime:
         return
     var spawn_roll: float = randf()
     var spawn_type: Enemy.EnemyType = Enemy.EnemyType.MELEE
@@ -1024,7 +1198,7 @@ func _random_spawn_position() -> Vector2:
     # Prefer radial spawn around player, but keep it inside arena bounds.
     for i: int in range(SPAWN_POSITION_RETRY_COUNT):
         var direction: Vector2 = Vector2.RIGHT.rotated(randf() * TAU)
-        var distance: float = randf_range(ENEMY_MIN_SPAWN_RADIUS, ENEMY_MAX_SPAWN_RADIUS)
+        var distance: float = randf_range(_enemy_min_spawn_radius_runtime, _enemy_max_spawn_radius_runtime)
         var candidate: Vector2 = _player.global_position + direction * distance
         if not arena_rect.has_point(candidate):
             continue
@@ -1037,7 +1211,7 @@ func _random_spawn_position() -> Vector2:
             randf_range(arena_rect.position.x, arena_rect.end.x),
             randf_range(arena_rect.position.y, arena_rect.end.y)
         )
-        if candidate.distance_to(_player.global_position) >= ENEMY_MIN_SPAWN_RADIUS * 0.65:
+        if candidate.distance_to(_player.global_position) >= _enemy_min_spawn_radius_runtime * 0.65:
             return candidate
     return fallback
 
@@ -1092,8 +1266,13 @@ func _tick_equipped_weapon_attacks(delta: float) -> void:
             _weapon_cooldowns[slot_index] = cooldown_remaining
             continue
 
+        var attack_mode: String = str(attack_profile.get("mode", "ranged_homing"))
+        if _active_melee_attacks.has(slot_index):
+            _weapon_cooldowns[slot_index] = 0.0
+            continue
+
         var weapon_pos: Vector2 = _player.global_position
-        if _weapon_orbit_nodes.has(slot_index):
+        if attack_mode != "melee_arc" and _weapon_orbit_nodes.has(slot_index):
             var sprite: Sprite2D = _weapon_orbit_nodes[slot_index]
             if is_instance_valid(sprite):
                 weapon_pos = sprite.global_position
@@ -1103,18 +1282,41 @@ func _tick_equipped_weapon_attacks(delta: float) -> void:
         if nearest_enemy == null:
             _weapon_cooldowns[slot_index] = 0.0
             continue
-        _attack_with_profile(nearest_enemy, attack_profile, slot_index)
-        _weapon_targets[slot_index] = nearest_enemy
-        _trigger_weapon_orbit_flash(slot_index)
-        _weapon_cooldowns[slot_index] = effective_interval
+        var attack_slot_index: int = slot_index
+        var active_attack_profile: Dictionary = attack_profile
+        var active_slot_weapon: Dictionary = slot_weapon
+        var active_effective_interval: float = effective_interval
+        if attack_mode == "melee_arc":
+            attack_slot_index = _resolve_melee_attack_slot_index(slot_index, nearest_enemy, equipped_slots)
+            if _active_melee_attacks.has(attack_slot_index):
+                _weapon_cooldowns[slot_index] = 0.0
+                continue
+            if attack_slot_index != slot_index:
+                var active_weapon_value: Variant = equipped_slots[attack_slot_index]
+                if _is_valid_weapon_slot(active_weapon_value):
+                    active_slot_weapon = active_weapon_value
+                    active_attack_profile = _resolve_attack_profile(active_slot_weapon)
+                    var active_base_interval: float = max(0.08, float(active_attack_profile.get("interval", AUTO_ATTACK_INTERVAL)))
+                    active_effective_interval = clampf(
+                        active_base_interval * _auto_attack_interval_multiplier_runtime / safe_speed_mult,
+                        0.08,
+                        1.2
+                    )
+        _attack_with_profile(nearest_enemy, active_attack_profile, attack_slot_index, active_slot_weapon)
+        _weapon_targets[attack_slot_index] = nearest_enemy
+        if attack_mode != "melee_arc":
+            _trigger_weapon_orbit_flash(attack_slot_index)
+        _weapon_cooldowns[slot_index] = 0.0 if attack_slot_index != slot_index else effective_interval
+        if attack_slot_index != slot_index:
+            _weapon_cooldowns[attack_slot_index] = active_effective_interval
 
-func _attack_with_profile(target_enemy: Enemy, attack_profile: Dictionary, slot_index: int = -1) -> void:
+func _attack_with_profile(target_enemy: Enemy, attack_profile: Dictionary, slot_index: int = -1, weapon: Dictionary = {}) -> void:
     if target_enemy == null or not is_instance_valid(target_enemy):
         return
     var mode: String = str(attack_profile.get("mode", "ranged_homing"))
     match mode:
         "melee_arc":
-            _perform_melee_arc_attack(target_enemy, attack_profile)
+            _perform_melee_arc_attack(target_enemy, attack_profile, slot_index, weapon)
         "ranged_heavy":
             _spawn_weapon_projectile(target_enemy, attack_profile, false, slot_index)
         _:
@@ -1142,12 +1344,20 @@ func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, h
     if target_enemy == null or not is_instance_valid(target_enemy):
         return
     var projectile: Projectile = Projectile.new()
+    var attack_mode: String = str(attack_profile.get("mode", "ranged_homing"))
     projectile.damage = _resolve_weapon_damage(attack_profile)
     projectile.speed = max(180.0, float(attack_profile.get("projectile_speed", BULLET_SPEED)))
     projectile.hit_radius = max(2.0, float(attack_profile.get("projectile_radius", 4.0)))
     projectile.crit_chance = _player.crit_chance
     projectile.crit_multiplier = _resolve_weapon_crit_multiplier(attack_profile)
     projectile.lifesteal_chance = _resolve_weapon_lifesteal_chance(attack_profile)
+    match attack_mode:
+        "ranged_homing":
+            projectile.configure_visual_preset("homing")
+        "ranged_heavy":
+            projectile.configure_visual_preset("heavy")
+        _:
+            projectile.configure_visual_preset("default")
     var sprite_node: Sprite2D = null
     if slot_index >= 0 and _weapon_orbit_nodes.has(slot_index):
         sprite_node = _weapon_orbit_nodes[slot_index]
@@ -1168,26 +1378,75 @@ func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, h
     add_child(projectile)
     _projectiles.append(projectile)
 
-func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary) -> void:
+func _perform_melee_arc_attack(target_enemy: Enemy, attack_profile: Dictionary, slot_index: int, weapon: Dictionary = {}) -> void:
     if not _is_enemy_combat_active(target_enemy):
         return
-    var impact_position: Vector2 = target_enemy.global_position
-    _spawn_melee_arc_effect(impact_position, attack_profile)
-    var base_damage: int = _resolve_weapon_damage(attack_profile)
-    var crit_multiplier: float = _resolve_weapon_crit_multiplier(attack_profile)
-    var lifesteal_chance: float = _resolve_weapon_lifesteal_chance(attack_profile)
-    var splash_radius: float = _resolve_melee_splash_radius(attack_profile)
-    for enemy: Enemy in _enemies:
-        if not _is_enemy_combat_active(enemy):
+    if slot_index < 0:
+        return
+    if _player == null or not is_instance_valid(_player):
+        return
+    if not _weapon_orbit_nodes.has(slot_index):
+        return
+    var sprite_value: Variant = _weapon_orbit_nodes.get(slot_index, null)
+    if not (sprite_value is Sprite2D):
+        return
+    var sprite: Sprite2D = sprite_value
+    if not is_instance_valid(sprite):
+        return
+
+    var direction: Vector2 = _player.global_position.direction_to(target_enemy.global_position)
+    if direction.length_squared() <= 0.0001:
+        direction = _resolve_slot_aim_direction(slot_index, sprite.global_position)
+    if direction.length_squared() <= 0.0001:
+        direction = Vector2.RIGHT
+
+    var runtime: Dictionary = _build_melee_attack_runtime(slot_index, weapon, attack_profile, sprite, direction)
+    _active_melee_attacks[slot_index] = runtime
+    _weapon_orbit_flash_timers.erase(slot_index)
+    _spawn_melee_arc_effect(target_enemy.global_position, attack_profile, str(runtime.get("family", "sweep")), float(runtime.get("duration", 0.18)))
+
+func _resolve_melee_attack_slot_index(original_slot_index: int, target_enemy: Enemy, equipped_slots: Array) -> int:
+    if _player == null or not is_instance_valid(_player):
+        return original_slot_index
+    if not _is_enemy_combat_active(target_enemy):
+        return original_slot_index
+    var target_direction: Vector2 = _player.global_position.direction_to(target_enemy.global_position)
+    if target_direction.length_squared() <= 0.0001:
+        return original_slot_index
+    target_direction = target_direction.normalized()
+
+    var best_slot_index: int = original_slot_index
+    var best_score: float = -INF
+    for candidate_slot_index: int in range(equipped_slots.size()):
+        if _active_melee_attacks.has(candidate_slot_index):
             continue
-        var hit_distance: float = splash_radius + enemy.body_radius
-        if impact_position.distance_squared_to(enemy.global_position) > hit_distance * hit_distance:
+        if not _weapon_orbit_nodes.has(candidate_slot_index):
             continue
-        var outgoing_damage: int = _player.roll_outgoing_damage(base_damage, _player.crit_chance, crit_multiplier)
-        var dealt_damage: int = enemy.take_damage(outgoing_damage)
-        if dealt_damage > 0:
-            _player.try_lifesteal_on_hit(lifesteal_chance)
-    _cleanup_dead_enemies()
+        var weapon_value: Variant = equipped_slots[candidate_slot_index]
+        if not _is_valid_weapon_slot(weapon_value):
+            continue
+        var candidate_weapon: Dictionary = weapon_value
+        var candidate_profile: Dictionary = _resolve_attack_profile(candidate_weapon)
+        if str(candidate_profile.get("mode", "ranged_homing")) != "melee_arc":
+            continue
+        if candidate_slot_index != original_slot_index and float(_weapon_cooldowns.get(candidate_slot_index, 0.0)) > 0.0:
+            continue
+        var sprite_value: Variant = _weapon_orbit_nodes.get(candidate_slot_index, null)
+        if not (sprite_value is Sprite2D):
+            continue
+        var sprite: Sprite2D = sprite_value
+        if not is_instance_valid(sprite):
+            continue
+        var slot_direction: Vector2 = _player.global_position.direction_to(sprite.global_position)
+        if slot_direction.length_squared() <= 0.0001:
+            continue
+        var score: float = slot_direction.normalized().dot(target_direction)
+        if candidate_slot_index == original_slot_index:
+            score += 0.001
+        if score > best_score:
+            best_score = score
+            best_slot_index = candidate_slot_index
+    return best_slot_index
 
 func _resolve_weapon_damage(attack_profile: Dictionary) -> int:
     if _player == null or not is_instance_valid(_player):
@@ -1233,6 +1492,533 @@ func _resolve_melee_splash_radius(attack_profile: Dictionary) -> float:
     var default_radius: float = melee_range * 0.58
     var raw_radius: float = float(attack_profile.get("splash_radius", default_radius))
     return clampf(raw_radius, 48.0, 110.0)
+
+func _build_melee_attack_runtime(
+    slot_index: int,
+    weapon: Dictionary,
+    attack_profile: Dictionary,
+    sprite: Sprite2D,
+    direction: Vector2
+) -> Dictionary:
+    var family: String = _resolve_melee_attack_family(weapon, attack_profile)
+    var attack_range: float = _resolve_weapon_attack_range(attack_profile)
+    var rest_radius: float = max(16.0, sprite.position.length())
+    var hitbox_length: float = 24.0
+    var hitbox_width: float = 18.0
+    var duration: float = 0.22
+    var active_start_ratio: float = 0.18
+    var active_end_ratio: float = 0.86
+    var sweep_arc: float = clampf(float(attack_profile.get("arc_width", 1.45)), 0.9, 2.0)
+    var attack_radius: float = clampf(attack_range * 0.82, 46.0, 122.0)
+    var windup_angle: float = direction.angle() - 1.1
+    var impact_angle: float = direction.angle() + 0.14
+    var recover_angle: float = direction.angle() - 0.06
+
+    match family:
+        "thrust":
+            duration = max(0.12, float(attack_profile.get("attack_duration", 0.17)))
+            active_start_ratio = clampf(float(attack_profile.get("active_start_ratio", 0.16)), 0.0, 0.95)
+            active_end_ratio = clampf(float(attack_profile.get("active_end_ratio", 0.68)), active_start_ratio, 1.0)
+            attack_radius = clampf(float(attack_profile.get("attack_radius", attack_range * 0.92)), 52.0, 136.0)
+            rest_radius = clampf(rest_radius, 12.0, 28.0)
+            hitbox_length = clampf(float(attack_profile.get("hitbox_length", attack_radius * 0.55)), 18.0, 52.0)
+            hitbox_width = clampf(float(attack_profile.get("hitbox_width", attack_radius * 0.16)), 12.0, 22.0)
+        "heavy":
+            duration = max(0.16, float(attack_profile.get("attack_duration", 0.29)))
+            active_start_ratio = clampf(float(attack_profile.get("active_start_ratio", 0.42)), 0.0, 0.95)
+            active_end_ratio = clampf(float(attack_profile.get("active_end_ratio", 0.78)), active_start_ratio, 1.0)
+            attack_radius = clampf(float(attack_profile.get("attack_radius", attack_range * 0.76)), 44.0, 118.0)
+            rest_radius = clampf(rest_radius, 16.0, 28.0)
+            hitbox_length = clampf(float(attack_profile.get("hitbox_length", attack_radius * 0.34)), 18.0, 40.0)
+            hitbox_width = clampf(float(attack_profile.get("hitbox_width", attack_radius * 0.34)), 22.0, 38.0)
+            sweep_arc = clampf(float(attack_profile.get("arc_width", 1.15)), 0.78, 1.55)
+            windup_angle = direction.angle() - sweep_arc * 0.95
+            impact_angle = direction.angle() + sweep_arc * 0.18
+            recover_angle = direction.angle() - sweep_arc * 0.06
+        _:
+            family = "sweep"
+            duration = max(0.14, float(attack_profile.get("attack_duration", 0.22)))
+            active_start_ratio = clampf(float(attack_profile.get("active_start_ratio", 0.18)), 0.0, 0.95)
+            active_end_ratio = clampf(float(attack_profile.get("active_end_ratio", 0.86)), active_start_ratio, 1.0)
+            attack_radius = clampf(float(attack_profile.get("attack_radius", attack_range * 0.82)), 46.0, 122.0)
+            rest_radius = clampf(rest_radius, 16.0, 30.0)
+            hitbox_length = clampf(float(attack_profile.get("hitbox_length", attack_radius * 0.28)), 16.0, 34.0)
+            hitbox_width = clampf(float(attack_profile.get("hitbox_width", attack_radius * 0.28)), 18.0, 30.0)
+
+    var forward: Vector2 = direction.normalized()
+    if forward.length_squared() <= 0.0001:
+        forward = Vector2.RIGHT
+    var current_global_point: Vector2 = _player.global_position + forward * rest_radius
+    var base_scale: Vector2 = _resolve_weapon_orbit_base_scale(sprite)
+    var weapon_id: String = str(weapon.get("weapon_id", ""))
+    var alignment: Dictionary = _resolve_melee_weapon_alignment(weapon_id, family, sprite)
+    var fx_intensity: float = 1.0
+    var camera_punch_strength: float = 1.2
+    var impact_scale: float = 1.0
+    var hit_pause_duration: float = 0.022
+
+    match family:
+        "thrust":
+            fx_intensity = 0.96
+            camera_punch_strength = 0.9
+            impact_scale = 0.88
+            hit_pause_duration = 0.018
+        "heavy":
+            fx_intensity = 1.2
+            camera_punch_strength = 2.2
+            impact_scale = 1.24
+            hit_pause_duration = 0.03
+        _:
+            fx_intensity = 1.04
+            camera_punch_strength = 1.35
+            impact_scale = 1.0
+            hit_pause_duration = 0.022
+
+    var tip_forward_distance: float = float(alignment.get("tip_forward_distance", 0.0))
+    var lateral_offset_distance: float = float(alignment.get("lateral_offset_distance", 0.0))
+    current_global_point = _player.global_position + forward * (rest_radius + tip_forward_distance) + forward.orthogonal() * lateral_offset_distance
+
+    return {
+        "slot_index": slot_index,
+        "weapon_id": weapon_id,
+        "family": family,
+        "sprite": sprite,
+        "elapsed": 0.0,
+        "duration": duration,
+        "active_start_time": duration * active_start_ratio,
+        "active_end_time": duration * active_end_ratio,
+        "direction": forward,
+        "base_angle": forward.angle(),
+        "attack_radius": attack_radius,
+        "rest_radius": rest_radius,
+        "hitbox_length": hitbox_length,
+        "hitbox_width": hitbox_width,
+        "sweep_arc": sweep_arc,
+        "sweep_from": forward.angle() - sweep_arc * 0.64,
+        "sweep_to": forward.angle() + sweep_arc * 0.54,
+        "windup_angle": windup_angle,
+        "impact_angle": impact_angle,
+        "recover_angle": recover_angle,
+        "base_damage": _resolve_weapon_damage(attack_profile),
+        "crit_multiplier": _resolve_weapon_crit_multiplier(attack_profile),
+        "lifesteal_chance": _resolve_weapon_lifesteal_chance(attack_profile),
+        "tip_forward_ratio": float(alignment.get("tip_forward_ratio", 0.9)),
+        "grip_back_ratio": float(alignment.get("grip_back_ratio", 0.35)),
+        "lateral_offset": float(alignment.get("lateral_offset", 0.0)),
+        "melee_rotation_offset": float(alignment.get("melee_rotation_offset", PI)),
+        "tip_forward_distance": tip_forward_distance,
+        "grip_back_distance": float(alignment.get("grip_back_distance", 0.0)),
+        "lateral_offset_distance": lateral_offset_distance,
+        "fx_intensity": fx_intensity,
+        "camera_punch_strength": camera_punch_strength,
+        "impact_scale": impact_scale,
+        "hit_pause_remaining": 0.0,
+        "hit_pause_duration": hit_pause_duration,
+        "has_triggered_primary_hit_fx": false,
+        "sprite_base_scale": base_scale,
+        "last_damage_point": current_global_point,
+        "last_tip_global_position": current_global_point,
+        "last_grip_global_position": _player.global_position + forward * max(4.0, rest_radius - float(alignment.get("grip_back_distance", 4.0))),
+        "hit_segment_thickness": max(6.0, hitbox_width * 0.72),
+        "was_active": false,
+        "hit_enemy_ids": {},
+    }
+
+func _resolve_melee_attack_family(weapon: Dictionary, attack_profile: Dictionary) -> String:
+    var explicit_family: String = str(attack_profile.get("melee_family", "")).to_lower()
+    if explicit_family == "thrust" or explicit_family == "sweep" or explicit_family == "heavy":
+        return explicit_family
+    var weapon_id: String = str(weapon.get("weapon_id", "")).to_lower()
+    if MELEE_ATTACK_FAMILY_BY_WEAPON_ID.has(weapon_id):
+        return str(MELEE_ATTACK_FAMILY_BY_WEAPON_ID.get(weapon_id, "sweep"))
+    return "sweep"
+
+func _resolve_melee_weapon_alignment(weapon_id: String, family: String, sprite: Sprite2D) -> Dictionary:
+    var resolved_family: String = family if MELEE_ATTACK_ALIGNMENT_BY_FAMILY.has(family) else "sweep"
+    var alignment: Dictionary = {}
+    var family_value: Variant = MELEE_ATTACK_ALIGNMENT_BY_FAMILY.get(resolved_family, {})
+    if family_value is Dictionary:
+        alignment = (family_value as Dictionary).duplicate(true)
+    var weapon_key: String = weapon_id.to_lower()
+    var override_value: Variant = MELEE_ATTACK_ALIGNMENT_BY_WEAPON_ID.get(weapon_key, {})
+    if override_value is Dictionary:
+        for key in (override_value as Dictionary).keys():
+            alignment[key] = (override_value as Dictionary)[key]
+    if MELEE_ATTACK_ASSET_FORWARD_ANGLE_BY_WEAPON_ID.has(weapon_key):
+        alignment["melee_rotation_offset"] = -float(MELEE_ATTACK_ASSET_FORWARD_ANGLE_BY_WEAPON_ID.get(weapon_key, PI))
+
+    var base_scale: Vector2 = _resolve_weapon_orbit_base_scale(sprite)
+    var texture_size: Vector2 = Vector2(WEAPON_ORBIT_ICON_TARGET_WIDTH, WEAPON_ORBIT_ICON_TARGET_WIDTH)
+    if sprite != null and sprite.texture != null:
+        texture_size = sprite.texture.get_size()
+    var half_width: float = max(5.0, texture_size.x * absf(base_scale.x) * 0.5)
+    var half_height: float = max(4.0, texture_size.y * absf(base_scale.y) * 0.5)
+    var reach_unit: float = max(half_width, half_height)
+    var thickness_unit: float = min(half_width, half_height)
+    alignment["tip_forward_distance"] = max(6.0, reach_unit * float(alignment.get("tip_forward_ratio", 0.9)))
+    alignment["grip_back_distance"] = max(2.0, reach_unit * float(alignment.get("grip_back_ratio", 0.35)))
+    alignment["lateral_offset_distance"] = thickness_unit * float(alignment.get("lateral_offset", 0.0))
+    alignment["melee_rotation_offset"] = float(alignment.get("melee_rotation_offset", PI))
+    return alignment
+
+func _tick_active_melee_attacks(delta: float) -> void:
+    if _active_melee_attacks.is_empty():
+        return
+    if _player == null or not is_instance_valid(_player):
+        _clear_active_melee_attacks()
+        _reset_melee_camera_punch()
+        return
+    var active_slots: Array = _active_melee_attacks.keys().duplicate()
+    for key in active_slots:
+        var slot_index: int = int(key)
+        var state_value: Variant = _active_melee_attacks.get(slot_index, null)
+        if not (state_value is Dictionary):
+            _finish_active_melee_attack(slot_index)
+            continue
+        var state: Dictionary = state_value
+        var sprite_value: Variant = state.get("sprite", null)
+        if not (sprite_value is Sprite2D) or not is_instance_valid(sprite_value as Sprite2D):
+            _finish_active_melee_attack(slot_index)
+            continue
+
+        var hit_pause_remaining: float = max(0.0, float(state.get("hit_pause_remaining", 0.0)))
+        if hit_pause_remaining > 0.0:
+            state["hit_pause_remaining"] = max(0.0, hit_pause_remaining - delta)
+            var paused_pose: Dictionary = _resolve_melee_attack_pose(state)
+            _apply_melee_attack_pose(state, paused_pose)
+            _active_melee_attacks[slot_index] = state
+            continue
+
+        state["elapsed"] = float(state.get("elapsed", 0.0)) + delta
+        if float(state.get("elapsed", 0.0)) >= float(state.get("duration", 0.0)):
+            _finish_active_melee_attack(slot_index)
+            continue
+
+        var pose: Dictionary = _resolve_melee_attack_pose(state)
+        _apply_melee_attack_pose(state, pose)
+
+        var current_damage_point: Vector2 = _player.global_position + Vector2(pose.get("damage_point_local", Vector2.ZERO))
+        var current_tip_global: Vector2 = _player.global_position + Vector2(pose.get("tip_local_position", Vector2.ZERO))
+        var current_grip_global: Vector2 = _player.global_position + Vector2(pose.get("grip_local_position", Vector2.ZERO))
+        var active_now: bool = _is_melee_attack_window_active(state)
+        var was_active: bool = bool(state.get("was_active", false))
+        if active_now:
+            if not was_active:
+                state["last_damage_point"] = current_damage_point
+                state["last_tip_global_position"] = current_tip_global
+                state["last_grip_global_position"] = current_grip_global
+            _apply_melee_attack_hits(state, current_damage_point, current_tip_global, current_grip_global, float(pose.get("damage_radius", 14.0)))
+        else:
+            state["last_damage_point"] = current_damage_point
+            state["last_tip_global_position"] = current_tip_global
+            state["last_grip_global_position"] = current_grip_global
+        state["was_active"] = active_now
+        _active_melee_attacks[slot_index] = state
+
+func _resolve_melee_attack_pose(state: Dictionary) -> Dictionary:
+    var family: String = str(state.get("family", "sweep"))
+    var progress: float = clampf(float(state.get("elapsed", 0.0)) / max(0.001, float(state.get("duration", 0.001))), 0.0, 1.0)
+    var base_angle: float = float(state.get("base_angle", 0.0))
+    var attack_radius: float = float(state.get("attack_radius", 64.0))
+    var rest_radius: float = float(state.get("rest_radius", 18.0))
+    var hitbox_length: float = float(state.get("hitbox_length", 20.0))
+    var hitbox_width: float = float(state.get("hitbox_width", 16.0))
+    var tip_forward_distance: float = float(state.get("tip_forward_distance", 10.0))
+    var grip_back_distance: float = float(state.get("grip_back_distance", 4.0))
+    var lateral_offset_distance: float = float(state.get("lateral_offset_distance", 0.0))
+    var melee_rotation_offset: float = float(state.get("melee_rotation_offset", PI))
+
+    var tip_local_position: Vector2 = Vector2.RIGHT.rotated(base_angle) * (rest_radius + tip_forward_distance)
+    var forward: Vector2 = tip_local_position.normalized() if tip_local_position.length_squared() > 0.0001 else Vector2.RIGHT.rotated(base_angle)
+    var rotation: float = forward.angle() + melee_rotation_offset
+    var sprite_forward: Vector2 = Vector2.RIGHT.rotated(rotation)
+    var sprite_side: Vector2 = sprite_forward.orthogonal()
+    var local_position: Vector2 = tip_local_position - sprite_forward * tip_forward_distance - sprite_side * lateral_offset_distance
+    var grip_local_position: Vector2 = local_position - sprite_forward * grip_back_distance + sprite_side * lateral_offset_distance
+    var scale_mult: Vector2 = Vector2.ONE
+    var damage_point_local: Vector2 = tip_local_position
+    var damage_radius: float = max(8.0, hitbox_width * 0.5)
+    var flash_blend: float = 0.22
+
+    match family:
+        "thrust":
+            var thrust_progress: float
+            if progress < 0.38:
+                thrust_progress = _ease_out_cubic(progress / 0.38)
+            else:
+                thrust_progress = 1.0 - _ease_in_cubic((progress - 0.38) / 0.62)
+            thrust_progress = clampf(thrust_progress, 0.0, 1.0)
+            forward = Vector2.RIGHT.rotated(base_angle)
+            var thrust_distance: float = lerpf(rest_radius, attack_radius, thrust_progress)
+            tip_local_position = forward * (thrust_distance + tip_forward_distance)
+            rotation = base_angle + melee_rotation_offset
+            sprite_forward = Vector2.RIGHT.rotated(rotation)
+            sprite_side = sprite_forward.orthogonal()
+            local_position = tip_local_position - sprite_forward * tip_forward_distance - sprite_side * lateral_offset_distance
+            grip_local_position = local_position - sprite_forward * grip_back_distance + sprite_side * lateral_offset_distance
+            scale_mult = Vector2(lerpf(0.94, 1.12, thrust_progress), lerpf(1.02, 0.9, thrust_progress))
+            damage_point_local = tip_local_position + forward * min(hitbox_length * 0.12, max(2.0, tip_forward_distance * 0.1))
+            damage_radius = max(8.0, hitbox_width * 0.5)
+            flash_blend = 0.24 + thrust_progress * 0.42
+        "heavy":
+            var heavy_windup_ratio: float = 0.34
+            var heavy_strike_ratio: float = 0.72
+            var heavy_angle: float = base_angle
+            var heavy_radius: float = rest_radius
+            var impact_strength: float = 0.0
+            if progress < heavy_windup_ratio:
+                var windup_t: float = _ease_out_quad(progress / heavy_windup_ratio)
+                heavy_angle = lerp_angle(base_angle + 0.34, float(state.get("windup_angle", base_angle - 1.0)), windup_t)
+                heavy_radius = lerpf(rest_radius * 0.96, attack_radius * 0.72, windup_t)
+            elif progress < heavy_strike_ratio:
+                var strike_t: float = _ease_in_cubic((progress - heavy_windup_ratio) / (heavy_strike_ratio - heavy_windup_ratio))
+                heavy_angle = lerp_angle(float(state.get("windup_angle", base_angle - 1.0)), float(state.get("impact_angle", base_angle + 0.15)), strike_t)
+                heavy_radius = lerpf(attack_radius * 0.72, attack_radius * 1.04, strike_t)
+                impact_strength = strike_t
+            else:
+                var recover_t: float = _ease_out_quad((progress - heavy_strike_ratio) / (1.0 - heavy_strike_ratio))
+                heavy_angle = lerp_angle(float(state.get("impact_angle", base_angle + 0.15)), float(state.get("recover_angle", base_angle - 0.08)), recover_t)
+                heavy_radius = lerpf(attack_radius * 1.04, rest_radius * 1.02, recover_t)
+                impact_strength = 1.0 - recover_t * 0.45
+            forward = Vector2.RIGHT.rotated(heavy_angle)
+            tip_local_position = forward * (heavy_radius + tip_forward_distance)
+            rotation = heavy_angle + melee_rotation_offset
+            sprite_forward = Vector2.RIGHT.rotated(rotation)
+            sprite_side = sprite_forward.orthogonal()
+            local_position = tip_local_position - sprite_forward * tip_forward_distance - sprite_side * lateral_offset_distance
+            grip_local_position = local_position - sprite_forward * grip_back_distance + sprite_side * lateral_offset_distance
+            var settle_pulse: float = sin(clampf((progress - heavy_windup_ratio) / max(0.001, 1.0 - heavy_windup_ratio), 0.0, 1.0) * PI)
+            scale_mult = Vector2(1.0 + impact_strength * 0.26, 1.0 + impact_strength * 0.1 + settle_pulse * 0.04)
+            damage_point_local = tip_local_position - forward * min(hitbox_length * 0.1, max(2.0, tip_forward_distance * 0.08))
+            damage_radius = max(12.0, hitbox_width * lerpf(0.85, 1.18, impact_strength) * 0.5)
+            flash_blend = 0.16 + impact_strength * 0.56
+        _:
+            var sweep_angle: float = lerp_angle(float(state.get("sweep_from", base_angle - 0.8)), float(state.get("sweep_to", base_angle + 0.8)), _ease_in_out_sine(progress))
+            forward = Vector2.RIGHT.rotated(sweep_angle)
+            var sweep_radius: float = attack_radius * (1.0 + 0.04 * sin(progress * PI))
+            tip_local_position = forward * (sweep_radius + tip_forward_distance)
+            rotation = sweep_angle + melee_rotation_offset
+            sprite_forward = Vector2.RIGHT.rotated(rotation)
+            sprite_side = sprite_forward.orthogonal()
+            local_position = tip_local_position - sprite_forward * tip_forward_distance - sprite_side * lateral_offset_distance
+            grip_local_position = local_position - sprite_forward * grip_back_distance + sprite_side * lateral_offset_distance
+            scale_mult = Vector2(1.0 + 0.07 * sin(progress * PI), 1.0 + 0.02 * sin(progress * PI))
+            damage_point_local = tip_local_position
+            damage_radius = max(10.0, hitbox_width * 0.52)
+            flash_blend = 0.18 + 0.3 * sin(progress * PI)
+
+    return {
+        "local_position": local_position,
+        "tip_local_position": tip_local_position,
+        "grip_local_position": grip_local_position,
+        "rotation": rotation,
+        "scale_mult": scale_mult,
+        "damage_point_local": damage_point_local,
+        "damage_radius": damage_radius,
+        "flash_blend": clampf(flash_blend, 0.0, 1.0),
+    }
+
+func _apply_melee_attack_pose(state: Dictionary, pose: Dictionary) -> void:
+    var sprite_value: Variant = state.get("sprite", null)
+    if not (sprite_value is Sprite2D):
+        return
+    var sprite: Sprite2D = sprite_value
+    if not is_instance_valid(sprite):
+        return
+    sprite.position = Vector2(pose.get("local_position", Vector2.ZERO))
+    sprite.rotation = float(pose.get("rotation", 0.0))
+    var base_scale: Vector2 = state.get("sprite_base_scale", _resolve_weapon_orbit_base_scale(sprite))
+    var scale_mult: Vector2 = pose.get("scale_mult", Vector2.ONE)
+    sprite.scale = Vector2(base_scale.x * scale_mult.x, base_scale.y * scale_mult.y)
+    var flash_blend: float = float(pose.get("flash_blend", 0.0))
+    sprite.modulate = MELEE_ATTACK_BASE_TINT.lerp(MELEE_ATTACK_FLASH_TINT, flash_blend)
+    sprite.z_index = MELEE_ATTACK_ACTIVE_Z_INDEX
+
+func _apply_melee_attack_hits(
+    state: Dictionary,
+    current_damage_point: Vector2,
+    current_tip_global: Vector2,
+    current_grip_global: Vector2,
+    damage_radius: float
+) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    var previous_damage_point: Vector2 = state.get("last_damage_point", current_damage_point)
+    var previous_tip_global: Vector2 = state.get("last_tip_global_position", current_tip_global)
+    var previous_grip_global: Vector2 = state.get("last_grip_global_position", current_grip_global)
+    var segment_thickness: float = max(damage_radius, float(state.get("hit_segment_thickness", damage_radius)))
+    var hit_enemy_ids: Dictionary = {}
+    var hit_ids_value: Variant = state.get("hit_enemy_ids", {})
+    if hit_ids_value is Dictionary:
+        hit_enemy_ids = hit_ids_value
+    var any_hit: bool = false
+    for enemy: Enemy in _enemies:
+        if not _is_enemy_combat_active(enemy):
+            continue
+        var enemy_id: int = enemy.get_instance_id()
+        if hit_enemy_ids.has(enemy_id):
+            continue
+        var effective_radius: float = segment_thickness + enemy.body_radius
+        var contact_info: Dictionary = _resolve_melee_enemy_contact(
+            enemy.global_position,
+            previous_grip_global,
+            previous_tip_global,
+            current_grip_global,
+            current_tip_global
+        )
+        if float(contact_info.get("distance_sq", INF)) > effective_radius * effective_radius:
+            continue
+        var outgoing_damage: int = _player.roll_outgoing_damage(
+            int(state.get("base_damage", 1)),
+            _player.crit_chance,
+            float(state.get("crit_multiplier", 1.5))
+        )
+        var dealt_damage: int = enemy.take_damage(outgoing_damage)
+        hit_enemy_ids[enemy_id] = true
+        if dealt_damage > 0:
+            _player.try_lifesteal_on_hit(float(state.get("lifesteal_chance", 0.0)))
+            var is_primary_hit: bool = not bool(state.get("has_triggered_primary_hit_fx", false))
+            var hit_direction: Vector2 = current_damage_point - previous_damage_point
+            if hit_direction.length_squared() <= 0.0001:
+                hit_direction = _player.global_position.direction_to(enemy.global_position)
+            var impact_position: Vector2 = contact_info.get("closest_point", current_damage_point.lerp(enemy.global_position, 0.65))
+            _spawn_melee_hit_effect(
+                impact_position,
+                hit_direction,
+                str(state.get("family", "sweep")),
+                is_primary_hit,
+                float(state.get("fx_intensity", 1.0)),
+                float(state.get("impact_scale", 1.0))
+            )
+            if is_primary_hit:
+                state["has_triggered_primary_hit_fx"] = true
+                state["hit_pause_remaining"] = float(state.get("hit_pause_duration", 0.022))
+                _apply_melee_camera_punch(hit_direction, float(state.get("camera_punch_strength", 1.0)))
+        any_hit = true
+    state["hit_enemy_ids"] = hit_enemy_ids
+    state["last_damage_point"] = current_damage_point
+    state["last_tip_global_position"] = current_tip_global
+    state["last_grip_global_position"] = current_grip_global
+    if any_hit:
+        _cleanup_dead_enemies()
+
+func _is_melee_attack_window_active(state: Dictionary) -> bool:
+    var elapsed: float = float(state.get("elapsed", 0.0))
+    return elapsed >= float(state.get("active_start_time", 0.0)) and elapsed <= float(state.get("active_end_time", 0.0))
+
+func _finish_active_melee_attack(slot_index: int) -> void:
+    if not _active_melee_attacks.has(slot_index):
+        return
+    var state_value: Variant = _active_melee_attacks.get(slot_index, null)
+    if state_value is Dictionary:
+        var state: Dictionary = state_value
+        var sprite_value: Variant = state.get("sprite", null)
+        if sprite_value is Sprite2D:
+            var sprite: Sprite2D = sprite_value
+            if is_instance_valid(sprite):
+                sprite.scale = state.get("sprite_base_scale", _resolve_weapon_orbit_base_scale(sprite))
+                sprite.modulate = WEAPON_ORBIT_BASE_TINT
+                sprite.z_index = 2
+    _active_melee_attacks.erase(slot_index)
+    _weapon_orbit_flash_timers.erase(slot_index)
+    _weapon_targets.erase(slot_index)
+
+func _clear_active_melee_attacks() -> void:
+    var active_slots: Array = _active_melee_attacks.keys().duplicate()
+    for key in active_slots:
+        _finish_active_melee_attack(int(key))
+    _active_melee_attacks.clear()
+
+func _tick_melee_camera_punch(delta: float) -> void:
+    if _player_camera == null or not is_instance_valid(_player_camera):
+        _melee_camera_punch_offset = Vector2.ZERO
+        _melee_camera_punch_velocity = Vector2.ZERO
+        return
+    _melee_camera_punch_offset += _melee_camera_punch_velocity * delta
+    _melee_camera_punch_offset = _melee_camera_punch_offset.lerp(Vector2.ZERO, clampf(delta * MELEE_CAMERA_PUNCH_RETURN_SPEED, 0.0, 1.0))
+    _melee_camera_punch_velocity = _melee_camera_punch_velocity.lerp(Vector2.ZERO, clampf(delta * MELEE_CAMERA_PUNCH_DAMPING, 0.0, 1.0))
+    if _melee_camera_punch_offset.length_squared() <= 0.0004 and _melee_camera_punch_velocity.length_squared() <= 0.0004:
+        _melee_camera_punch_offset = Vector2.ZERO
+        _melee_camera_punch_velocity = Vector2.ZERO
+    _player_camera.offset = _melee_camera_punch_offset
+
+func _apply_melee_camera_punch(hit_direction: Vector2, strength: float) -> void:
+    if _player_camera == null or not is_instance_valid(_player_camera):
+        return
+    var forward: Vector2 = hit_direction.normalized()
+    if forward.length_squared() <= 0.0001:
+        forward = Vector2.RIGHT
+    var side: Vector2 = forward.orthogonal()
+    var clamped_strength: float = clampf(strength, 0.4, 3.2)
+    _melee_camera_punch_offset += -forward * (clamped_strength * 0.85)
+    _melee_camera_punch_velocity += -forward * (clamped_strength * 68.0) + side * randf_range(-1.0, 1.0) * clamped_strength * 14.0
+
+func _reset_melee_camera_punch() -> void:
+    _melee_camera_punch_offset = Vector2.ZERO
+    _melee_camera_punch_velocity = Vector2.ZERO
+    if _player_camera != null and is_instance_valid(_player_camera):
+        _player_camera.offset = Vector2.ZERO
+
+func _distance_squared_point_to_segment(point: Vector2, segment_from: Vector2, segment_to: Vector2) -> float:
+    var ab: Vector2 = segment_to - segment_from
+    var ab_length_sq: float = ab.length_squared()
+    if ab_length_sq <= 0.0001:
+        return point.distance_squared_to(segment_from)
+    var t: float = clampf((point - segment_from).dot(ab) / ab_length_sq, 0.0, 1.0)
+    var closest: Vector2 = segment_from + ab * t
+    return point.distance_squared_to(closest)
+
+func _closest_point_on_segment(point: Vector2, segment_from: Vector2, segment_to: Vector2) -> Vector2:
+    var ab: Vector2 = segment_to - segment_from
+    var ab_length_sq: float = ab.length_squared()
+    if ab_length_sq <= 0.0001:
+        return segment_from
+    var t: float = clampf((point - segment_from).dot(ab) / ab_length_sq, 0.0, 1.0)
+    return segment_from + ab * t
+
+func _resolve_melee_enemy_contact(
+    enemy_position: Vector2,
+    previous_grip_global: Vector2,
+    previous_tip_global: Vector2,
+    current_grip_global: Vector2,
+    current_tip_global: Vector2
+) -> Dictionary:
+    var candidates: Array[Array] = [
+        [current_grip_global, current_tip_global],
+        [previous_tip_global, current_tip_global],
+        [previous_grip_global, current_grip_global],
+        [(previous_grip_global + previous_tip_global) * 0.5, (current_grip_global + current_tip_global) * 0.5],
+    ]
+    var best_distance_sq: float = INF
+    var best_point: Vector2 = current_tip_global
+    for candidate in candidates:
+        var from_point: Vector2 = candidate[0]
+        var to_point: Vector2 = candidate[1]
+        var closest_point: Vector2 = _closest_point_on_segment(enemy_position, from_point, to_point)
+        var distance_sq: float = enemy_position.distance_squared_to(closest_point)
+        if distance_sq < best_distance_sq:
+            best_distance_sq = distance_sq
+            best_point = closest_point
+    return {
+        "distance_sq": best_distance_sq,
+        "closest_point": best_point,
+    }
+
+func _ease_out_cubic(value: float) -> float:
+    var t: float = clampf(value, 0.0, 1.0)
+    return 1.0 - pow(1.0 - t, 3.0)
+
+func _ease_in_cubic(value: float) -> float:
+    var t: float = clampf(value, 0.0, 1.0)
+    return t * t * t
+
+func _ease_out_quad(value: float) -> float:
+    var t: float = clampf(value, 0.0, 1.0)
+    return 1.0 - (1.0 - t) * (1.0 - t)
+
+func _ease_in_out_sine(value: float) -> float:
+    var t: float = clampf(value, 0.0, 1.0)
+    return -(cos(PI * t) - 1.0) * 0.5
 
 func _normalize_equipped_weapon_slots(raw_slots: Variant) -> Array:
     var slots: Array = []
@@ -1296,6 +2082,8 @@ func _tick_weapon_orbit_visuals(delta: float) -> void:
         var slot_index: int = active_slots[i]
         var sprite: Sprite2D = _weapon_orbit_nodes[slot_index]
         if not is_instance_valid(sprite):
+            continue
+        if _active_melee_attacks.has(slot_index):
             continue
             
         # Brotato-style circular distribution
@@ -1405,6 +2193,8 @@ func _ensure_weapon_orbit_root() -> void:
     _player.add_child(_weapon_orbit_root)
 
 func _clear_weapon_orbit_runtime() -> void:
+    _clear_active_melee_attacks()
+    _reset_melee_camera_punch()
     var existing_slots: Array = _weapon_orbit_nodes.keys().duplicate()
     for key in existing_slots:
         _remove_weapon_orbit_slot(int(key))
@@ -1437,6 +2227,7 @@ func _rebuild_weapon_orbit_slot_sprite(slot_index: int, weapon: Dictionary) -> v
     _weapon_orbit_nodes[slot_index] = sprite
 
 func _remove_weapon_orbit_slot(slot_index: int) -> void:
+    _finish_active_melee_attack(slot_index)
     var sprite_value: Variant = _weapon_orbit_nodes.get(slot_index, null)
     if sprite_value is Sprite2D:
         var sprite: Sprite2D = sprite_value
@@ -1507,7 +2298,7 @@ func _trigger_weapon_orbit_flash(slot_index: int) -> void:
         return
     _weapon_orbit_flash_timers[slot_index] = WEAPON_ORBIT_FLASH_DURATION
 
-func _spawn_melee_arc_effect(target_position: Vector2, attack_profile: Dictionary) -> void:
+func _spawn_melee_arc_effect(target_position: Vector2, attack_profile: Dictionary, family: String = "sweep", duration: float = 0.11) -> void:
     if _player == null or not is_instance_valid(_player):
         return
     var effect: Node2D = MELEE_ARC_EFFECT_SCRIPT.new() as Node2D
@@ -1520,15 +2311,64 @@ func _spawn_melee_arc_effect(target_position: Vector2, attack_profile: Dictionar
         direction = Vector2.RIGHT
     var profile_range: float = clampf(float(attack_profile.get("range", 95.0)), 55.0, 130.0)
     var arc_width: float = clampf(float(attack_profile.get("arc_width", 1.35)), 0.4, 2.2)
+    var effect_radius: float = profile_range * 0.85
+    var effect_width: float = 8.0
+    var tint: Color = Color(0.9, 0.98, 1.0, 0.92)
+    var intensity: float = 1.0
+    match family:
+        "thrust":
+            effect_radius = profile_range * 0.94
+            effect_width = 6.5
+            arc_width = clampf(arc_width * 0.58, 0.22, 1.0)
+            tint = Color(0.86, 0.97, 1.0, 0.9)
+            intensity = 0.95
+        "heavy":
+            effect_radius = profile_range * 0.82
+            effect_width = 11.0
+            arc_width = clampf(arc_width * 0.86, 0.65, 1.75)
+            tint = Color(0.92, 0.98, 1.0, 0.96)
+            intensity = 1.18
+        _:
+            intensity = 1.0
     if effect.has_method("configure"):
         effect.call(
             "configure",
             direction.angle(),
-            profile_range * 0.85,
+            effect_radius,
             arc_width,
-            8.0,
-            Color(0.9, 0.98, 1.0, 0.92),
-            0.11
+            effect_width,
+            tint,
+            duration,
+            family,
+            intensity
+        )
+
+func _spawn_melee_hit_effect(
+    hit_position: Vector2,
+    hit_direction: Vector2,
+    family: String,
+    is_primary_hit: bool,
+    intensity: float,
+    impact_scale: float
+) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    var effect: Node2D = MELEE_HIT_EFFECT_SCRIPT.new() as Node2D
+    if effect == null:
+        return
+    effect.global_position = hit_position
+    add_child(effect)
+    if effect.has_method("configure"):
+        effect.call(
+            "configure",
+            family,
+            hit_direction,
+            is_primary_hit,
+            intensity if is_primary_hit else intensity * 0.74,
+            impact_scale if is_primary_hit else impact_scale * 0.82,
+            Color(0.05, 0.26, 0.42, 0.72),
+            Color(0.48, 0.95, 1.0, 1.0),
+            Color(0.98, 1.0, 1.0, 1.0)
         )
 
 func _cleanup_dead_enemies() -> void :
@@ -1551,6 +2391,7 @@ func _handle_projectile_hits() -> void :
             if projectile.global_position.distance_squared_to(enemy.global_position) <= hit_distance * hit_distance:
                 var projectile_owner: Player = projectile.owner_player
                 var outgoing_damage: int = projectile.damage
+                var impact_direction: Vector2 = enemy.global_position - projectile.global_position
                 if projectile_owner != null and is_instance_valid(projectile_owner):
                     outgoing_damage = projectile_owner.roll_outgoing_damage(
                         projectile.damage,
@@ -1560,7 +2401,7 @@ func _handle_projectile_hits() -> void :
                 var dealt_damage: int = enemy.take_damage(outgoing_damage)
                 if projectile_owner != null and is_instance_valid(projectile_owner):
                     projectile_owner.heal_from_lifesteal(dealt_damage, projectile.lifesteal_chance)
-                projectile.queue_free()
+                projectile.despawn(true, impact_direction)
                 break
     _cleanup_dead_enemies()
 
@@ -1618,7 +2459,7 @@ func _handle_enemy_projectile_hits() -> void :
         var hit_distance: float = projectile.hit_radius + _player.body_radius
         if projectile.global_position.distance_squared_to(_player.global_position) <= hit_distance * hit_distance:
             _player.take_damage(projectile.damage)
-            projectile.queue_free()
+            projectile.despawn(true, _player.global_position - projectile.global_position)
             _refresh_player_hud()
             if _is_game_over:
                 return
@@ -1638,8 +2479,8 @@ func _handle_enemy_contact_damage() -> void :
             break
     if not touched:
         return
-    _contact_damage_timer = CONTACT_DAMAGE_INTERVAL
-    var scaled_contact_damage: int = max(1, int(round(float(CONTACT_DAMAGE) * _enemy_damage_multiplier)))
+    _contact_damage_timer = _contact_damage_interval_runtime
+    var scaled_contact_damage: int = max(1, int(round(float(_contact_damage_runtime) * _enemy_damage_multiplier)))
     _player.take_damage(scaled_contact_damage)
     _refresh_player_hud()
 
@@ -2256,7 +3097,7 @@ func _on_enemy_died(enemy: Enemy) -> void :
         if hud.has_method("hide_boss_bar"):
             hud.call("hide_boss_bar")
     
-    var gold_amount: int = _resolve_enemy_gold_drop(enemy) + _roll_harvest_kill_bonus_gold()
+    var gold_amount: int = _resolve_enemy_gold_drop(enemy)
     _spawn_experience_orb(enemy.global_position, enemy.xp_drop_amount, gold_amount)
     
     # Roll for consumable drop (from monsters)
@@ -2322,27 +3163,6 @@ func _apply_harvest_growth() -> void:
     var growth: float = ceil(current_harvest * 0.05)
     _player.add_harvest(growth)
 
-func _roll_harvest_kill_bonus_gold() -> int:
-    if _player == null or not is_instance_valid(_player):
-        return 0
-    var harvest_value: float = max(0.0, _player.get_harvest())
-    if harvest_value <= 0.0:
-        return 0
-    var combat_params: Dictionary = BalanceService.get_global_combat_params()
-    var chance_per_point: float = max(
-        0.0,
-        float(combat_params.get("harvest_kill_gold_chance_per_point", HARVEST_KILL_GOLD_CHANCE_PER_POINT_DEFAULT))
-    )
-    var max_chance: float = clampf(
-        float(combat_params.get("harvest_kill_gold_max_chance", HARVEST_KILL_GOLD_MAX_CHANCE_DEFAULT)),
-        0.0,
-        1.0
-    )
-    var trigger_chance: float = clampf(harvest_value * chance_per_point, 0.0, max_chance)
-    if randf() > trigger_chance:
-        return 0
-    return max(0, int(combat_params.get("harvest_kill_gold_amount", HARVEST_KILL_GOLD_AMOUNT_DEFAULT)))
-
 func _update_tree_spawning(delta: float) -> void:
     if _is_game_over or _stage_clear_triggered:
         return
@@ -2374,7 +3194,10 @@ func _on_tree_destroyed(pos: Vector2) -> void:
 
 func _spawn_consumable(pos: Vector2) -> void:
     var drop = ConsumableDrop.new()
-    drop.global_position = pos
+    var impulse: Vector2 = _random_drop_impulse(76.0, 150.0)
+    drop.global_position = pos + impulse.normalized() * randf_range(3.0, 12.0)
+    if drop.has_method("set_spawn_impulse"):
+        drop.call("set_spawn_impulse", impulse)
     add_child(drop)
     _consumables.append(drop)
 
@@ -2389,28 +3212,21 @@ func _update_consumables(delta: float) -> void:
         if drop.tick_collect(_player.global_position, pickup_radius, delta):
             var healed = _player.heal(drop.heal_amount)
             if healed > 0:
-                _spawn_double_pickup_hint(drop.global_position) # Reuse the hint logic but maybe customize it later
-                # Custom float text for healing
+                _spawn_pickup_hint(drop.global_position, "+", Color(0.0, 1.0, 0.25, 0.9), 16, Vector2(-8.0, -18.0), 0.5, 24.0)
                 _spawn_heal_hint(_player.global_position, healed)
             
             drop.queue_free()
 
 func _spawn_heal_hint(pos: Vector2, amount: int) -> void:
-    var label = Label.new()
-    label.text = "+" + str(amount)
-    label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-    label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.4)) # Bright Green/Health
-    label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-    label.add_theme_constant_override("outline_size", 4)
-    label.add_theme_font_size_override("font_size", 20)
-    
-    add_child(label)
-    label.global_position = pos + Vector2(-10, -30)
-    
-    var tween = create_tween()
-    tween.tween_property(label, "global_position:y", label.global_position.y - 50, 0.8).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-    tween.parallel().tween_property(label, "modulate:a", 0.0, 0.8).set_delay(0.3)
-    tween.tween_callback(label.queue_free)
+    _spawn_pickup_hint(
+        pos,
+        "+" + str(amount),
+        Color(0.0, 1.0, 0.25, 0.95),
+        20,
+        Vector2(-10.0, -30.0),
+        0.8,
+        50.0
+    )
 
 func _cleanup_dead_consumables() -> void:
     var alive: Array[ConsumableDrop] = []
@@ -2420,12 +3236,19 @@ func _cleanup_dead_consumables() -> void:
     _consumables = alive
 
 func _spawn_experience_orb(spawn_position: Vector2, xp_value: int, gold_value: int = 0) -> void :
-
     var orb: ExperienceOrb = ExperienceOrb.new()
-    orb.global_position = spawn_position
+    var impulse: Vector2 = _random_drop_impulse(56.0, 128.0)
+    orb.global_position = spawn_position + impulse.normalized() * randf_range(2.0, 10.0)
     orb.setup(xp_value, gold_value)
+    if orb.has_method("set_spawn_impulse"):
+        orb.call("set_spawn_impulse", impulse)
     add_child(orb)
     _experience_orbs.append(orb)
+
+func _random_drop_impulse(min_speed: float, max_speed: float) -> Vector2:
+    var angle: float = randf_range(0.0, TAU)
+    var speed: float = randf_range(min_speed, max_speed)
+    return Vector2.RIGHT.rotated(angle) * speed
 
 func _animate_orbs_to_bag(orbs: Array[ExperienceOrb]) -> void:
     # 1. 动态获取 HUD 上的回收袋位置
@@ -2481,21 +3304,33 @@ func _animate_orbs_to_bag(orbs: Array[ExperienceOrb]) -> void:
         await get_tree().process_frame
 
 func _spawn_double_pickup_hint(pos: Vector2) -> void:
-    var label = Label.new()
-    label.text = "x2"
-    label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-    label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.2)) # Bright Green
-    label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-    label.add_theme_constant_override("outline_size", 4)
-    label.add_theme_font_size_override("font_size", 18)
+    _spawn_pickup_hint(pos, "x2", Color(0.0, 1.0, 0.25, 0.95), 18, Vector2(-10.0, -20.0), 0.6, 40.0)
     
     # 移除有问题的硬编码路径加载，优先使用项目全局字体
+
+func _spawn_pickup_hint(
+    pos: Vector2,
+    text: String,
+    font_color: Color,
+    font_size: int,
+    offset: Vector2,
+    duration: float,
+    rise_distance: float
+) -> void:
+    var label = Label.new()
+    label.text = text
+    label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
+    label.add_theme_color_override("font_color", font_color)
+    label.add_theme_color_override("font_outline_color", Color(0.02, 0.04, 0.08, 0.95))
+    label.add_theme_constant_override("outline_size", 4)
+    label.add_theme_font_size_override("font_size", font_size)
+
     add_child(label)
-    label.global_position = pos + Vector2(-10, -20)
-    
+    label.global_position = pos + offset
+
     var tween = create_tween()
-    tween.tween_property(label, "global_position:y", label.global_position.y - 40, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-    tween.parallel().tween_property(label, "modulate:a", 0.0, 0.6).set_delay(0.2)
+    tween.tween_property(label, "global_position:y", label.global_position.y - rise_distance, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+    tween.parallel().tween_property(label, "modulate:a", 0.0, duration).set_delay(duration * 0.35)
     tween.tween_callback(label.queue_free)
 
 func _add_experience(amount: int) -> void :
@@ -2782,6 +3617,7 @@ func _build_runtime_save_payload() -> Dictionary:
         "auto_attack_interval_multiplier": _auto_attack_interval_multiplier_runtime,
         "gold_gain_multiplier": _gold_multiplier,
         "run_kill_count": _run_kill_count,
+        "run_survival_time": _run_survival_time_runtime + _battle_elapsed,
         "shop_runtime_state": _shop_runtime_state.duplicate(true),
         "equipped_weapons": _extract_weapon_list_from_shop_state(_shop_runtime_state),
         "locked_shop_offers": _extract_locked_offer_list_from_shop_state(_shop_runtime_state),
@@ -2871,12 +3707,14 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
     _wave_progress_index = max(0, int(slot_data.get("wave_progress_index", wave_id - 1)))
     _current_gold_runtime = max(0, int(slot_data.get("current_gold", _current_gold_runtime)))
     _run_kill_count = max(0, int(slot_data.get("run_kill_count", 0)))
+    _run_survival_time_runtime = max(0.0, float(slot_data.get("run_survival_time", 0.0)))
+    var has_explicit_shop_runtime_state: bool = slot_data.has("shop_runtime_state") and slot_data.get("shop_runtime_state", {}) is Dictionary
     _shop_runtime_state = _normalize_shop_runtime_state(slot_data.get("shop_runtime_state", {}))
     if _shop_runtime_state.get("equipped_weapons", []).is_empty():
         var legacy_equipped: Variant = slot_data.get("equipped_weapons", [])
         if legacy_equipped is Array:
             _shop_runtime_state["equipped_weapons"] = legacy_equipped.duplicate(true)
-    if _shop_runtime_state.get("locked_shop_offers", []).is_empty():
+    if not has_explicit_shop_runtime_state and _shop_runtime_state.get("locked_shop_offers", []).is_empty():
         var legacy_locked: Variant = slot_data.get("locked_shop_offers", [])
         if legacy_locked is Array:
             _shop_runtime_state["locked_shop_offers"] = legacy_locked.duplicate(true)
@@ -3053,6 +3891,19 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     var spawn_profile: Dictionary = stage_profile.get("spawn_profile", {})
     
     _initial_enemy_count_runtime = int(combat_params.get("initial_enemy_count", INITIAL_ENEMY_COUNT))
+    _enemy_min_spawn_radius_runtime = max(
+        0.0,
+        float(combat_params.get("enemy_min_spawn_radius", ENEMY_MIN_SPAWN_RADIUS))
+    )
+    _enemy_max_spawn_radius_runtime = max(
+        _enemy_min_spawn_radius_runtime,
+        float(combat_params.get("enemy_max_spawn_radius", ENEMY_MAX_SPAWN_RADIUS))
+    )
+    _contact_damage_runtime = max(1, int(combat_params.get("contact_damage_default", CONTACT_DAMAGE)))
+    _contact_damage_interval_runtime = max(
+        0.01,
+        float(combat_params.get("contact_damage_interval", CONTACT_DAMAGE_INTERVAL))
+    )
     _max_enemy_count_runtime = int(spawn_profile.get("max_enemy_count", MAX_ENEMY_COUNT))
     _spawn_interval_start_runtime = float(spawn_profile.get("spawn_interval_start", ENEMY_SPAWN_INTERVAL))
     _spawn_interval_end_runtime = float(spawn_profile.get("spawn_interval_end", ENEMY_SPAWN_INTERVAL))

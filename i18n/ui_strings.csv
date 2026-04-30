@@ -297,3 +297,23 @@ ui.shop.owned_item_count_fmt,x%d,x%d
 ui.shop.equipped_weapons_title_fmt,武器（%d/%d）,Weapons (%d/%d)
 ui.shop.elite_hint_fmt,一个精英怪会出现在第%d波敌袭,An elite enemy will appear on wave %d
 ui.shop.elite_hint_none,暂无精英怪预告,No elite wave announced
+msg.shop.combine_invalid_slot,无效武器槽位,Invalid weapon slot
+msg.shop.combine_empty_slot,该武器槽为空,This weapon slot is empty
+msg.shop.combine_no_match,没有可合成的同阶武器,No matching weapon to combine
+msg.shop.combine_success,武器合成成功,Weapon combined
+msg.shop.combine_failed,合成失败,Combine failed
+msg.shop.recycle_invalid_slot,无效武器槽位,Invalid weapon slot
+msg.shop.recycle_empty_slot,该武器槽为空,This weapon slot is empty
+msg.shop.recycle_success,武器已回收,Weapon recycled
+msg.shop.recycle_success_fmt,回收获得 %d 金币,Recycled for %dG
+msg.shop.recycle_failed,回收失败,Recycle failed
+msg.shop.weapon_slot_empty,空武器槽,Empty weapon slot
+msg.shop.weapon_selected,已选择武器,Weapon selected
+ui.shop.combine,合成,Combine
+ui.shop.recycle,回收,Recycle
+ui.shop.recycle_fmt,回收 +%dG,Recycle +%dG
+ui.shop.combine_ready,可合成,Combine ready
+ui.shop.combine_none,没有同阶武器,No matching weapon
+ui.shop.kind_weapon,武器,Weapon
+ui.shop.kind_item,道具,Item
+ui.shop.offer_unlock,解锁,Unlock

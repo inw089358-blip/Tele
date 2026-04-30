@@ -1,0 +1,502 @@
+[
+  {
+    "item_id": "item_bible_old",
+    "name": "破旧的圣经",
+    "rarity": "common",
+    "description": "+3 护甲, -4% 移速",
+    "path": "sprite/items/item_bible_old.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "old holy book, armor cue"
+  },
+  {
+    "item_id": "item_dagger_rusty",
+    "name": "生锈的匕首",
+    "rarity": "common",
+    "description": "+5% 攻速, -3 最大生命",
+    "path": "sprite/items/item_dagger_rusty.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "rusty dagger, attack speed with health cost"
+  },
+  {
+    "item_id": "item_lantern_apprentice",
+    "name": "学徒提灯",
+    "rarity": "common",
+    "description": "+20 拾取范围, -2 幸运",
+    "path": "sprite/items/item_lantern_apprentice.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "apprentice lantern, pickup cue"
+  },
+  {
+    "item_id": "item_herb_dry",
+    "name": "干燥草药",
+    "rarity": "common",
+    "description": "+1 生命回复, -3% 伤害",
+    "path": "sprite/items/item_herb_dry.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "dried herb bundle, healing cue"
+  },
+  {
+    "item_id": "item_mirror_crude",
+    "name": "粗制护心镜",
+    "rarity": "common",
+    "description": "+2 护甲, -1% 闪避",
+    "path": "sprite/items/item_mirror_crude.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "crude mirror, armor and dodge cue"
+  },
+  {
+    "item_id": "item_bullet_lead",
+    "name": "铅制子弹",
+    "rarity": "common",
+    "description": "+3 远程伤害, -2% 攻速",
+    "path": "sprite/items/item_bullet_lead.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "lead bullet, ranged damage cue"
+  },
+  {
+    "item_id": "item_whetstone_heavy",
+    "name": "沉重磨刀石",
+    "rarity": "common",
+    "description": "+3 近战伤害, -2% 攻速",
+    "path": "sprite/items/item_whetstone_heavy.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "heavy whetstone, melee damage cue"
+  },
+  {
+    "item_id": "item_coin_broken",
+    "name": "破碎古币",
+    "rarity": "common",
+    "description": "+8 收获, -2% 闪避",
+    "path": "sprite/items/item_coin_broken.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "broken ancient coin, harvest cue"
+  },
+  {
+    "item_id": "item_rabbit_foot",
+    "name": "幸运兔脚",
+    "rarity": "common",
+    "description": "+10 幸运, -3 最大生命",
+    "path": "sprite/items/item_rabbit_foot.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "lucky rabbit foot, luck cue"
+  },
+  {
+    "item_id": "item_feather_light",
+    "name": "轻快羽毛",
+    "rarity": "common",
+    "description": "+5% 移速, -1 护甲",
+    "path": "sprite/items/item_feather_light.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "light feather, move speed cue"
+  },
+  {
+    "item_id": "item_tarot_fragment",
+    "name": "塔罗残页",
+    "rarity": "common",
+    "description": "+5% 经验获取, -2 幸运",
+    "path": "sprite/items/item_tarot_fragment.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "tarot fragment page, experience cue"
+  },
+  {
+    "item_id": "item_lens_shard",
+    "name": "透镜碎片",
+    "rarity": "common",
+    "description": "+10% 攻击范围, -3% 攻速",
+    "path": "sprite/items/item_lens_shard.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "lens shard, range cue"
+  },
+  {
+    "item_id": "item_bandage_bloody",
+    "name": "带血绷带",
+    "rarity": "common",
+    "description": "+1% 吸血, -2 护甲",
+    "path": "sprite/items/item_bandage_bloody.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "bloody bandage, lifesteal cue"
+  },
+  {
+    "item_id": "item_alchemist_coin",
+    "name": "炼金金币",
+    "rarity": "common",
+    "description": "+12 收获, -3% 移速",
+    "path": "sprite/items/item_alchemist_coin.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "alchemist coin, harvest cue"
+  },
+  {
+    "item_id": "item_shield_wood",
+    "name": "木制圆盾",
+    "rarity": "common",
+    "description": "+5% 闪避, -3% 伤害",
+    "path": "sprite/items/item_shield_wood.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "wooden shield, dodge cue"
+  },
+  {
+    "item_id": "item_beads_meditation",
+    "name": "冥想念珠",
+    "rarity": "common",
+    "description": "+2 生命回复, -5% 攻速",
+    "path": "sprite/items/item_beads_meditation.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "meditation beads, regeneration cue"
+  },
+  {
+    "item_id": "item_potion_strange",
+    "name": "怪味药水",
+    "rarity": "common",
+    "description": "+10% 伤害, -5 最大生命",
+    "path": "sprite/items/item_potion_strange.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "strange potion, risky power cue"
+  },
+  {
+    "item_id": "item_bottle_empty",
+    "name": "空酒瓶",
+    "rarity": "common",
+    "description": "+5% 攻速, +5% 移速, -3 护甲",
+    "path": "sprite/items/item_bottle_empty.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "empty bottle, scrappy agility cue"
+  },
+  {
+    "item_id": "item_candle_ritual",
+    "name": "仪式蜡烛",
+    "rarity": "common",
+    "description": "+5% 暴击率, -2 护甲",
+    "path": "sprite/items/item_candle_ritual.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "ritual candle, crit cue"
+  },
+  {
+    "item_id": "item_boots_iron",
+    "name": "沉重铁靴",
+    "rarity": "common",
+    "description": "+5 护甲, -8% 移速",
+    "path": "sprite/items/item_boots_iron.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "iron boots, armor cue"
+  },
+  {
+    "item_id": "item_pope_robe",
+    "name": "教皇法袍",
+    "rarity": "rare",
+    "description": "+5 护甲, +10 最大生命, -5% 移速",
+    "path": "sprite/items/item_pope_robe.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "pope robe, armor and vitality cue"
+  },
+  {
+    "item_id": "item_magician_poker",
+    "name": "魔术师扑克",
+    "rarity": "rare",
+    "description": "+10% 暴击率, +10% 暴击伤害, -5 最大生命",
+    "path": "sprite/items/item_magician_poker.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "magician poker cards, crit cue"
+  },
+  {
+    "item_id": "item_chariot_wheel",
+    "name": "战车轮毂",
+    "rarity": "rare",
+    "description": "+15% 移速, +15 拾取范围, -2 护甲",
+    "path": "sprite/items/item_chariot_wheel.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "chariot wheel, speed cue"
+  },
+  {
+    "item_id": "item_priestess_mercy",
+    "name": "女祭司慈悲",
+    "rarity": "rare",
+    "description": "+3% 吸血, +2 生命回复, -5% 伤害",
+    "path": "sprite/items/item_priestess_mercy.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "priestess mercy chalice, sustain cue"
+  },
+  {
+    "item_id": "item_hermit_candle",
+    "name": "隐者蜡烛",
+    "rarity": "rare",
+    "description": "+20% 伤害, -10% 攻速",
+    "path": "sprite/items/item_hermit_candle.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "hermit candle, output cue"
+  },
+  {
+    "item_id": "item_piggy_bank",
+    "name": "储蓄罐",
+    "rarity": "rare",
+    "description": "+20 每波利息(以收获体现), -5% 伤害",
+    "path": "sprite/items/item_piggy_bank.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "piggy bank, interest cue"
+  },
+  {
+    "item_id": "item_merchant_scale",
+    "name": "商人的天平",
+    "rarity": "rare",
+    "description": "+25 收获, -10% 伤害",
+    "path": "sprite/items/item_merchant_scale.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "merchant scale, trade and harvest cue"
+  },
+  {
+    "item_id": "item_revenge_arrow",
+    "name": "复仇之箭",
+    "rarity": "rare",
+    "description": "+5 远程伤害, -5% 闪避",
+    "path": "sprite/items/item_revenge_arrow.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "revenge arrow, ranged damage cue"
+  },
+  {
+    "item_id": "item_cursed_eye",
+    "name": "诅咒之眼",
+    "rarity": "rare",
+    "description": "+15% 伤害, +10% 攻速, -20 幸运",
+    "path": "sprite/items/item_cursed_eye.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "cursed eye, unstable power cue"
+  },
+  {
+    "item_id": "item_star_dust",
+    "name": "星辰之尘",
+    "rarity": "rare",
+    "description": "+20% 经验获取, +10 幸运, -5% 伤害",
+    "path": "sprite/items/item_star_dust.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "stardust, exp and luck cue"
+  },
+  {
+    "item_id": "item_stake_tough",
+    "name": "坚韧木桩",
+    "rarity": "rare",
+    "description": "+20 最大生命, -5% 移速",
+    "path": "sprite/items/item_stake_tough.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "reinforced stake, max hp cue"
+  },
+  {
+    "item_id": "item_razor_sharp",
+    "name": "锋利剃刀",
+    "rarity": "rare",
+    "description": "+8 近战伤害, +8% 攻速, -5 护甲",
+    "path": "sprite/items/item_razor_sharp.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "sharp razor, melee offense cue"
+  },
+  {
+    "item_id": "item_telescope",
+    "name": "望远镜",
+    "rarity": "rare",
+    "description": "+25% 攻击范围, +5 远程伤害, -5% 闪避",
+    "path": "sprite/items/item_telescope.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "telescope, range cue"
+  },
+  {
+    "item_id": "item_watch_magnetic",
+    "name": "磁力怀表",
+    "rarity": "rare",
+    "description": "+100 拾取范围, -8% 伤害",
+    "path": "sprite/items/item_watch_magnetic.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "magnetic watch, pickup cue"
+  },
+  {
+    "item_id": "item_crown_thorn",
+    "name": "荆棘王冠",
+    "rarity": "rare",
+    "description": "+15% 伤害, -15 最大生命",
+    "path": "sprite/items/item_crown_thorn.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "thorn crown, risky damage cue"
+  },
+  {
+    "item_id": "item_death_scythe",
+    "name": "死神权能",
+    "rarity": "epic",
+    "description": "+15% 暴击率, -10 生命回复",
+    "path": "sprite/items/item_death_scythe.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "death scythe, crit cue"
+  },
+  {
+    "item_id": "item_wheel_fortune",
+    "name": "命运之轮",
+    "rarity": "epic",
+    "description": "+30 幸运, -10 护甲",
+    "path": "sprite/items/item_wheel_fortune.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "wheel of fortune, luck cue"
+  },
+  {
+    "item_id": "item_inquisitor_chain",
+    "name": "审判官锁链",
+    "rarity": "epic",
+    "description": "+20% 伤害, -10% 攻速",
+    "path": "sprite/items/item_inquisitor_chain.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "inquisitor chain, punishment cue"
+  },
+  {
+    "item_id": "item_temperance_sacrament",
+    "name": "节制圣餐",
+    "rarity": "epic",
+    "description": "+5 生命回复, -35% 移速",
+    "path": "sprite/items/item_temperance_sacrament.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "temperance sacrament, major regeneration cue"
+  },
+  {
+    "item_id": "item_demon_contract",
+    "name": "恶魔契约",
+    "rarity": "epic",
+    "description": "+50% 伤害, +20 收获",
+    "path": "sprite/items/item_demon_contract.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "demon contract, high-risk reward cue"
+  },
+  {
+    "item_id": "item_alchemist_crucible",
+    "name": "炼金坩埚",
+    "rarity": "epic",
+    "description": "+15% 金币收益, +5 伤害, -10 护甲",
+    "path": "sprite/items/item_alchemist_crucible.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "alchemist crucible, gold and damage cue"
+  },
+  {
+    "item_id": "item_moon_veil",
+    "name": "月之纱幔",
+    "rarity": "epic",
+    "description": "+20% 闪避, -10 最大生命",
+    "path": "sprite/items/item_moon_veil.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "moon veil, dodge and vitality cue"
+  },
+  {
+    "item_id": "item_justice_guillotine",
+    "name": "正义断头台",
+    "rarity": "epic",
+    "description": "+25% 伤害, -5 护甲",
+    "path": "sprite/items/item_justice_guillotine.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "justice guillotine, execution cue"
+  },
+  {
+    "item_id": "item_world_tree_sapling",
+    "name": "世界树幼苗",
+    "rarity": "epic",
+    "description": "+100 最大生命, -30% 伤害",
+    "path": "sprite/items/item_world_tree_sapling.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "world tree sapling, massive vitality cue"
+  },
+  {
+    "item_id": "item_glutton_greed",
+    "name": "暴食者贪婪",
+    "rarity": "epic",
+    "description": "+20 收获, -10% 闪避",
+    "path": "sprite/items/item_glutton_greed.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "glutton greed, harvest cue"
+  },
+  {
+    "item_id": "item_emperor_throne",
+    "name": "皇帝至尊宝座",
+    "rarity": "legendary",
+    "description": "+40% 伤害, +40% 攻速, -25% 移速",
+    "path": "sprite/items/item_emperor_throne.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "emperor throne, supreme offense cue"
+  },
+  {
+    "item_id": "item_astronomy_orb",
+    "name": "全知星象仪",
+    "rarity": "legendary",
+    "description": "+25 幸运, +25 收获, +25% 经验",
+    "path": "sprite/items/item_astronomy_orb.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "astronomy orb, all-knowledge cue"
+  },
+  {
+    "item_id": "item_fool_pocket",
+    "name": "愚者万能口袋",
+    "rarity": "legendary",
+    "description": "+20% 攻速, +20% 金币收益",
+    "path": "sprite/items/item_fool_pocket.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "fool pocket, versatile stash cue"
+  },
+  {
+    "item_id": "item_star_source",
+    "name": "星辰之源",
+    "rarity": "legendary",
+    "description": "+15% 经验, +15 幸运",
+    "path": "sprite/items/item_star_source.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "star source, exp and luck cue"
+  },
+  {
+    "item_id": "item_world_omni",
+    "name": "世界·全知全能",
+    "rarity": "legendary",
+    "description": "+20 生命, +10 护甲, +10% 闪避, +10% 暴击, +10 幸运, +10 收获",
+    "path": "sprite/items/item_world_omni.png",
+    "size": "512x512",
+    "style": "pixel-art + subtle glitch + transparent background",
+    "prompt": "omniscient world orb, ultimate survival cue"
+  }
+]

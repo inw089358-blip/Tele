@@ -10,6 +10,35 @@ const ATTACK_FLAT_TO_GLOBAL_ATTACK_PERCENT_DEFAULT: float = 3.0
 const CRIT_MULTIPLIER_TO_CRIT_CHANCE_RATIO_DEFAULT: float = 0.12
 const WEAPON_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/"
 const ITEM_ICON_DIR: String = "res://sprite/items/"
+const WEAPON_RECYCLE_RATIO: float = 0.25
+const WEAPON_RARITY_DAMAGE_MULTIPLIERS: Dictionary = {
+    "common": 1.0,
+    "rare": 1.25,
+    "epic": 1.55,
+    "legendary": 1.9,
+}
+const WEAPON_RARITY_INTERVAL_MULTIPLIERS: Dictionary = {
+    "common": 1.0,
+    "rare": 0.96,
+    "epic": 0.91,
+    "legendary": 0.86,
+}
+const WEAPON_RARITY_EFFECT_MULTIPLIERS: Dictionary = {
+    "common": 1.0,
+    "rare": 1.0,
+    "epic": 1.25,
+    "legendary": 1.5,
+}
+const WEAPON_RARITY_PRICE_MULTIPLIERS: Dictionary = {
+    "common": 1.0,
+    "rare": 1.45,
+    "epic": 2.1,
+    "legendary": 3.0,
+}
+const WEAPON_RARITY_EFFECT_SCALING_KEYS: Dictionary = {
+    "bonus_attack_damage": true,
+    "bonus_target_range": true,
+}
 
 var _catalog: Dictionary = {}
 
@@ -176,34 +205,15 @@ func merge_weapons_if_possible(state: Dictionary) -> Dictionary:
     var runtime: Dictionary = state.duplicate(true)
     var shop_state: Dictionary = _normalize_shop_state(runtime.get("shop_runtime_state", {}))
     var equipped: Array = _normalize_weapon_slots(shop_state.get("equipped_weapons", []))
-    var rarity_order: PackedStringArray = _get_rarity_order()
     var merged_once: bool = false
 
     for i: int in range(equipped.size()):
-        var left: Variant = equipped[i]
-        if not _is_valid_weapon(left):
+        if not _is_valid_weapon(equipped[i]):
             continue
-        for j: int in range(i + 1, equipped.size()):
-            var right: Variant = equipped[j]
-            if not _is_valid_weapon(right):
-                continue
-            var left_weapon: Dictionary = left
-            var right_weapon: Dictionary = right
-            if str(left_weapon.get("stack_key", "")) != str(right_weapon.get("stack_key", "")):
-                continue
-            if str(left_weapon.get("rarity", "common")) != str(right_weapon.get("rarity", "common")):
-                continue
-            var current_rarity: String = str(left_weapon.get("rarity", "common"))
-            var next_rarity: String = _next_rarity(current_rarity, rarity_order)
-            if next_rarity == current_rarity:
-                continue
-            left_weapon["rarity"] = next_rarity
-            left_weapon["level"] = int(left_weapon.get("level", 1)) + 1
-            equipped[i] = left_weapon
-            equipped[j] = {}
+        var partner_index: int = _find_merge_partner(equipped, i)
+        if partner_index >= 0:
+            _merge_weapon_pair_into_left(equipped, i, partner_index)
             merged_once = true
-            break
-        if merged_once:
             break
 
     shop_state["equipped_weapons"] = equipped
@@ -211,6 +221,53 @@ func merge_weapons_if_possible(state: Dictionary) -> Dictionary:
     runtime["shop_runtime_state"] = shop_state
     runtime["merged"] = merged_once
     return runtime
+
+func combine_weapon_slot(slot_index: int, state: Dictionary) -> Dictionary:
+    var runtime: Dictionary = state.duplicate(true)
+    var shop_state: Dictionary = _normalize_shop_state(runtime.get("shop_runtime_state", {}))
+    var equipped: Array = _normalize_weapon_slots(shop_state.get("equipped_weapons", []))
+    if slot_index < 0 or slot_index >= equipped.size():
+        runtime["shop_runtime_state"] = shop_state
+        return {"ok": false, "message": "msg.shop.combine_invalid_slot", "state": runtime}
+    if not _is_valid_weapon(equipped[slot_index]):
+        runtime["shop_runtime_state"] = shop_state
+        return {"ok": false, "message": "msg.shop.combine_empty_slot", "state": runtime}
+
+    var partner_index: int = _find_merge_partner(equipped, slot_index)
+    if partner_index < 0:
+        runtime["shop_runtime_state"] = shop_state
+        return {"ok": false, "message": "msg.shop.combine_no_match", "state": runtime}
+
+    _merge_weapon_pair_into_left(equipped, slot_index, partner_index)
+    shop_state["equipped_weapons"] = equipped
+    shop_state["weapon_tag_state"] = resolve_weapon_tag_state(shop_state)
+    runtime["shop_runtime_state"] = shop_state
+    return {"ok": true, "message": "msg.shop.combine_success", "state": runtime}
+
+func recycle_weapon_slot(slot_index: int, state: Dictionary) -> Dictionary:
+    var runtime: Dictionary = state.duplicate(true)
+    var shop_state: Dictionary = _normalize_shop_state(runtime.get("shop_runtime_state", {}))
+    var equipped: Array = _normalize_weapon_slots(shop_state.get("equipped_weapons", []))
+    if slot_index < 0 or slot_index >= equipped.size():
+        runtime["shop_runtime_state"] = shop_state
+        return {"ok": false, "message": "msg.shop.recycle_invalid_slot", "state": runtime}
+    if not _is_valid_weapon(equipped[slot_index]):
+        runtime["shop_runtime_state"] = shop_state
+        return {"ok": false, "message": "msg.shop.recycle_empty_slot", "state": runtime}
+
+    var weapon: Dictionary = equipped[slot_index]
+    var refund: int = max(1, int(weapon.get("recycle_value", _estimate_weapon_recycle_value(weapon))))
+    equipped[slot_index] = {}
+    shop_state["equipped_weapons"] = equipped
+    shop_state["weapon_tag_state"] = resolve_weapon_tag_state(shop_state)
+    runtime["current_gold"] = max(0, int(runtime.get("current_gold", 0))) + refund
+    runtime["shop_runtime_state"] = shop_state
+    return {
+        "ok": true,
+        "message": "msg.shop.recycle_success",
+        "refund": refund,
+        "state": runtime,
+    }
 
 func _build_offer_for_slot(slot_index: int, wave_index: int, weapon_chance: float, luck_value: float) -> Dictionary:
     var pick_weapon: bool = randf() < weapon_chance
@@ -261,22 +318,26 @@ func _roll_item_offer(wave_index: int) -> Dictionary:
 func _roll_weapon_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
     var weapon_pool: Array = _catalog.get("weapon_pool", [])
     if weapon_pool.is_empty():
+        var fallback_price: int = 45 + wave_index * 3
+        var fallback_weapon: Dictionary = {
+            "weapon_id": "starter_blade",
+            "rarity": "common",
+            "level": 1,
+            "tags": ["melee"],
+            "build_tags": ["berserker", "sustain"],
+            "effects": {"bonus_attack_damage": 1},
+            "_base_effects": {"bonus_attack_damage": 1},
+            "stack_key": "starter_blade",
+        }
+        _prepare_weapon_economy(fallback_weapon, fallback_price)
         var fallback_weapon_offer: Dictionary = {
             "kind": "weapon",
             "weapon_id": "starter_blade",
             "name": "Starter Blade",
-            "price": 45 + wave_index * 3,
+            "price": fallback_price,
             "rarity": "common",
             "description": "Simple blade, stable DPS.",
-            "weapon": {
-                "weapon_id": "starter_blade",
-                "rarity": "common",
-                "level": 1,
-                "tags": ["melee"],
-                "build_tags": ["berserker", "sustain"],
-                "effects": {"bonus_attack_damage": 1},
-                "stack_key": "starter_blade",
-            },
+            "weapon": fallback_weapon,
         }
         fallback_weapon_offer["icon_path"] = _resolve_offer_icon_path(fallback_weapon_offer)
         return fallback_weapon_offer
@@ -292,10 +353,14 @@ func _roll_weapon_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
         "level": int(template.get("level", 1)),
         "tags": template.get("tags", []),
         "build_tags": template.get("build_tags", []),
-        "effects": template.get("effects", {}),
+        "effects": template.get("effects", {}).duplicate(true),
+        "_base_effects": template.get("effects", {}).duplicate(true),
         "stack_key": str(template.get("stack_key", template.get("weapon_id", "weapon_unknown"))),
-        "attack_profile": template.get("attack_profile", {}),
+        "attack_profile": template.get("attack_profile", {}).duplicate(true),
+        "_base_attack_profile": template.get("attack_profile", {}).duplicate(true),
     }
+    _apply_rarity_scaling_to_weapon(weapon)
+    _prepare_weapon_economy(weapon, final_price)
     var offer: Dictionary = {
         "kind": "weapon",
         "weapon_id": str(template.get("weapon_id", "weapon_unknown")),
@@ -314,6 +379,7 @@ func _add_weapon_to_slots(weapon_payload: Variant, shop_state: Dictionary, repla
     if not (weapon_payload is Dictionary):
         return {"shop_state": shop_state, "needs_replace": false, "message": "msg.shop.invalid_weapon_data"}
     var weapon: Dictionary = (weapon_payload as Dictionary).duplicate(true)
+    _prepare_weapon_economy(weapon, int(weapon.get("acquired_price", 0)))
     var equipped: Array = _normalize_weapon_slots(shop_state.get("equipped_weapons", []))
     var empty_slot: int = _find_empty_slot(equipped)
     if empty_slot >= 0:
@@ -352,7 +418,7 @@ func _try_merge_for_weapon(equipped: Array, incoming_weapon: Dictionary) -> Dict
         if not _is_valid_weapon(slot_weapon):
             continue
         var as_dict: Dictionary = slot_weapon
-        if str(as_dict.get("stack_key", "")) != stack_key:
+        if str(as_dict.get("stack_key", as_dict.get("weapon_id", ""))) != stack_key:
             continue
         if str(as_dict.get("rarity", "common")) != rarity:
             continue
@@ -360,11 +426,155 @@ func _try_merge_for_weapon(equipped: Array, incoming_weapon: Dictionary) -> Dict
         break
     if first_match < 0:
         return {"equipped": equipped, "merged": false}
-    var merged_weapon: Dictionary = (equipped[first_match] as Dictionary).duplicate(true)
-    merged_weapon["rarity"] = _next_rarity(rarity, _get_rarity_order())
-    merged_weapon["level"] = int(merged_weapon.get("level", 1)) + 1
-    equipped[first_match] = merged_weapon
+    var incoming_slot: int = equipped.size()
+    equipped.append(incoming_weapon)
+    _merge_weapon_pair_into_left(equipped, first_match, incoming_slot)
+    equipped.remove_at(incoming_slot)
     return {"equipped": equipped, "merged": true}
+
+func _find_merge_partner(equipped: Array, source_index: int) -> int:
+    if source_index < 0 or source_index >= equipped.size():
+        return -1
+    var source_value: Variant = equipped[source_index]
+    if not _is_valid_weapon(source_value):
+        return -1
+    var source_weapon: Dictionary = source_value
+    for i: int in range(equipped.size()):
+        if i == source_index:
+            continue
+        var candidate_value: Variant = equipped[i]
+        if not _is_valid_weapon(candidate_value):
+            continue
+        if _can_merge_weapons(source_weapon, candidate_value):
+            return i
+    return -1
+
+func _can_merge_weapons(left_value: Variant, right_value: Variant) -> bool:
+    if not _is_valid_weapon(left_value) or not _is_valid_weapon(right_value):
+        return false
+    var left: Dictionary = left_value
+    var right: Dictionary = right_value
+    var left_stack: String = str(left.get("stack_key", left.get("weapon_id", "")))
+    var right_stack: String = str(right.get("stack_key", right.get("weapon_id", "")))
+    if left_stack.is_empty() or left_stack != right_stack:
+        return false
+    var left_rarity: String = str(left.get("rarity", "common"))
+    if left_rarity != str(right.get("rarity", "common")):
+        return false
+    return _next_rarity(left_rarity, _get_rarity_order()) != left_rarity
+
+func _merge_weapon_pair_into_left(equipped: Array, left_index: int, right_index: int) -> void:
+    if left_index < 0 or left_index >= equipped.size():
+        return
+    if right_index < 0 or right_index >= equipped.size():
+        return
+    if not _can_merge_weapons(equipped[left_index], equipped[right_index]):
+        return
+    var left_weapon: Dictionary = (equipped[left_index] as Dictionary).duplicate(true)
+    var right_weapon: Dictionary = equipped[right_index]
+    var current_rarity: String = str(left_weapon.get("rarity", "common"))
+    left_weapon["rarity"] = _next_rarity(current_rarity, _get_rarity_order())
+    left_weapon["level"] = int(left_weapon.get("level", 1)) + 1
+    left_weapon["acquired_price"] = max(
+        int(left_weapon.get("acquired_price", 0)),
+        int(right_weapon.get("acquired_price", 0))
+    )
+    left_weapon["recycle_value"] = max(
+        int(left_weapon.get("recycle_value", _estimate_weapon_recycle_value(left_weapon))),
+        int(right_weapon.get("recycle_value", _estimate_weapon_recycle_value(right_weapon)))
+    )
+    _apply_rarity_scaling_to_weapon(left_weapon)
+    _prepare_weapon_economy(left_weapon, int(left_weapon.get("acquired_price", 0)))
+    equipped[left_index] = left_weapon
+    equipped[right_index] = {}
+
+func _cascade_merge_from_slot(equipped: Array, slot_index: int) -> void:
+    var guard: int = 0
+    while guard < 8:
+        guard += 1
+        var partner_index: int = _find_merge_partner(equipped, slot_index)
+        if partner_index < 0:
+            return
+        _merge_weapon_pair_into_left(equipped, slot_index, partner_index)
+
+func _apply_rarity_scaling_to_weapon(weapon: Dictionary) -> void:
+    var rarity: String = str(weapon.get("rarity", "common"))
+    var damage_multiplier: float = float(WEAPON_RARITY_DAMAGE_MULTIPLIERS.get(rarity, 1.0))
+    var interval_multiplier: float = float(WEAPON_RARITY_INTERVAL_MULTIPLIERS.get(rarity, 1.0))
+    var effect_multiplier: float = float(WEAPON_RARITY_EFFECT_MULTIPLIERS.get(rarity, 1.0))
+
+    var template: Dictionary = _find_catalog_weapon_template(str(weapon.get("weapon_id", "")))
+    var base_profile: Dictionary = {}
+    if template.has("attack_profile") and template.get("attack_profile", {}) is Dictionary:
+        base_profile = (template.get("attack_profile", {}) as Dictionary).duplicate(true)
+    elif weapon.has("_base_attack_profile") and weapon.get("_base_attack_profile", {}) is Dictionary:
+        base_profile = (weapon.get("_base_attack_profile", {}) as Dictionary).duplicate(true)
+    elif weapon.get("attack_profile", {}) is Dictionary:
+        base_profile = (weapon.get("attack_profile", {}) as Dictionary).duplicate(true)
+    weapon["_base_attack_profile"] = base_profile.duplicate(true)
+
+    var profile: Dictionary = base_profile.duplicate(true)
+    if not profile.is_empty():
+        if profile.has("base_damage"):
+            profile["base_damage"] = int(round(float(profile["base_damage"]) * damage_multiplier))
+        if profile.has("interval"):
+            profile["interval"] = max(0.08, float(profile["interval"]) * interval_multiplier)
+    weapon["attack_profile"] = profile
+
+    var base_effects: Dictionary = {}
+    if template.has("effects") and template.get("effects", {}) is Dictionary:
+        base_effects = (template.get("effects", {}) as Dictionary).duplicate(true)
+    elif weapon.has("_base_effects") and weapon.get("_base_effects", {}) is Dictionary:
+        base_effects = (weapon.get("_base_effects", {}) as Dictionary).duplicate(true)
+    elif weapon.get("effects", {}) is Dictionary:
+        base_effects = (weapon.get("effects", {}) as Dictionary).duplicate(true)
+    weapon["_base_effects"] = base_effects.duplicate(true)
+
+    var effects: Dictionary = base_effects.duplicate(true)
+    for key in effects.keys():
+        var val = effects[key]
+        if not WEAPON_RARITY_EFFECT_SCALING_KEYS.has(str(key)):
+            continue
+        if val is int:
+            effects[key] = int(round(float(val) * effect_multiplier))
+        elif val is float:
+            effects[key] = float(val) * effect_multiplier
+    weapon["effects"] = effects
+
+func _prepare_weapon_economy(weapon: Dictionary, paid_price: int) -> void:
+    var acquired_price: int = max(0, paid_price)
+    if acquired_price <= 0:
+        acquired_price = max(0, int(weapon.get("acquired_price", 0)))
+    if acquired_price <= 0:
+        acquired_price = _estimate_weapon_base_price(weapon)
+    weapon["acquired_price"] = acquired_price
+    weapon["recycle_value"] = max(1, int(weapon.get("recycle_value", round(float(acquired_price) * WEAPON_RECYCLE_RATIO))))
+
+func _estimate_weapon_recycle_value(weapon: Dictionary) -> int:
+    var recycle_value: int = int(weapon.get("recycle_value", 0))
+    if recycle_value > 0:
+        return recycle_value
+    var acquired_price: int = int(weapon.get("acquired_price", 0))
+    if acquired_price <= 0:
+        acquired_price = _estimate_weapon_base_price(weapon)
+    return max(1, int(round(float(acquired_price) * WEAPON_RECYCLE_RATIO)))
+
+func _estimate_weapon_base_price(weapon: Dictionary) -> int:
+    var template: Dictionary = _find_catalog_weapon_template(str(weapon.get("weapon_id", "")))
+    var base_price: int = max(1, int(template.get("base_price", weapon.get("base_price", 35))))
+    return max(1, int(round(float(base_price) * _rarity_price_multiplier(str(weapon.get("rarity", "common"))))))
+
+func _find_catalog_weapon_template(weapon_id: String) -> Dictionary:
+    var weapon_pool: Variant = _catalog.get("weapon_pool", [])
+    if not (weapon_pool is Array):
+        return {}
+    for entry_value: Variant in weapon_pool:
+        if not (entry_value is Dictionary):
+            continue
+        var entry: Dictionary = entry_value
+        if str(entry.get("weapon_id", "")) == weapon_id:
+            return entry
+    return {}
 
 func _record_owned_item(shop_state: Dictionary, offer: Dictionary) -> void:
     var item_id: String = str(offer.get("item_id", ""))
@@ -562,15 +772,7 @@ func _get_crit_multiplier_to_crit_chance_ratio() -> float:
     )
 
 func _rarity_price_multiplier(rarity: String) -> float:
-    match rarity:
-        "rare":
-            return 1.8
-        "epic":
-            return 2.5
-        "legendary":
-            return 3.5
-        _:
-            return 1.0
+    return float(WEAPON_RARITY_PRICE_MULTIPLIERS.get(rarity, 1.0))
 
 func _pick_weighted(pool: Array) -> Dictionary:
     if pool.is_empty():

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://mfe8rxlqaxij"
-path="res://.godot/imported/preview_alpha_final.png-fc6a8f7ec825477dd9142ecce4bc0633.ctex"
+uid="uid://bkqj584gg6esq"
+path="res://.godot/imported/item_fool_pocket.png-acda769511b887753fa8702975ff34fe.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprite/weapons/generated_from_doc_v1_alpha_final/preview_alpha_final.png"
-dest_files=["res://.godot/imported/preview_alpha_final.png-fc6a8f7ec825477dd9142ecce4bc0633.ctex"]
+source_file="res://sprite/items/item_fool_pocket.png"
+dest_files=["res://.godot/imported/item_fool_pocket.png-acda769511b887753fa8702975ff34fe.ctex"]
 
 [params]
 
