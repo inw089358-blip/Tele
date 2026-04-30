@@ -101,8 +101,8 @@ ui.weapon_select.character_fmt,角色：%s,Character: %s
 ui.weapon_select.no_weapon,没有可用的初始武器。,No starter weapon available.
 ui.weapon_select.mode_fmt,模式：%s,Mode: %s
 ui.weapon_select.damage_fmt,伤害：%s,Damage: %s
-ui.weapon_select.interval_fmt,间隔：%s,Interval: %s
-ui.weapon_select.range_fmt,范围：%s,Range: %s
+ui.weapon_select.interval_fmt,攻击间隔：%s,Attack Interval: %s
+ui.weapon_select.range_fmt,攻击/索敌范围：%s,Attack/Target Range: %s
 ui.weapon_select.projectile_speed_fmt,弹速：%s,Projectile Speed: %s
 ui.weapon_select.projectile_radius_fmt,弹体半径：%s,Projectile Radius: %s
 msg.shop.offer_not_found,找不到该商品,Offer not found
@@ -317,3 +317,43 @@ ui.shop.combine_none,没有同阶武器,No matching weapon
 ui.shop.kind_weapon,武器,Weapon
 ui.shop.kind_item,道具,Item
 ui.shop.offer_unlock,解锁,Unlock
+ui.shop.weapon_tag_bonus_title_bb,[b]武器标签加成[/b],[b]Weapon Tag Bonuses[/b]
+ui.shop.weapon_tag_empty,暂无武器标签,No weapon tags
+ui.shop.weapon_tag_active_tier_fmt,已激活 %d,Active %d
+ui.shop.weapon_tag_next_tier_fmt,下档 %d,Next %d
+ui.shop.weapon_tag_capped,已封顶,Capped
+ui.shop.weapon_tag_preview_hint,规则未启用，仅显示层级预览,Rules disabled; tier preview only
+ui.shop.weapon_tag_panel_title,标签,Tags
+ui.shop.weapon_tag_none,无标签,No tags
+ui.shop.weapon_tag_count_fmt,当前 %d,Count %d
+ui.shop.weapon_tag_tier_detail_fmt,%d件：%s,%d pcs: %s
+ui.tag.eagle_eye.tier2,暴击 +2%,Crit +2%
+ui.tag.eagle_eye.tier3,暴击 +3%,Crit +3%
+ui.tag.eagle_eye.tier4,暴击 +4%,Crit +4%
+ui.tag.eagle_eye.tier5,暴击 +5%,Crit +5%
+ui.tag.eagle_eye.tier6,暴击 +6%,Crit +6%
+ui.tag.berserker.tier2,伤害 +3%,Damage +3%
+ui.tag.berserker.tier3,伤害 +5%,Damage +5%
+ui.tag.berserker.tier4,伤害 +7%,Damage +7%
+ui.tag.berserker.tier5,伤害 +9%,Damage +9%
+ui.tag.berserker.tier6,伤害 +11%,Damage +11%
+ui.tag.bulwark.tier2,护甲 +1,Armor +1
+ui.tag.bulwark.tier3,护甲 +2,Armor +2
+ui.tag.bulwark.tier4,护甲 +2，闪避 +1%,Armor +2 / Dodge +1%
+ui.tag.bulwark.tier5,护甲 +3，闪避 +1%,Armor +3 / Dodge +1%
+ui.tag.bulwark.tier6,护甲 +4，闪避 +2%,Armor +4 / Dodge +2%
+ui.tag.rapid.tier2,攻速 +3%,Attack Speed +3%
+ui.tag.rapid.tier3,攻速 +5%,Attack Speed +5%
+ui.tag.rapid.tier4,攻速 +7%,Attack Speed +7%
+ui.tag.rapid.tier5,攻速 +9%,Attack Speed +9%
+ui.tag.rapid.tier6,攻速 +11%,Attack Speed +11%
+ui.tag.raider.tier2,移速 +4,Move Speed +4
+ui.tag.raider.tier3,移速 +6,Move Speed +6
+ui.tag.raider.tier4,移速 +8，幸运 +2,Move Speed +8 / Luck +2
+ui.tag.raider.tier5,移速 +10，幸运 +3,Move Speed +10 / Luck +3
+ui.tag.raider.tier6,移速 +12，幸运 +4,Move Speed +12 / Luck +4
+ui.tag.sustain.tier2,吸血 +1%,Lifesteal +1%
+ui.tag.sustain.tier3,吸血 +1%，生命回复 +1,Lifesteal +1% / HP Regen +1
+ui.tag.sustain.tier4,吸血 +2%，生命回复 +1,Lifesteal +2% / HP Regen +1
+ui.tag.sustain.tier5,吸血 +2%，生命回复 +2,Lifesteal +2% / HP Regen +2
+ui.tag.sustain.tier6,吸血 +3%，生命回复 +2,Lifesteal +3% / HP Regen +2

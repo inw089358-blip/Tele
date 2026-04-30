@@ -25,6 +25,8 @@ const LEVELUP_ALLOWED_EFFECT_TYPES: Dictionary = {
     "move_speed_flat": true,
     "target_range_flat": true,
     "stamina_recover_mult": true,
+    "xp_gain_mult": true,
+    "gold_gain_mult": true,
 }
 const LEVELUP_ALLOWED_REWARD_IDS: Dictionary = {
     "atk_flat_1": true,
@@ -41,6 +43,8 @@ const LEVELUP_ALLOWED_REWARD_IDS: Dictionary = {
     "crit_damage_25": true,
     "lifesteal_3": true,
     "luck_up_8": true,
+    "xp_gain_10": true,
+    "gold_gain_10": true,
     "fortune_protocol": true,
     "stamina_regen_10": true,
 }
@@ -195,13 +199,13 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
 
     var result: Array[Dictionary] = []
     for reward in selected:
-        var rarity_label: String = str(reward.get("rarity", "common")).to_upper()
         var base_id: String = str(reward.get("_base_id", reward.get("id", "")))
         var localized_name: String = _localize_reward_name(base_id, str(reward.get("name", "Unknown")))
         var localized_desc: String = _localize_reward_desc(base_id, str(reward.get("desc", "")))
         result.append({
             "id": str(reward.get("_resolved_id", reward.get("id", ""))),
-            "name": "%s [%s]" % [localized_name, rarity_label],
+            "base_id": base_id,
+            "name": localized_name,
             "desc": localized_desc,
             "category": str(reward.get("category", "basic_growth")),
             "rarity": str(reward.get("rarity", "common")),
@@ -345,8 +349,15 @@ static func _scale_effects_by_rarity(effects: Array, rarity: String, scaling_raw
             continue
         var effect: Dictionary = (effect_value as Dictionary).duplicate(true)
         if effect.has("value"):
+            var effect_type: String = str(effect.get("type", ""))
             var raw_value: Variant = effect.get("value")
-            if raw_value is int:
+            if raw_value is float and _is_multiplier_effect_type(effect_type):
+                var base_multiplier: float = float(raw_value)
+                if base_multiplier >= 1.0:
+                    effect["value"] = 1.0 + (base_multiplier - 1.0) * multiplier
+                else:
+                    effect["value"] = max(0.05, 1.0 - (1.0 - base_multiplier) * multiplier)
+            elif raw_value is int:
                 var base_int: int = int(raw_value)
                 var scaled_int: int = int(round(float(base_int) * multiplier))
                 if scaled_int == 0 and base_int != 0:
@@ -356,6 +367,15 @@ static func _scale_effects_by_rarity(effects: Array, rarity: String, scaling_raw
                 effect["value"] = float(raw_value) * multiplier
         scaled_effects.append(effect)
     return scaled_effects
+
+static func _is_multiplier_effect_type(effect_type: String) -> bool:
+    return (
+        effect_type == "auto_attack_interval_mult"
+        or effect_type == "attack_speed_mult"
+        or effect_type == "xp_gain_mult"
+        or effect_type == "gold_gain_mult"
+        or effect_type == "stamina_recover_mult"
+    )
 
 static func _compose_reward_choice_id(base_id: String, rarity: String) -> String:
     var rarity_key: String = rarity.strip_edges().to_lower()

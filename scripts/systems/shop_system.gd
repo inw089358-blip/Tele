@@ -11,6 +11,7 @@ const CRIT_MULTIPLIER_TO_CRIT_CHANCE_RATIO_DEFAULT: float = 0.12
 const WEAPON_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/"
 const ITEM_ICON_DIR: String = "res://sprite/items/"
 const WEAPON_RECYCLE_RATIO: float = 0.25
+const ITEM_REWARD_RECYCLE_RATIO: float = 0.35
 const WEAPON_RARITY_DAMAGE_MULTIPLIERS: Dictionary = {
     "common": 1.0,
     "rare": 1.25,
@@ -269,9 +270,66 @@ func recycle_weapon_slot(slot_index: int, state: Dictionary) -> Dictionary:
         "state": runtime,
     }
 
+func roll_elite_chest_item(context: Dictionary) -> Dictionary:
+    var wave_index: int = max(1, int(context.get("wave", 1)))
+    var luck_value: float = _get_context_luck(context)
+    if context.has("luck"):
+        luck_value = float(context.get("luck", luck_value))
+    var item_pool: Array = _catalog.get("item_pool", [])
+    var template: Dictionary = _pick_chest_item_template(item_pool, luck_value)
+    if template.is_empty():
+        template = {
+            "item_id": "item_damage_upgrade",
+            "name": "Damage Upgrade",
+            "description": "+1 attack damage",
+            "rarity": "common",
+            "base_price": 35,
+            "effects": {"bonus_attack_damage": 1},
+        }
+    var wave_inflation: float = 1.0 + (max(0, wave_index - 1) * 0.06)
+    var base_price: int = max(1, int(template.get("base_price", 20)))
+    var final_price: int = max(1, int(round(float(base_price) * wave_inflation)))
+    var offer: Dictionary = {
+        "kind": "item",
+        "item_id": str(template.get("item_id", "")),
+        "name": str(template.get("name", "Item")),
+        "price": final_price,
+        "rarity": str(template.get("rarity", "common")),
+        "description": str(template.get("description", "")),
+        "effects": template.get("effects", {}),
+        "icon_path": str(template.get("icon_path", "")),
+    }
+    if str(offer.get("icon_path", "")).is_empty():
+        offer["icon_path"] = _resolve_offer_icon_path(offer)
+    offer["recycle_value"] = max(1, int(round(float(final_price) * ITEM_REWARD_RECYCLE_RATIO)))
+    return offer
+
+func claim_item_reward(offer: Dictionary, state: Dictionary) -> Dictionary:
+    var runtime: Dictionary = state.duplicate(true)
+    var reward: Dictionary = offer.duplicate(true)
+    reward["kind"] = "item"
+    var shop_state: Dictionary = _normalize_shop_state(runtime.get("shop_runtime_state", {}))
+    _record_owned_item(shop_state, reward)
+    _apply_item_effect(runtime, reward.get("effects", {}))
+    shop_state["weapon_tag_state"] = resolve_weapon_tag_state(shop_state)
+    runtime["shop_runtime_state"] = shop_state
+    return {"ok": true, "state": runtime, "message": "msg.elite_chest.claim_success"}
+
+func recycle_item_reward(offer: Dictionary, state: Dictionary) -> Dictionary:
+    var runtime: Dictionary = state.duplicate(true)
+    var fallback_refund: int = int(round(float(max(1, int(offer.get("price", 1)))) * ITEM_REWARD_RECYCLE_RATIO))
+    var refund: int = max(1, int(offer.get("recycle_value", fallback_refund)))
+    runtime["current_gold"] = max(0, int(runtime.get("current_gold", 0))) + refund
+    return {
+        "ok": true,
+        "state": runtime,
+        "message": "msg.elite_chest.recycle_success",
+        "refund": refund,
+    }
+
 func _build_offer_for_slot(slot_index: int, wave_index: int, weapon_chance: float, luck_value: float) -> Dictionary:
     var pick_weapon: bool = randf() < weapon_chance
-    var offer: Dictionary = _roll_weapon_offer(wave_index, luck_value) if pick_weapon else _roll_item_offer(wave_index)
+    var offer: Dictionary = _roll_weapon_offer(wave_index, luck_value) if pick_weapon else _roll_item_offer(wave_index, luck_value)
     offer["offer_id"] = _build_offer_id(wave_index, slot_index)
     offer["slot_index"] = slot_index
     offer["sold"] = false
@@ -283,7 +341,7 @@ func _build_offer_for_slot(slot_index: int, wave_index: int, weapon_chance: floa
 func _build_offer_id(wave_index: int, slot_index: int) -> String:
     return "offer_%d_%d_%d" % [wave_index, slot_index, randi() % 100000]
 
-func _roll_item_offer(wave_index: int) -> Dictionary:
+func _roll_item_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
     var item_pool: Array = _catalog.get("item_pool", [])
     if item_pool.is_empty():
         var fallback_offer: Dictionary = {
@@ -297,7 +355,7 @@ func _roll_item_offer(wave_index: int) -> Dictionary:
         }
         fallback_offer["icon_path"] = _resolve_offer_icon_path(fallback_offer)
         return fallback_offer
-    var template: Dictionary = _pick_weighted(item_pool)
+    var template: Dictionary = _pick_shop_item_template(item_pool, luck_value)
     var wave_inflation: float = 1.0 + (max(0, wave_index - 1) * 0.06)
     var base_price: int = max(1, int(template.get("base_price", 20)))
     var final_price: int = max(1, int(round(base_price * wave_inflation)))
@@ -314,6 +372,53 @@ func _roll_item_offer(wave_index: int) -> Dictionary:
     if str(offer.get("icon_path", "")).is_empty():
         offer["icon_path"] = _resolve_offer_icon_path(offer)
     return offer
+
+func _pick_shop_item_template(item_pool: Array, luck_value: float) -> Dictionary:
+    var shop_rules: Dictionary = _catalog.get("shop_rules", {})
+    var rarity_weights_raw: Variant = shop_rules.get("item_rarity_weights", {})
+    if not (rarity_weights_raw is Dictionary) or (rarity_weights_raw as Dictionary).is_empty():
+        return _pick_weighted(item_pool)
+
+    var pools_by_rarity: Dictionary = {}
+    for row_value: Variant in item_pool:
+        if not (row_value is Dictionary):
+            continue
+        var row: Dictionary = row_value
+        var rarity: String = str(row.get("rarity", "common")).to_lower()
+        if not pools_by_rarity.has(rarity):
+            pools_by_rarity[rarity] = []
+        var rarity_pool: Array = pools_by_rarity[rarity]
+        rarity_pool.append(row)
+        pools_by_rarity[rarity] = rarity_pool
+
+    var rolled_rarity: String = _roll_rarity(rarity_weights_raw, luck_value)
+    var selected_pool: Array = pools_by_rarity.get(rolled_rarity, [])
+    if selected_pool.is_empty():
+        return _pick_weighted(item_pool)
+    return _pick_weighted(selected_pool)
+
+func _pick_chest_item_template(item_pool: Array, luck_value: float) -> Dictionary:
+    if item_pool.is_empty():
+        return {}
+    var rarity_weights: Dictionary = {}
+    var pools_by_rarity: Dictionary = {}
+    for row_value: Variant in item_pool:
+        if not (row_value is Dictionary):
+            continue
+        var row: Dictionary = row_value
+        var rarity: String = str(row.get("rarity", "common")).to_lower()
+        var weight: float = max(0.0, float(row.get("weight", 1.0)))
+        rarity_weights[rarity] = float(rarity_weights.get(rarity, 0.0)) + weight
+        if not pools_by_rarity.has(rarity):
+            pools_by_rarity[rarity] = []
+        var rarity_pool: Array = pools_by_rarity[rarity]
+        rarity_pool.append(row)
+        pools_by_rarity[rarity] = rarity_pool
+    var rolled_rarity: String = _roll_rarity(rarity_weights, luck_value)
+    var selected_pool: Array = pools_by_rarity.get(rolled_rarity, [])
+    if selected_pool.is_empty():
+        selected_pool = item_pool
+    return _pick_weighted(selected_pool)
 
 func _roll_weapon_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
     var weapon_pool: Array = _catalog.get("weapon_pool", [])

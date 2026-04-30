@@ -1,1081 +1,1085 @@
 {
-    "rules":  {
-                  "same_category_max_streak":  2,
-                  "no_output_soft_pity":  3,
-                  "choices_count":  3,
-                  "require_two_axes":  true
-              },
-    "rarity_weights_by_stage":  {
-                                    "stage_001":  {
-                                                      "common":  0.92,
-                                                      "rare":  0.08
-                                                  },
-                                    "stage_002":  {
-                                                      "common":  0.86,
-                                                      "rare":  0.14
-                                                  },
-                                    "stage_003":  {
-                                                      "common":  0.79,
-                                                      "rare":  0.21
-                                                  },
-                                    "stage_004":  {
-                                                      "common":  0.73,
-                                                      "rare":  0.27
-                                                  },
-                                    "stage_005":  {
-                                                      "common":  0.66,
-                                                      "rare":  0.34
-                                                  },
-                                    "stage_006":  {
-                                                      "common":  0.62,
-                                                      "rare":  0.36,
-                                                      "epic":  0.02
-                                                  },
-                                    "stage_007":  {
-                                                      "common":  0.58,
-                                                      "rare":  0.39,
-                                                      "epic":  0.03
-                                                  },
-                                    "stage_008":  {
-                                                      "common":  0.55,
-                                                      "rare":  0.41,
-                                                      "epic":  0.04
-                                                  },
-                                    "stage_009":  {
-                                                      "common":  0.52,
-                                                      "rare":  0.43,
-                                                      "epic":  0.05
-                                                  },
-                                    "stage_010":  {
-                                                      "common":  0.50,
-                                                      "rare":  0.44,
-                                                      "epic":  0.06
-                                                  },
-                                    "stage_011":  {
-                                                      "common":  0.47,
-                                                      "rare":  0.45,
-                                                      "epic":  0.08
-                                                  },
-                                    "stage_012":  {
-                                                      "common":  0.44,
-                                                      "rare":  0.46,
-                                                      "epic":  0.10
-                                                  },
-                                    "stage_013":  {
-                                                      "common":  0.41,
-                                                      "rare":  0.47,
-                                                      "epic":  0.12
-                                                  },
-                                    "stage_014":  {
-                                                      "common":  0.38,
-                                                      "rare":  0.48,
-                                                      "epic":  0.14
-                                                  },
-                                    "stage_015":  {
-                                                      "common":  0.35,
-                                                      "rare":  0.49,
-                                                      "epic":  0.16
-                                                  }
-                                },
-    "pools":  {
-                  "basic_growth":  {
-                                       "weight":  32
-                                   },
-                  "weapon_behavior":  {
-                                          "weight":  20
-                                      },
-                  "survival_counter":  {
-                                           "weight":  18
-                                       },
-                  "rhythm_resource":  {
-                                          "weight":  10
-                                      },
-                  "economy_ops":  {
-                                      "weight":  8
-                                  },
-                  "build_core":  {
-                                     "weight":  12
-                                 }
-              },
-    "rewards":  [
-                    {
-                        "id":  "atk_flat_1",
-                        "name":  "攻击 +1",
-                        "desc":  "基础攻击伤害 +1",
-                        "category":  "basic_growth",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "attack_damage_flat",
-                                            "value":  1
-                                        }
-                                    ],
-                        "max_stacks":  6,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "range_up_40",
-                        "name":  "射程 +40",
-                        "desc":  "索敌范围 +40",
-                        "category":  "basic_growth",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "target_range_flat",
-                                            "value":  40
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "move_up_6",
-                        "name":  "移速 +6",
-                        "desc":  "移动速度 +6",
-                        "category":  "basic_growth",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "survival",
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "move_speed_flat",
-                                            "value":  6
-                                        }
-                                    ],
-                        "max_stacks":  5,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "hp_up_2",
-                        "name":  "生命 +2",
-                        "desc":  "最大生命 +2 并治疗 2",
-                        "category":  "survival_counter",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "max_hp_flat",
-                                            "value":  2
-                                        },
-                                        {
-                                            "type":  "heal_flat",
-                                            "value":  2
-                                        }
-                                    ],
-                        "max_stacks":  5,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "armor_up_2",
-                        "name":  "护甲 +2",
-                        "desc":  "减少受到的伤害",
-                        "category":  "survival_counter",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "armor_flat",
-                                            "value":  2
-                                        }
-                                    ],
-                        "max_stacks":  6,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "dodge_up_5",
-                        "name":  "闪避 +5%",
-                        "desc":  "5% 概率完全免伤",
-                        "category":  "survival_counter",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "survival",
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "dodge_chance_flat",
-                                            "value":  0.05
-                                        }
-                                    ],
-                        "max_stacks":  5,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "atk_rate_10",
-                        "name":  "攻速 +10%",
-                        "desc":  "自动攻击间隔 -7%",
-                        "category":  "weapon_behavior",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "auto_attack_interval_mult",
-                                            "value":  0.93
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "atk_rate_8",
-                        "name":  "攻速 +8%",
-                        "desc":  "自动攻击间隔 -6%",
-                        "category":  "weapon_behavior",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "auto_attack_interval_mult",
-                                            "value":  0.94
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "crit_chance_8",
-                        "name":  "暴击率 +8%",
-                        "desc":  "更容易触发暴击",
-                        "category":  "weapon_behavior",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "crit_chance_flat",
-                                            "value":  0.05
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "crit_damage_25",
-                        "name":  "暴击率 +2.2%",
-                        "desc":  "提升暴击触发概率",
-                        "category":  "weapon_behavior",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "crit_multiplier_flat",
-                                            "value":  0.18
-                                        }
-                                    ],
-                        "max_stacks":  3,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "lifesteal_3",
-                        "name":  "吸血 +3%",
-                        "desc":  "伤害转化为生命回复",
-                        "category":  "build_core",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "survival",
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "lifesteal_flat",
-                                            "value":  0.03
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "require":  {
-                                        "min_level":  3
-                                    },
-                        "rarity_tiers":  [
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "stamina_regen_10",
-                        "name":  "体力回复 +10%",
-                        "desc":  "体力恢复速度 +10%",
-                        "category":  "rhythm_resource",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "stamina_recover_mult",
-                                            "value":  1.1
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "xp_gain_10",
-                        "name":  "经验收益 +10%",
-                        "desc":  "经验获取倍率 +10%",
-                        "category":  "economy_ops",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "economy",
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "xp_gain_mult",
-                                            "value":  1.1
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "gold_gain_10",
-                        "name":  "金币收益 +10%",
-                        "desc":  "金币获取倍率 +10%",
-                        "category":  "economy_ops",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "economy"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "gold_gain_mult",
-                                            "value":  1.1
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "luck_up_8",
-                        "name":  "幸运 +8",
-                        "desc":  "提升高价值奖励出现倾向",
-                        "category":  "economy_ops",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "economy",
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "luck_flat",
-                                            "value":  8
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "glass_minor",
-                        "name":  "玻璃炮",
-                        "desc":  "攻击 +2，生命 -1，暴击率 +6%",
-                        "category":  "build_core",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "output",
-                                     "boss"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "attack_damage_flat",
-                                            "value":  2
-                                        },
-                                        {
-                                            "type":  "max_hp_flat",
-                                            "value":  -1
-                                        },
-                                        {
-                                            "type":  "crit_chance_flat",
-                                            "value":  0.06
-                                        }
-                                    ],
-                        "max_stacks":  2,
-                        "require":  {
-                                        "min_level":  5
-                                    },
-                        "rarity_tiers":  [
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "fortress_minor",
-                        "name":  "堡垒姿态",
-                        "desc":  "生命 +4，护甲 +3，攻速 -6%",
-                        "category":  "build_core",
-                        "rarity":  "rare",
-                        "tags":  [
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "max_hp_flat",
-                                            "value":  4
-                                        },
-                                        {
-                                            "type":  "armor_flat",
-                                            "value":  3
-                                        },
-                                        {
-                                            "type":  "auto_attack_interval_mult",
-                                            "value":  1.06
-                                        }
-                                    ],
-                        "max_stacks":  2,
-                        "require":  {
-                                        "min_level":  5
-                                    },
-                        "rarity_tiers":  [
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "precision_calibration",
-                        "name":  "精度校准",
-                        "desc":  "暴击率基础值提升（随稀有度提升数值）",
-                        "category":  "weapon_behavior",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           },
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  0.03,
-                                            "type":  "crit_chance_flat"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "burst_gears",
-                        "name":  "爆发齿轮",
-                        "desc":  "攻击间隔缩短（随稀有度提升数值）",
-                        "category":  "weapon_behavior",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           },
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  0.96,
-                                            "type":  "auto_attack_interval_mult"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "impact_matrix",
-                        "name":  "冲击矩阵",
-                        "desc":  "攻击与暴击率同步提升（随稀有度提升数值）",
-                        "category":  "build_core",
-                        "rarity":  "rare",
-                        "rarity_tiers":  [
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "rare":  1.22,
-                                               "epic":  1.46
-                                           },
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  1,
-                                            "type":  "attack_damage_flat"
-                                        },
-                                        {
-                                            "value":  0.08,
-                                            "type":  "crit_multiplier_flat"
-                                        }
-                                    ],
-                        "max_stacks":  3,
-                        "require":  {
-                                        "min_level":  3
-                                    }
-                    },
-                    {
-                        "id":  "fortified_lining",
-                        "name":  "强化衬层",
-                        "desc":  "护甲提升（随稀有度提升数值）",
-                        "category":  "survival_counter",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           },
-                        "tags":  [
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  2,
-                                            "type":  "armor_flat"
-                                        }
-                                    ],
-                        "max_stacks":  5
-                    },
-                    {
-                        "id":  "phase_shift",
-                        "name":  "相位偏移",
-                        "desc":  "闪避率提升（随稀有度提升数值）",
-                        "category":  "survival_counter",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           },
-                        "tags":  [
-                                     "survival",
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  0.03,
-                                            "type":  "dodge_chance_flat"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "drain_route",
-                        "name":  "汲取回路",
-                        "desc":  "吸血提升（随稀有度提升数值）",
-                        "category":  "build_core",
-                        "rarity":  "rare",
-                        "rarity_tiers":  [
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "rare":  1.2,
-                                               "epic":  1.45
-                                           },
-                        "tags":  [
-                                     "survival",
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  0.015,
-                                            "type":  "lifesteal_flat"
-                                        }
-                                    ],
-                        "max_stacks":  4,
-                        "require":  {
-                                        "min_level":  3
-                                    }
-                    },
-                    {
-                        "id":  "mobility_rig",
-                        "name":  "机动组件",
-                        "desc":  "移速与射程同步提升（随稀有度提升数值）",
-                        "category":  "rhythm_resource",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.32,
-                                               "epic":  1.5
-                                           },
-                        "tags":  [
-                                     "utility",
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  4,
-                                            "type":  "move_speed_flat"
-                                        },
-                                        {
-                                            "value":  20,
-                                            "type":  "target_range_flat"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "field_medicine",
-                        "name":  "战地医疗",
-                        "desc":  "回血并提升少量最大生命（随稀有度提升数值）",
-                        "category":  "survival_counter",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.3,
-                                               "epic":  1.5
-                                           },
-                        "tags":  [
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  3,
-                                            "type":  "heal_flat"
-                                        },
-                                        {
-                                            "value":  1,
-                                            "type":  "max_hp_flat"
-                                        }
-                                    ],
-                        "max_stacks":  5
-                    },
-                    {
-                        "id":  "stamina_loop",
-                        "name":  "体力回环",
-                        "desc":  "体力回复速度提升（随稀有度提升数值）",
-                        "category":  "rhythm_resource",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.3,
-                                               "epic":  1.5
-                                           },
-                        "tags":  [
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  1.08,
-                                            "type":  "stamina_recover_mult"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "study_protocol",
-                        "name":  "学习协议",
-                        "desc":  "经验收益提升（随稀有度提升数值）",
-                        "category":  "economy_ops",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.3,
-                                               "epic":  1.5
-                                           },
-                        "tags":  [
-                                     "economy",
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  1.08,
-                                            "type":  "xp_gain_mult"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "fortune_protocol",
-                        "name":  "幸运协议",
-                        "desc":  "幸运提升（随稀有度提升数值）",
-                        "category":  "economy_ops",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.32,
-                                               "epic":  1.55
-                                           },
-                        "tags":  [
-                                     "economy",
-                                     "utility"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  6,
-                                            "type":  "luck_flat"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "trade_contract",
-                        "name":  "贸易契约",
-                        "desc":  "金币收益提升（随稀有度提升数值）",
-                        "category":  "economy_ops",
-                        "rarity":  "common",
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.3,
-                                               "epic":  1.5
-                                           },
-                        "tags":  [
-                                     "economy"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  1.08,
-                                            "type":  "gold_gain_mult"
-                                        }
-                                    ],
-                        "max_stacks":  4
-                    },
-                    {
-                        "id":  "glass_pressure",
-                        "name":  "过载增压",
-                        "desc":  "攻击提升，生命下降（随稀有度提升数值）",
-                        "category":  "build_core",
-                        "rarity":  "rare",
-                        "rarity_tiers":  [
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "rare":  1,
-                                               "epic":  1.25
-                                           },
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  2,
-                                            "type":  "attack_damage_flat"
-                                        },
-                                        {
-                                            "value":  -1,
-                                            "type":  "max_hp_flat"
-                                        }
-                                    ],
-                        "max_stacks":  2,
-                        "require":  {
-                                        "min_level":  4
-                                    }
-                    },
-                    {
-                        "id":  "iron_oath",
-                        "name":  "铁壁誓约",
-                        "desc":  "护甲提升，攻速小幅下降（随稀有度提升数值）",
-                        "category":  "build_core",
-                        "rarity":  "rare",
-                        "rarity_tiers":  [
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "rare":  1,
-                                               "epic":  1.22
-                                           },
-                        "tags":  [
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "value":  2,
-                                            "type":  "armor_flat"
-                                        },
-                                        {
-                                            "value":  1.03,
-                                            "type":  "auto_attack_interval_mult"
-                                        }
-                                    ],
-                        "max_stacks":  3,
-                        "require":  {
-                                        "min_level":  4
-                                    }
-                    },
-                    {
-                        "id":  "hp_flat_3",
-                        "name":  "\u751f\u547d +3",
-                        "desc":  "\u6700\u5927\u751f\u547d +3",
-                        "category":  "survival_counter",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "survival"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "max_hp_flat",
-                                            "value":  3
-                                        }
-                                    ],
-                        "max_stacks":  6,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "melee_damage_flat_2",
-                        "name":  "\u8fd1\u6218\u4f24\u5bb3 +2",
-                        "desc":  "\u53ea\u63d0\u5347\u8fd1\u6218\u6b66\u5668\u4f24\u5bb3 +2",
-                        "category":  "weapon_behavior",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "melee_damage_flat",
-                                            "value":  2
-                                        }
-                                    ],
-                        "max_stacks":  6,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    },
-                    {
-                        "id":  "ranged_damage_flat_2",
-                        "name":  "\u8fdc\u7a0b\u4f24\u5bb3 +2",
-                        "desc":  "\u53ea\u63d0\u5347\u8fdc\u7a0b\u6b66\u5668\u4f24\u5bb3 +2",
-                        "category":  "weapon_behavior",
-                        "rarity":  "common",
-                        "tags":  [
-                                     "output"
-                                 ],
-                        "effects":  [
-                                        {
-                                            "type":  "ranged_damage_flat",
-                                            "value":  2
-                                        }
-                                    ],
-                        "max_stacks":  6,
-                        "rarity_tiers":  [
-                                             "common",
-                                             "rare",
-                                             "epic"
-                                         ],
-                        "rarity_scaling":  {
-                                               "common":  1,
-                                               "rare":  1.4,
-                                               "epic":  1.72
-                                           }
-                    }
-                ]
+    "rules": {
+        "same_category_max_streak": 2,
+        "no_output_soft_pity": 3,
+        "choices_count": 3,
+        "require_two_axes": true
+    },
+    "rarity_weights_by_stage": {
+        "stage_001": {
+            "common": 0.82,
+            "rare": 0.18
+        },
+        "stage_002": {
+            "common": 0.82,
+            "rare": 0.18
+        },
+        "stage_003": {
+            "common": 0.82,
+            "rare": 0.18
+        },
+        "stage_004": {
+            "common": 0.72,
+            "rare": 0.25,
+            "epic": 0.03
+        },
+        "stage_005": {
+            "common": 0.72,
+            "rare": 0.25,
+            "epic": 0.03
+        },
+        "stage_006": {
+            "common": 0.62,
+            "rare": 0.31,
+            "epic": 0.07
+        },
+        "stage_007": {
+            "common": 0.62,
+            "rare": 0.31,
+            "epic": 0.07
+        },
+        "stage_008": {
+            "common": 0.62,
+            "rare": 0.31,
+            "epic": 0.07
+        },
+        "stage_009": {
+            "common": 0.52,
+            "rare": 0.36,
+            "epic": 0.12
+        },
+        "stage_010": {
+            "common": 0.52,
+            "rare": 0.36,
+            "epic": 0.12
+        },
+        "stage_011": {
+            "common": 0.52,
+            "rare": 0.36,
+            "epic": 0.12
+        },
+        "stage_012": {
+            "common": 0.44,
+            "rare": 0.4,
+            "epic": 0.16
+        },
+        "stage_013": {
+            "common": 0.44,
+            "rare": 0.4,
+            "epic": 0.16
+        },
+        "stage_014": {
+            "common": 0.44,
+            "rare": 0.4,
+            "epic": 0.16
+        },
+        "stage_015": {
+            "common": 0.44,
+            "rare": 0.4,
+            "epic": 0.16
+        }
+    },
+    "pools": {
+        "basic_growth": {
+            "weight": 22
+        },
+        "weapon_behavior": {
+            "weight": 35
+        },
+        "survival_counter": {
+            "weight": 25
+        },
+        "rhythm_resource": {
+            "weight": 10
+        },
+        "economy_ops": {
+            "weight": 10
+        },
+        "build_core": {
+            "weight": 8
+        }
+    },
+    "rewards": [
+        {
+            "id": "atk_flat_1",
+            "name": "?? +1",
+            "desc": "?? +1",
+            "category": "weapon_behavior",
+            "rarity": "common",
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "attack_damage_flat",
+                    "value": 1
+                }
+            ],
+            "max_stacks": 8,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.5,
+                "epic": 2
+            }
+        },
+        {
+            "id": "range_up_40",
+            "name": "?? +35",
+            "desc": "?? +35",
+            "category": "basic_growth",
+            "rarity": "common",
+            "tags": [
+                "utility"
+            ],
+            "effects": [
+                {
+                    "type": "target_range_flat",
+                    "value": 35
+                }
+            ],
+            "max_stacks": 6,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.45,
+                "epic": 1.85
+            }
+        },
+        {
+            "id": "move_up_6",
+            "name": "?? +5",
+            "desc": "?? +5",
+            "category": "basic_growth",
+            "rarity": "common",
+            "tags": [
+                "survival",
+                "utility"
+            ],
+            "effects": [
+                {
+                    "type": "move_speed_flat",
+                    "value": 5
+                }
+            ],
+            "max_stacks": 6,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.8
+            }
+        },
+        {
+            "id": "hp_up_2",
+            "name": "生命 +2",
+            "desc": "最大生命 +2 并治疗 2",
+            "category": "survival_counter",
+            "rarity": "common",
+            "tags": [
+                "survival"
+            ],
+            "effects": [
+                {
+                    "type": "max_hp_flat",
+                    "value": 2
+                },
+                {
+                    "type": "heal_flat",
+                    "value": 2
+                }
+            ],
+            "max_stacks": 5,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.72
+            }
+        },
+        {
+            "id": "armor_up_2",
+            "name": "?? +1",
+            "desc": "?? +1",
+            "category": "survival_counter",
+            "rarity": "rare",
+            "tags": [
+                "survival"
+            ],
+            "effects": [
+                {
+                    "type": "armor_flat",
+                    "value": 1
+                }
+            ],
+            "max_stacks": 8,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 2,
+                "epic": 3
+            }
+        },
+        {
+            "id": "dodge_up_5",
+            "name": "?? +4%",
+            "desc": "?? +4%",
+            "category": "survival_counter",
+            "rarity": "rare",
+            "tags": [
+                "survival",
+                "utility"
+            ],
+            "effects": [
+                {
+                    "type": "dodge_chance_flat",
+                    "value": 0.04
+                }
+            ],
+            "max_stacks": 6,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.5,
+                "epic": 2
+            }
+        },
+        {
+            "id": "atk_rate_10",
+            "name": "?? +9%",
+            "desc": "?? +9%",
+            "category": "weapon_behavior",
+            "rarity": "rare",
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "auto_attack_interval_mult",
+                    "value": 0.91
+                }
+            ],
+            "max_stacks": 4,
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1,
+                "epic": 1.45
+            },
+            "require": {
+                "min_level": 4
+            }
+        },
+        {
+            "id": "atk_rate_8",
+            "name": "?? +6%",
+            "desc": "?? +6%",
+            "category": "weapon_behavior",
+            "rarity": "common",
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "auto_attack_interval_mult",
+                    "value": 0.94
+                }
+            ],
+            "max_stacks": 6,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.45,
+                "epic": 1.85
+            }
+        },
+        {
+            "id": "crit_chance_8",
+            "name": "?? +5%",
+            "desc": "??? +5%",
+            "category": "weapon_behavior",
+            "rarity": "rare",
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "crit_chance_flat",
+                    "value": 0.05
+                }
+            ],
+            "max_stacks": 5,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.5,
+                "epic": 2
+            }
+        },
+        {
+            "id": "crit_damage_25",
+            "name": "???? +18%",
+            "desc": "???? +18%",
+            "category": "weapon_behavior",
+            "rarity": "rare",
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "crit_multiplier_flat",
+                    "value": 0.18
+                }
+            ],
+            "max_stacks": 4,
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1,
+                "epic": 1.45
+            },
+            "require": {
+                "min_level": 3
+            }
+        },
+        {
+            "id": "lifesteal_3",
+            "name": "?? +3%",
+            "desc": "?? +3%",
+            "category": "build_core",
+            "rarity": "rare",
+            "tags": [
+                "survival",
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "lifesteal_flat",
+                    "value": 0.03
+                }
+            ],
+            "max_stacks": 4,
+            "require": {
+                "min_level": 3
+            },
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1,
+                "epic": 1.5
+            }
+        },
+        {
+            "id": "stamina_regen_10",
+            "name": "???? +10%",
+            "desc": "???? +10%",
+            "category": "rhythm_resource",
+            "rarity": "common",
+            "tags": [
+                "utility"
+            ],
+            "effects": [
+                {
+                    "type": "stamina_recover_mult",
+                    "value": 1.1
+                }
+            ],
+            "max_stacks": 5,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.45,
+                "epic": 1.85
+            }
+        },
+        {
+            "id": "xp_gain_10",
+            "name": "?? +10%",
+            "desc": "???? +10%",
+            "category": "economy_ops",
+            "rarity": "rare",
+            "tags": [
+                "economy",
+                "utility"
+            ],
+            "effects": [
+                {
+                    "type": "xp_gain_mult",
+                    "value": 1.1
+                }
+            ],
+            "max_stacks": 4,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.45,
+                "epic": 1.85
+            }
+        },
+        {
+            "id": "gold_gain_10",
+            "name": "?? +10%",
+            "desc": "???? +10%",
+            "category": "economy_ops",
+            "rarity": "rare",
+            "tags": [
+                "economy"
+            ],
+            "effects": [
+                {
+                    "type": "gold_gain_mult",
+                    "value": 1.1
+                }
+            ],
+            "max_stacks": 4,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.45,
+                "epic": 1.85
+            }
+        },
+        {
+            "id": "luck_up_8",
+            "name": "?? +8",
+            "desc": "?? +8",
+            "category": "economy_ops",
+            "rarity": "rare",
+            "tags": [
+                "economy",
+                "utility"
+            ],
+            "effects": [
+                {
+                    "type": "luck_flat",
+                    "value": 8
+                }
+            ],
+            "max_stacks": 5,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.5,
+                "epic": 2
+            }
+        },
+        {
+            "id": "glass_minor",
+            "name": "玻璃炮",
+            "desc": "攻击 +2，生命 -1，暴击率 +6%",
+            "category": "build_core",
+            "rarity": "rare",
+            "tags": [
+                "output",
+                "boss"
+            ],
+            "effects": [
+                {
+                    "type": "attack_damage_flat",
+                    "value": 2
+                },
+                {
+                    "type": "max_hp_flat",
+                    "value": -1
+                },
+                {
+                    "type": "crit_chance_flat",
+                    "value": 0.06
+                }
+            ],
+            "max_stacks": 2,
+            "require": {
+                "min_level": 5
+            },
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.72
+            }
+        },
+        {
+            "id": "fortress_minor",
+            "name": "堡垒姿态",
+            "desc": "生命 +4，护甲 +3，攻速 -6%",
+            "category": "build_core",
+            "rarity": "rare",
+            "tags": [
+                "survival"
+            ],
+            "effects": [
+                {
+                    "type": "max_hp_flat",
+                    "value": 4
+                },
+                {
+                    "type": "armor_flat",
+                    "value": 3
+                },
+                {
+                    "type": "auto_attack_interval_mult",
+                    "value": 1.06
+                }
+            ],
+            "max_stacks": 2,
+            "require": {
+                "min_level": 5
+            },
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.72
+            }
+        },
+        {
+            "id": "precision_calibration",
+            "name": "精度校准",
+            "desc": "暴击率基础值提升（随稀有度提升数值）",
+            "category": "weapon_behavior",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.72
+            },
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "value": 0.03,
+                    "type": "crit_chance_flat"
+                }
+            ],
+            "max_stacks": 4
+        },
+        {
+            "id": "burst_gears",
+            "name": "爆发齿轮",
+            "desc": "攻击间隔缩短（随稀有度提升数值）",
+            "category": "weapon_behavior",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.72
+            },
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "value": 0.96,
+                    "type": "auto_attack_interval_mult"
+                }
+            ],
+            "max_stacks": 4
+        },
+        {
+            "id": "impact_matrix",
+            "name": "冲击矩阵",
+            "desc": "攻击与暴击率同步提升（随稀有度提升数值）",
+            "category": "build_core",
+            "rarity": "rare",
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1.22,
+                "epic": 1.46
+            },
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "value": 1,
+                    "type": "attack_damage_flat"
+                },
+                {
+                    "value": 0.08,
+                    "type": "crit_multiplier_flat"
+                }
+            ],
+            "max_stacks": 3,
+            "require": {
+                "min_level": 3
+            }
+        },
+        {
+            "id": "fortified_lining",
+            "name": "强化衬层",
+            "desc": "护甲提升（随稀有度提升数值）",
+            "category": "survival_counter",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.72
+            },
+            "tags": [
+                "survival"
+            ],
+            "effects": [
+                {
+                    "value": 2,
+                    "type": "armor_flat"
+                }
+            ],
+            "max_stacks": 5
+        },
+        {
+            "id": "phase_shift",
+            "name": "相位偏移",
+            "desc": "闪避率提升（随稀有度提升数值）",
+            "category": "survival_counter",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.4,
+                "epic": 1.72
+            },
+            "tags": [
+                "survival",
+                "utility"
+            ],
+            "effects": [
+                {
+                    "value": 0.03,
+                    "type": "dodge_chance_flat"
+                }
+            ],
+            "max_stacks": 4
+        },
+        {
+            "id": "drain_route",
+            "name": "汲取回路",
+            "desc": "吸血提升（随稀有度提升数值）",
+            "category": "build_core",
+            "rarity": "rare",
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1.2,
+                "epic": 1.45
+            },
+            "tags": [
+                "survival",
+                "output"
+            ],
+            "effects": [
+                {
+                    "value": 0.015,
+                    "type": "lifesteal_flat"
+                }
+            ],
+            "max_stacks": 4,
+            "require": {
+                "min_level": 3
+            }
+        },
+        {
+            "id": "mobility_rig",
+            "name": "机动组件",
+            "desc": "移速与射程同步提升（随稀有度提升数值）",
+            "category": "rhythm_resource",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.32,
+                "epic": 1.5
+            },
+            "tags": [
+                "utility",
+                "survival"
+            ],
+            "effects": [
+                {
+                    "value": 4,
+                    "type": "move_speed_flat"
+                },
+                {
+                    "value": 20,
+                    "type": "target_range_flat"
+                }
+            ],
+            "max_stacks": 4
+        },
+        {
+            "id": "field_medicine",
+            "name": "战地医疗",
+            "desc": "回血并提升少量最大生命（随稀有度提升数值）",
+            "category": "survival_counter",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.3,
+                "epic": 1.5
+            },
+            "tags": [
+                "survival"
+            ],
+            "effects": [
+                {
+                    "value": 3,
+                    "type": "heal_flat"
+                },
+                {
+                    "value": 1,
+                    "type": "max_hp_flat"
+                }
+            ],
+            "max_stacks": 5
+        },
+        {
+            "id": "stamina_loop",
+            "name": "体力回环",
+            "desc": "体力回复速度提升（随稀有度提升数值）",
+            "category": "rhythm_resource",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.3,
+                "epic": 1.5
+            },
+            "tags": [
+                "utility"
+            ],
+            "effects": [
+                {
+                    "value": 1.08,
+                    "type": "stamina_recover_mult"
+                }
+            ],
+            "max_stacks": 4
+        },
+        {
+            "id": "study_protocol",
+            "name": "学习协议",
+            "desc": "经验收益提升（随稀有度提升数值）",
+            "category": "economy_ops",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.3,
+                "epic": 1.5
+            },
+            "tags": [
+                "economy",
+                "utility"
+            ],
+            "effects": [
+                {
+                    "value": 1.08,
+                    "type": "xp_gain_mult"
+                }
+            ],
+            "max_stacks": 4
+        },
+        {
+            "id": "fortune_protocol",
+            "name": "????",
+            "desc": "?? +12",
+            "category": "economy_ops",
+            "rarity": "common",
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1,
+                "epic": 1.5
+            },
+            "tags": [
+                "economy",
+                "utility"
+            ],
+            "effects": [
+                {
+                    "type": "luck_flat",
+                    "value": 12
+                }
+            ],
+            "max_stacks": 3,
+            "require": {
+                "min_level": 4
+            }
+        },
+        {
+            "id": "trade_contract",
+            "name": "贸易契约",
+            "desc": "金币收益提升（随稀有度提升数值）",
+            "category": "economy_ops",
+            "rarity": "common",
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.3,
+                "epic": 1.5
+            },
+            "tags": [
+                "economy"
+            ],
+            "effects": [
+                {
+                    "value": 1.08,
+                    "type": "gold_gain_mult"
+                }
+            ],
+            "max_stacks": 4
+        },
+        {
+            "id": "glass_pressure",
+            "name": "过载增压",
+            "desc": "攻击提升，生命下降（随稀有度提升数值）",
+            "category": "build_core",
+            "rarity": "rare",
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1,
+                "epic": 1.25
+            },
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "value": 2,
+                    "type": "attack_damage_flat"
+                },
+                {
+                    "value": -1,
+                    "type": "max_hp_flat"
+                }
+            ],
+            "max_stacks": 2,
+            "require": {
+                "min_level": 4
+            }
+        },
+        {
+            "id": "iron_oath",
+            "name": "铁壁誓约",
+            "desc": "护甲提升，攻速小幅下降（随稀有度提升数值）",
+            "category": "build_core",
+            "rarity": "rare",
+            "rarity_tiers": [
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "rare": 1,
+                "epic": 1.22
+            },
+            "tags": [
+                "survival"
+            ],
+            "effects": [
+                {
+                    "value": 2,
+                    "type": "armor_flat"
+                },
+                {
+                    "value": 1.03,
+                    "type": "auto_attack_interval_mult"
+                }
+            ],
+            "max_stacks": 3,
+            "require": {
+                "min_level": 4
+            }
+        },
+        {
+            "id": "hp_flat_3",
+            "name": "?? +3",
+            "desc": "???? +3",
+            "category": "survival_counter",
+            "rarity": "common",
+            "tags": [
+                "survival"
+            ],
+            "effects": [
+                {
+                    "type": "max_hp_flat",
+                    "value": 3
+                }
+            ],
+            "max_stacks": 8,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.5,
+                "epic": 2
+            }
+        },
+        {
+            "id": "melee_damage_flat_2",
+            "name": "???? +2",
+            "desc": "???? +2",
+            "category": "weapon_behavior",
+            "rarity": "common",
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "melee_damage_flat",
+                    "value": 2
+                }
+            ],
+            "max_stacks": 6,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.5,
+                "epic": 2
+            }
+        },
+        {
+            "id": "ranged_damage_flat_2",
+            "name": "???? +2",
+            "desc": "???? +2",
+            "category": "weapon_behavior",
+            "rarity": "common",
+            "tags": [
+                "output"
+            ],
+            "effects": [
+                {
+                    "type": "ranged_damage_flat",
+                    "value": 2
+                }
+            ],
+            "max_stacks": 6,
+            "rarity_tiers": [
+                "common",
+                "rare",
+                "epic"
+            ],
+            "rarity_scaling": {
+                "common": 1,
+                "rare": 1.5,
+                "epic": 2
+            }
+        }
+    ]
 }

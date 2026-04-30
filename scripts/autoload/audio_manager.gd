@@ -1,9 +1,9 @@
 extends Node
 
 const SFX_POOL_SIZE: int = 8
-const BGM_MENU_PATH: String = "res://audio/CRT Transformer.mp3"
-const BGM_PREPARE_PATH: String = "res://audio/Velvet Hexagon.mp3"
-const BGM_COMBAT_PATH: String = "res://audio/Factory Synapse.mp3"
+const BGM_MENU_PATH: String = "res://audio/CRT_Transformer.mp3"
+const BGM_PREPARE_PATH: String = "res://audio/Velvet_Hexagon.mp3"
+const BGM_COMBAT_PATH: String = "res://audio/Factory_Synapse.mp3"
 
 var _bgm_player: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
@@ -81,15 +81,13 @@ func _get_or_load_mp3_stream(path: String) -> AudioStream:
     return loaded_stream
 
 func _load_mp3_stream(path: String) -> AudioStream:
-    var file: FileAccess = FileAccess.open(path, FileAccess.READ)
-    if file == null:
-        push_warning("BGM file not found: %s" % path)
+    var loaded: Resource = ResourceLoader.load(path)
+    if not (loaded is AudioStream):
+        push_warning("BGM stream not found/load failed: %s" % path)
         return null
 
-    var data: PackedByteArray = file.get_buffer(file.get_length())
-    var stream: AudioStreamMP3 = AudioStreamMP3.new()
-    stream.data = data
-    stream.loop = true
+    var stream: AudioStream = loaded
+    _ensure_stream_loop(stream)
     return stream
 
 func _get_or_load_sfx_stream(path: String) -> AudioStream:

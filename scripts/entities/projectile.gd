@@ -11,8 +11,10 @@ const PROJECTILE_IMPACT_EFFECT_SCRIPT: Script = preload("res://scripts/effects/p
 @export var crit_chance: float = 0.0
 @export var crit_multiplier: float = 1.5
 @export var lifesteal_chance: float = 0.0
+@export var aoe_radius: float = 0.0
 
 var visual_preset: String = "default"
+var impact_mode: String = "single"
 var spawn_flash_time: float = 0.05
 var trail_strength: float = 1.0
 var base_tint: Color = Color(0.47, 0.94, 1.0, 1.0)
@@ -29,6 +31,13 @@ var _trail_length_scale: float = 1.0
 var _glow_strength: float = 1.0
 var _glitch_phase: float = 0.0
 var _despawned: bool = false
+var _lob_enabled: bool = false
+var _lob_start_position: Vector2 = Vector2.ZERO
+var _lob_target_position: Vector2 = Vector2.ZERO
+var _lob_flight_time: float = 0.55
+var _lob_arc_height: float = 80.0
+var _lob_elapsed: float = 0.0
+var _impact_requested: bool = false
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -39,6 +48,28 @@ func _ready() -> void :
 
 func set_target(target: Node2D) -> void :
     _target = target
+
+func configure_lob(target_position: Vector2, flight_time: float, arc_height: float) -> void:
+    _lob_enabled = true
+    _lob_start_position = global_position
+    _lob_target_position = target_position
+    _lob_flight_time = max(0.05, flight_time)
+    _lob_arc_height = max(0.0, arc_height)
+    _lob_elapsed = 0.0
+    life_time = max(life_time, _lob_flight_time + 0.08)
+    _total_life_time = max(0.01, life_time)
+    var initial_direction: Vector2 = _lob_start_position.direction_to(_lob_target_position)
+    if initial_direction.length_squared() > 0.0001:
+        direction = initial_direction
+
+func is_aoe_projectile() -> bool:
+    return impact_mode == "aoe" and aoe_radius > 0.0
+
+func consume_impact_request() -> bool:
+    if not _impact_requested:
+        return false
+    _impact_requested = false
+    return true
 
 func configure_visual_preset(preset: String) -> void:
     visual_preset = preset
@@ -63,6 +94,16 @@ func configure_visual_preset(preset: String) -> void:
             _body_width_scale = 1.28
             _trail_length_scale = 0.88
             _glow_strength = 1.14
+        "lob_aoe":
+            spawn_flash_time = 0.07
+            trail_strength = 0.72
+            base_tint = Color(1.0, 0.45, 0.18, 1.0)
+            outer_tint = Color(0.76, 0.12, 0.05, 0.78)
+            core_tint = Color(1.0, 0.9, 0.48, 1.0)
+            _body_length_scale = 2.15
+            _body_width_scale = 1.35
+            _trail_length_scale = 0.76
+            _glow_strength = 1.28
         _:
             visual_preset = "default"
             spawn_flash_time = 0.05
@@ -76,6 +117,11 @@ func configure_visual_preset(preset: String) -> void:
             _glow_strength = 1.0
 
 func _physics_process(delta: float) -> void :
+    if _impact_requested:
+        return
+    if _lob_enabled:
+        _tick_lob_motion(delta)
+        return
     if _target != null and is_instance_valid(_target):
         var to_target: Vector2 = _target.global_position - global_position
         if to_target.length_squared() > 0.0001:
@@ -84,8 +130,29 @@ func _physics_process(delta: float) -> void :
     global_position += direction.normalized() * speed * delta
     life_time -= delta
     if life_time <= 0.0:
+        if is_aoe_projectile():
+            _impact_requested = true
+            queue_redraw()
+            return
         despawn(false)
         return
+    queue_redraw()
+
+func _tick_lob_motion(delta: float) -> void:
+    var previous_position: Vector2 = global_position
+    _elapsed += delta
+    _lob_elapsed += delta
+    life_time -= delta
+    var progress: float = clampf(_lob_elapsed / _lob_flight_time, 0.0, 1.0)
+    var ground_position: Vector2 = _lob_start_position.lerp(_lob_target_position, progress)
+    var arc_offset: Vector2 = Vector2.UP * sin(progress * PI) * _lob_arc_height
+    global_position = ground_position + arc_offset
+    var travel_direction: Vector2 = global_position - previous_position
+    if travel_direction.length_squared() > 0.0001:
+        direction = travel_direction.normalized()
+    if progress >= 1.0 or life_time <= 0.0:
+        global_position = _lob_target_position
+        _impact_requested = true
     queue_redraw()
 
 func _draw() -> void :
@@ -213,9 +280,12 @@ func _spawn_despawn_fx(is_hit: bool, impact_direction: Vector2) -> void:
     var effect_direction: Vector2 = impact_direction.normalized() if impact_direction.length_squared() > 0.0001 else direction.normalized()
     if effect_direction.length_squared() <= 0.0001:
         effect_direction = Vector2.RIGHT
+    var effect_radius: float = max(hit_radius * 1.2, 5.0)
+    if is_hit and is_aoe_projectile():
+        effect_radius = max(effect_radius, aoe_radius)
     effect.configure(
         "player_hit" if is_hit else "player_fade",
-        max(hit_radius * 1.2, 5.0),
+        effect_radius,
         effect_direction,
         0.12 if is_hit else 0.08,
         outer_tint,

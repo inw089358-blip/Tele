@@ -11,6 +11,8 @@ extends CharacterBody2D
 @export var dash_duration: float = 0.18
 @export var dash_speed_multiplier: float = 3.2
 @export var base_target_range: float = 320.0
+@export var invincibility_duration: float = 0.58
+@export var hurt_feedback_duration: float = 0.34
 
 var current_hp: int = max_hp
 var current_stamina: float = stamina_max
@@ -41,6 +43,8 @@ var _hp_regen_extra_hps_per_point: float = 0.089
 var _hp_regen_elapsed: float = 0.0
 var _lifesteal_internal_cooldown_seconds: float = 0.1
 var _lifesteal_cooldown_remaining: float = 0.0
+var _invincibility_timer: float = 0.0
+var _hurt_feedback_timer: float = 0.0
 var _visual_sprite: Sprite2D
 var _visual_move_frames: Array[int] = []
 var _visual_anim_fps: float = 0.0
@@ -72,6 +76,8 @@ func _physics_process(delta: float) -> void :
     _lifesteal_cooldown_remaining = max(0.0, _lifesteal_cooldown_remaining - delta)
     if _dash_timer <= 0.0:
         current_stamina = min(stamina_max, current_stamina + stamina_recover_per_sec * delta)
+    _invincibility_timer = max(0.0, _invincibility_timer - delta)
+    _hurt_feedback_timer = max(0.0, _hurt_feedback_timer - delta)
     _tick_hp_regen(delta)
 
     var movement: Vector2 = Vector2(
@@ -89,11 +95,14 @@ func _physics_process(delta: float) -> void :
     velocity = move_vector.normalized() * move_speed * speed_scale
     move_and_slide()
     _tick_visual_animation(delta)
+    _tick_hurt_feedback()
 
 func take_damage(amount: int) -> int:
     if amount <= 0:
         return 0
     if _is_dead:
+        return 0
+    if _invincibility_timer > 0.0:
         return 0
     if _roll_dodge():
         return 0
@@ -102,9 +111,15 @@ func take_damage(amount: int) -> int:
     if current_hp <= 0:
         _is_dead = true
         velocity = Vector2.ZERO
+        _reset_hurt_feedback()
         _set_collision_enabled(false)
         EventBus.player_died.emit()
+    else:
+        _start_hurt_feedback()
     return final_damage
+
+func is_invincible() -> bool:
+    return _invincibility_timer > 0.0
 
 func _set_collision_enabled(enabled: bool) -> void:
     for child: Node in get_children():
@@ -128,6 +143,9 @@ func _draw() -> void :
     if not _visual_has_sprite:
         draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.15, 0.12, 0.08, 0.85))
         draw_circle(Vector2.ZERO, body_radius, Color(0.93, 0.86, 0.69, 1.0))
+        if _hurt_feedback_timer > 0.0:
+            var hurt_ratio: float = _hurt_feedback_timer / max(0.01, hurt_feedback_duration)
+            draw_circle(Vector2.ZERO, body_radius + 4.0, Color(1.0, 0.12, 0.18, 0.28 * hurt_ratio))
 
 func setup_visual_from_config(config: Dictionary) -> void:
     _clear_visual_sprite()
@@ -278,6 +296,46 @@ func _apply_visual_frame(frame_index: int) -> void:
     if _visual_sprite == null:
         return
     _visual_sprite.frame = frame_index
+
+func _start_hurt_feedback() -> void:
+    _invincibility_timer = max(_invincibility_timer, invincibility_duration)
+    _hurt_feedback_timer = max(_hurt_feedback_timer, hurt_feedback_duration)
+    _tick_hurt_feedback()
+    queue_redraw()
+
+func _tick_hurt_feedback() -> void:
+    if _visual_sprite == null or not is_instance_valid(_visual_sprite):
+        if _hurt_feedback_timer > 0.0:
+            queue_redraw()
+        elif _invincibility_timer <= 0.0 and modulate != Color.WHITE:
+            modulate = Color.WHITE
+            queue_redraw()
+        return
+
+    if _hurt_feedback_timer > 0.0:
+        var hurt_ratio: float = _hurt_feedback_timer / max(0.01, hurt_feedback_duration)
+        var flicker_on: bool = int(Time.get_ticks_msec() / 48) % 2 == 0
+        _visual_sprite.modulate = Color(1.0, 0.32, 0.38, 1.0) if flicker_on else Color(1.0, 1.0, 1.0, 1.0)
+        _visual_sprite.offset = Vector2(
+            randf_range(-1.8, 1.8) * hurt_ratio,
+            randf_range(-1.2, 1.2) * hurt_ratio
+        )
+    elif _invincibility_timer > 0.0:
+        var blink_on: bool = int(Time.get_ticks_msec() / 72) % 2 == 0
+        _visual_sprite.modulate = Color(1.0, 1.0, 1.0, 0.52) if blink_on else Color.WHITE
+        _visual_sprite.offset = Vector2.ZERO
+    else:
+        _visual_sprite.modulate = Color.WHITE
+        _visual_sprite.offset = Vector2.ZERO
+    queue_redraw()
+
+func _reset_hurt_feedback() -> void:
+    _invincibility_timer = 0.0
+    _hurt_feedback_timer = 0.0
+    modulate = Color.WHITE
+    if _visual_sprite != null and is_instance_valid(_visual_sprite):
+        _visual_sprite.modulate = Color.WHITE
+        _visual_sprite.offset = Vector2.ZERO
 
 func _clear_visual_sprite() -> void:
     if _visual_sprite != null and is_instance_valid(_visual_sprite):

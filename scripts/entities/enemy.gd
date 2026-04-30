@@ -9,6 +9,8 @@ enum EnemyType {
     RANGED,
     ELITE_WARDEN,
     BARRAGE,
+    FAST_MELEE,
+    CHARGER,
 }
 
 signal died(enemy: Enemy)
@@ -32,6 +34,7 @@ signal enemy_projectile_fired(
 
 var current_hp: int = max_hp
 var damage_reduction_ratio: float = 0.0
+var damage_multiplier: float = 1.0
 var _target: Node2D
 var _is_dead: bool = false
 var _visual_sprite: Sprite2D
@@ -67,6 +70,8 @@ func _get_type_key() -> String:
         EnemyType.RANGED: return "ranged"
         EnemyType.ELITE_WARDEN: return "elite_warden"
         EnemyType.BARRAGE: return "barrage"
+        EnemyType.FAST_MELEE: return "fast_melee"
+        EnemyType.CHARGER: return "charger"
     return "melee"
 
 func _configure_visual_from_balance() -> void:
@@ -101,6 +106,9 @@ func set_target(target: Node2D) -> void :
 func get_display_name() -> String:
     return "Enemy"
 
+func scale_outgoing_damage(base_damage: int) -> int:
+    return max(1, int(round(float(max(1, base_damage)) * max(0.1, damage_multiplier))))
+
 func try_fire_projectile(
     direction: Vector2,
     speed: float,
@@ -114,6 +122,21 @@ func try_fire_projectile(
     if direction.length_squared() <= 0.0001:
         return
     enemy_projectile_fired.emit(self, global_position, direction.normalized(), speed, damage, hit_radius, life_time, tint)
+
+func fire_projectile_from(
+    origin: Vector2,
+    direction: Vector2,
+    speed: float,
+    damage: int,
+    hit_radius: float,
+    life_time: float,
+    tint: Color = Color(1.0, 0.36, 0.3, 1.0)
+) -> void:
+    if _is_dead:
+        return
+    if direction.length_squared() <= 0.0001:
+        return
+    enemy_projectile_fired.emit(self, origin, direction.normalized(), speed, damage, hit_radius, life_time, tint)
 
 func take_damage(amount: int) -> int:
     if _is_dead:
@@ -168,11 +191,27 @@ func _setup_visual_from_config(config: Dictionary) -> void:
     sprite.vframes = max(1, int(config.get("vframes", 1)))
     
     var base_scale: float = max(0.01, float(config.get("scale", 1.0)))
+    var elite_scale_multiplier: float = max(0.01, float(config.get("elite_scale_multiplier", 1.5)))
+    var apply_elite_tint: bool = bool(config.get("apply_elite_tint", true))
     if is_elite:
-        sprite.scale = Vector2.ONE * base_scale * 1.5
-        sprite.modulate = Color(1.2, 1.1, 0.8, 1.0) # Golden tint
+        sprite.scale = Vector2.ONE * base_scale * elite_scale_multiplier
+        if apply_elite_tint:
+            sprite.modulate = Color(1.2, 1.1, 0.8, 1.0)
     else:
         sprite.scale = Vector2.ONE * base_scale
+        var tint_raw: Variant = config.get("tint", "")
+        if tint_raw is String and not str(tint_raw).is_empty():
+            sprite.modulate = Color(str(tint_raw))
+        elif tint_raw is Array:
+            var tint_values: Array = tint_raw
+            if tint_values.size() >= 3:
+                var alpha: float = float(tint_values[3]) if tint_values.size() >= 4 else 1.0
+                sprite.modulate = Color(
+                    float(tint_values[0]),
+                    float(tint_values[1]),
+                    float(tint_values[2]),
+                    alpha
+                )
         
     sprite.z_index = 1
     add_child(sprite)
@@ -257,6 +296,7 @@ func _spawn_death_visual_fx() -> void:
         _visual_sprite.vframes,
         _visual_sprite.scale,
         _visual_sprite.flip_h,
+        _visual_sprite.modulate,
         _death_frames.duplicate(),
         _death_anim_fps,
         _death_hold_seconds,

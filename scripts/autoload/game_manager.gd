@@ -29,7 +29,7 @@ const SCENE_SHOP: String = "res://scenes/shop_scene.tscn"
 
 var current_state: GameState = GameState.MENU
 var selected_character: String = ""
-var current_difficulty: String = "normal"
+var current_difficulty: String = "danger_1"
 var current_stage_id: String = "stage_001"
 var current_wave: int = 0
 var selected_starter_weapon_id: String = ""
@@ -149,29 +149,65 @@ func start_new_run_with_difficulty(difficulty_id: String) -> void :
 
 func get_difficulty_modifiers() -> Dictionary:
     match _normalize_difficulty(current_difficulty):
-        "easy":
+        "danger_0":
             return {
-                "enemy_hp": 0.85, 
-                "enemy_damage": 0.85, 
-                "spawn_interval": 1.12, 
-                "xp": 0.9, 
-                "gold": 0.9, 
+                "enemy_hp": 1.0,
+                "enemy_damage": 1.0,
+                "spawn_interval": 1.0,
+                "enemy_count": 1.0,
+                "enemy_speed": 1.0,
+                "xp": 1.0,
+                "gold": 1.0,
             }
-        "hard":
+        "danger_2":
             return {
-                "enemy_hp": 1.25, 
-                "enemy_damage": 1.2, 
-                "spawn_interval": 0.9, 
-                "xp": 1.15, 
-                "gold": 1.15, 
+                "enemy_hp": 1.12,
+                "enemy_damage": 1.05,
+                "spawn_interval": 0.88,
+                "enemy_count": 1.25,
+                "enemy_speed": 1.0,
+                "xp": 1.0,
+                "gold": 1.0,
+            }
+        "danger_3":
+            return {
+                "enemy_hp": 1.22,
+                "enemy_damage": 1.1,
+                "spawn_interval": 0.82,
+                "enemy_count": 1.38,
+                "enemy_speed": 1.03,
+                "xp": 1.0,
+                "gold": 1.0,
+            }
+        "danger_4":
+            return {
+                "enemy_hp": 1.35,
+                "enemy_damage": 1.16,
+                "spawn_interval": 0.76,
+                "enemy_count": 1.52,
+                "enemy_speed": 1.06,
+                "xp": 1.0,
+                "gold": 1.0,
+            }
+        "danger_5":
+            return {
+                "enemy_hp": 1.5,
+                "enemy_damage": 1.22,
+                "spawn_interval": 0.7,
+                "enemy_count": 1.7,
+                "enemy_speed": 1.1,
+                "xp": 1.0,
+                "gold": 1.0,
             }
         _:
             return {
-                "enemy_hp": 1.0, 
-                "enemy_damage": 1.0, 
-                "spawn_interval": 1.0, 
-                "xp": 1.0, 
-                "gold": 1.0, 
+                "enemy_hp": 1.05,
+                "enemy_damage": 1.0,
+                "spawn_interval": 0.94,
+                "enemy_count": 1.12,
+                "enemy_speed": 1.0,
+                "xp": 1.0,
+                "gold": 1.0,
             }
 
 func start_game(stage_id: String = "stage_001") -> void :
@@ -327,9 +363,30 @@ func _run_scene_transition(
 
 func _normalize_difficulty(value: String) -> String:
     var lowered: String = value.to_lower()
-    if lowered == "easy" or lowered == "hard":
-        return lowered
-    return "normal"
+    if lowered.begins_with("danger_"):
+        var danger_value: String = lowered.substr(7)
+        if not danger_value.is_valid_int():
+            return "danger_1"
+        var danger_level: int = clampi(int(danger_value), 0, 5)
+        return "danger_%d" % danger_level
+    if lowered == "easy":
+        return "danger_0"
+    if lowered == "hard":
+        return "danger_4"
+    if lowered == "normal":
+        return "danger_1"
+    if lowered.is_valid_int():
+        var numeric_level: int = clampi(int(lowered), 0, 5)
+        return "danger_%d" % numeric_level
+    if lowered == "danger":
+        return "danger_1"
+    if lowered == "danger_":
+        return "danger_1"
+    if lowered == "d0" or lowered == "d1" or lowered == "d2" or lowered == "d3" or lowered == "d4" or lowered == "d5":
+        return "danger_%s" % lowered.substr(1)
+    if lowered == "danger0" or lowered == "danger1" or lowered == "danger2" or lowered == "danger3" or lowered == "danger4" or lowered == "danger5":
+        return "danger_%s" % lowered.substr(6)
+    return "danger_1"
 
 func _resolve_default_starter_weapon_id() -> String:
     var shop_catalog: Dictionary = BalanceService.get_shop_catalog()

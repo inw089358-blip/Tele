@@ -24,8 +24,12 @@ var _player_hp_display: float = 100.0
 const BOSS_BAR_HALF_WIDTH: float = 460.0
 const PLAYER_HP_SMOOTH_SPEED: float = 11.0
 const BOSS_HP_SMOOTH_SPEED: float = 9.0
+const PLAYER_HP_BAR_COLOR: Color = Color(0.95, 0.08, 0.12, 1.0)
+const PLAYER_EXP_BAR_COLOR: Color = Color(0.24, 0.95, 0.32, 1.0)
+const PLAYER_BAR_BG_COLOR: Color = Color(0.025, 0.045, 0.065, 0.92)
 
 func _ready() -> void :
+    _apply_player_bar_styles()
     set_player_stats(100.0, 100.0, 80.0, 100.0, 0.0, 20.0, 1, 0)
     refresh_recycling_bag()
     EventBus.wave_started.connect(_on_wave_started)
@@ -40,6 +44,25 @@ func _process(delta: float) -> void:
 
 func _on_wave_started(_wave_id: int) -> void :
     pass
+
+func _apply_player_bar_styles() -> void:
+    _style_progress_bar(hp_bar, PLAYER_HP_BAR_COLOR)
+    _style_progress_bar(exp_bar, PLAYER_EXP_BAR_COLOR)
+
+func _style_progress_bar(bar: ProgressBar, fill_color: Color) -> void:
+    if bar == null:
+        return
+    bar.add_theme_stylebox_override("background", _make_bar_style(PLAYER_BAR_BG_COLOR))
+    bar.add_theme_stylebox_override("fill", _make_bar_style(fill_color))
+
+func _make_bar_style(fill_color: Color) -> StyleBoxFlat:
+    var style: StyleBoxFlat = StyleBoxFlat.new()
+    style.bg_color = fill_color
+    style.corner_radius_top_left = 2
+    style.corner_radius_top_right = 2
+    style.corner_radius_bottom_right = 2
+    style.corner_radius_bottom_left = 2
+    return style
 
 func set_stage_timer(is_visible: bool, value_text: String = "", tint: Color = Color(0.82, 0.96, 1.0, 0.95)) -> void:
     if stage_timer_label == null:

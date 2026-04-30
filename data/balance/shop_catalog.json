@@ -1,1391 +1,1536 @@
 {
-    "shop_rules":  {
-                       "offers_per_wave":  4,
-                       "weapon_chance":  0.55,
-                       "refresh_base_cost":  20,
-                       "refresh_cost_step":  12
-                   },
-    "merge_rules":  {
-                        "rule":  "2_to_1_same_weapon_same_rarity",
-                        "rarity_order":  [
-                                             "common",
-                                             "rare",
-                                             "epic",
-                                             "legendary"
-                                         ]
-                    },
-    "item_pool": [
-        {
-            "item_id": "item_bible_old",
-            "name": "破旧的圣经",
-            "description": "+3 护甲, -4% 移速",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "armor": 3,
-                "player_move_speed": -9
-            }
-        },
-        {
-            "item_id": "item_dagger_rusty",
-            "name": "生锈的匕首",
-            "description": "+5% 攻速, -3 最大生命",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "attack_speed_mult": 1.05,
-                "max_hp_flat": -3
-            }
-        },
-        {
-            "item_id": "item_lantern_apprentice",
-            "name": "学徒提灯",
-            "description": "+20 拾取范围, -2 幸运",
-            "rarity": "common",
-            "base_price": 22,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "pickup_radius": 20,
-                "luck": -2
-            }
-        },
-        {
-            "item_id": "item_herb_dry",
-            "name": "干燥草药",
-            "description": "+1 生命回复, -3% 伤害",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "hp_regen": 1,
-                "global_attack_percent": -3
-            }
-        },
-        {
-            "item_id": "item_mirror_crude",
-            "name": "粗制护心镜",
-            "description": "+2 护甲, -1% 闪避",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "armor": 2,
-                "dodge_chance": -0.01
-            }
-        },
-        {
-            "item_id": "item_bullet_lead",
-            "name": "铅制子弹",
-            "description": "+3 远程伤害, -2% 攻速",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "ranged_damage_flat": 3,
-                "attack_speed_mult": 0.98
-            }
-        },
-        {
-            "item_id": "item_whetstone_heavy",
-            "name": "沉重磨刀石",
-            "description": "+3 近战伤害, -2% 攻速",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "melee_damage_flat": 3,
-                "attack_speed_mult": 0.98
-            }
-        },
-        {
-            "item_id": "item_coin_broken",
-            "name": "破碎古币",
-            "description": "+8 收获, -2% 闪避",
-            "rarity": "common",
-            "base_price": 20,
-            "price_wave_scale": 1.04,
-            "weight": 1.1,
-            "effects": {
-                "harvest": 8,
-                "dodge_chance": -0.02
-            }
-        },
-        {
-            "item_id": "item_rabbit_foot",
-            "name": "幸运兔脚",
-            "description": "+10 幸运, -3 最大生命",
-            "rarity": "common",
-            "base_price": 22,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "luck": 10,
-                "max_hp_flat": -3
-            }
-        },
-        {
-            "item_id": "item_feather_light",
-            "name": "轻快羽毛",
-            "description": "+5% 移速, -1 护甲",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "player_move_speed": 11,
-                "armor": -1
-            }
-        },
-        {
-            "item_id": "item_tarot_fragment",
-            "name": "塔罗残页",
-            "description": "+5% 经验获取, -2 幸运",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "xp_gain_mult": 1.05,
-                "luck": -2
-            }
-        },
-        {
-            "item_id": "item_lens_shard",
-            "name": "透镜碎片",
-            "description": "+10% 攻击范围, -3% 攻速",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "bonus_target_range": 32,
-                "attack_speed_mult": 0.97
-            }
-        },
-        {
-            "item_id": "item_bandage_bloody",
-            "name": "带血绷带",
-            "description": "+1% 吸血, -2 护甲",
-            "rarity": "common",
-            "base_price": 28,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "lifesteal": 0.01,
-                "armor": -2
-            }
-        },
-        {
-            "item_id": "item_alchemist_coin",
-            "name": "炼金金币",
-            "description": "+12 收获, -3% 移速",
-            "rarity": "common",
-            "base_price": 28,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "harvest": 12,
-                "player_move_speed": -7
-            }
-        },
-        {
-            "item_id": "item_shield_wood",
-            "name": "木制圆盾",
-            "description": "+5% 闪避, -3% 伤害",
-            "rarity": "common",
-            "base_price": 24,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "dodge_chance": 0.05,
-                "global_attack_percent": -3
-            }
-        },
-        {
-            "item_id": "item_beads_meditation",
-            "name": "冥想念珠",
-            "description": "+2 生命回复, -5% 攻速",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "hp_regen": 2,
-                "attack_speed_mult": 0.95
-            }
-        },
-        {
-            "item_id": "item_potion_strange",
-            "name": "怪味药水",
-            "description": "+10% 伤害, -5 最大生命",
-            "rarity": "common",
-            "base_price": 30,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "global_attack_percent": 10,
-                "max_hp_flat": -5
-            }
-        },
-        {
-            "item_id": "item_bottle_empty",
-            "name": "空酒瓶",
-            "description": "+5% 攻速, +5% 移速, -3 护甲",
-            "rarity": "common",
-            "base_price": 28,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "attack_speed_mult": 1.05,
-                "player_move_speed": 11,
-                "armor": -3
-            }
-        },
-        {
-            "item_id": "item_candle_ritual",
-            "name": "仪式蜡烛",
-            "description": "+5% 暴击率, -2 护甲",
-            "rarity": "common",
-            "base_price": 26,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "crit_chance": 0.05,
-                "armor": -2
-            }
-        },
-        {
-            "item_id": "item_boots_iron",
-            "name": "沉重铁靴",
-            "description": "+5 护甲, -8% 移速",
-            "rarity": "common",
-            "base_price": 25,
-            "price_wave_scale": 1.04,
-            "weight": 1.0,
-            "effects": {
-                "armor": 5,
-                "player_move_speed": -18
-            }
-        },
-        {
-            "item_id": "item_pope_robe",
-            "name": "教皇法袍",
-            "description": "+5 护甲, +10 最大生命, -5% 移速",
-            "rarity": "rare",
-            "base_price": 55,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "armor": 5,
-                "max_hp_flat": 10,
-                "player_move_speed": -11
-            }
-        },
-        {
-            "item_id": "item_magician_poker",
-            "name": "魔术师扑克",
-            "description": "+10% 暴击率, +10% 暴击伤害, -5 最大生命",
-            "rarity": "rare",
-            "base_price": 60,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "crit_chance": 0.10,
-                "crit_multiplier_flat": 0.10,
-                "max_hp_flat": -5
-            }
-        },
-        {
-            "item_id": "item_chariot_wheel",
-            "name": "战车轮毂",
-            "description": "+15% 移速, +15 拾取范围, -2 护甲",
-            "rarity": "rare",
-            "base_price": 50,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "player_move_speed": 33,
-                "pickup_radius": 15,
-                "armor": -2
-            }
-        },
-        {
-            "item_id": "item_priestess_mercy",
-            "name": "女祭司慈悲",
-            "description": "+3% 吸血, +2 生命回复, -5% 伤害",
-            "rarity": "rare",
-            "base_price": 58,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "lifesteal": 0.03,
-                "hp_regen": 2,
-                "global_attack_percent": -5
-            }
-        },
-        {
-            "item_id": "item_hermit_candle",
-            "name": "隐者蜡烛",
-            "description": "+20% 伤害, -10% 攻速",
-            "rarity": "rare",
-            "base_price": 65,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "global_attack_percent": 20,
-                "attack_speed_mult": 0.90
-            }
-        },
-        {
-            "item_id": "item_piggy_bank",
-            "name": "储蓄罐",
-            "description": "+20 每波利息(以收获体现), -5% 伤害",
-            "rarity": "rare",
-            "base_price": 45,
-            "price_wave_scale": 1.06,
-            "weight": 0.9,
-            "effects": {
-                "harvest": 20,
-                "global_attack_percent": -5
-            }
-        },
-        {
-            "item_id": "item_merchant_scale",
-            "name": "商人的天平",
-            "description": "+25 收获, -10% 伤害",
-            "rarity": "rare",
-            "base_price": 48,
-            "price_wave_scale": 1.06,
-            "weight": 0.9,
-            "effects": {
-                "harvest": 25,
-                "global_attack_percent": -10
-            }
-        },
-        {
-            "item_id": "item_revenge_arrow",
-            "name": "复仇之箭",
-            "description": "+5 远程伤害, -5% 闪避",
-            "rarity": "rare",
-            "base_price": 52,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "ranged_damage_flat": 5,
-                "dodge_chance": -0.05
-            }
-        },
-        {
-            "item_id": "item_cursed_eye",
-            "name": "诅咒之眼",
-            "description": "+15% 伤害, +10% 攻速, -20 幸运",
-            "rarity": "rare",
-            "base_price": 70,
-            "price_wave_scale": 1.06,
-            "weight": 0.7,
-            "effects": {
-                "global_attack_percent": 15,
-                "attack_speed_mult": 1.10,
-                "luck": -20
-            }
-        },
-        {
-            "item_id": "item_star_dust",
-            "name": "星辰之尘",
-            "description": "+20% 经验获取, +10 幸运, -5% 伤害",
-            "rarity": "rare",
-            "base_price": 60,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "xp_gain_mult": 1.20,
-                "luck": 10,
-                "global_attack_percent": -5
-            }
-        },
-        {
-            "item_id": "item_stake_tough",
-            "name": "坚韧木桩",
-            "description": "+20 最大生命, -5% 移速",
-            "rarity": "rare",
-            "base_price": 55,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "max_hp_flat": 20,
-                "player_move_speed": -11
-            }
-        },
-        {
-            "item_id": "item_razor_sharp",
-            "name": "锋利剃刀",
-            "description": "+8 近战伤害, +8% 攻速, -5 护甲",
-            "rarity": "rare",
-            "base_price": 62,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "melee_damage_flat": 8,
-                "attack_speed_mult": 1.08,
-                "armor": -5
-            }
-        },
-        {
-            "item_id": "item_telescope",
-            "name": "望远镜",
-            "description": "+25% 攻击范围, +5 远程伤害, -5% 闪避",
-            "rarity": "rare",
-            "base_price": 58,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "bonus_target_range": 80,
-                "ranged_damage_flat": 5,
-                "dodge_chance": -0.05
-            }
-        },
-        {
-            "item_id": "item_watch_magnetic",
-            "name": "磁力怀表",
-            "description": "+100 拾取范围, -8% 伤害",
-            "rarity": "rare",
-            "base_price": 50,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "pickup_radius": 100,
-                "global_attack_percent": -8
-            }
-        },
-        {
-            "item_id": "item_crown_thorn",
-            "name": "荆棘王冠",
-            "description": "+15% 伤害, -15 最大生命",
-            "rarity": "rare",
-            "base_price": 60,
-            "price_wave_scale": 1.06,
-            "weight": 0.8,
-            "effects": {
-                "global_attack_percent": 15,
-                "max_hp_flat": -15
-            }
-        },
-        {
-            "item_id": "item_death_scythe",
-            "name": "死神权能",
-            "description": "+15% 暴击率, -10 生命回复",
-            "rarity": "epic",
-            "base_price": 110,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "crit_chance": 0.15,
-                "hp_regen": -10
-            }
-        },
-        {
-            "item_id": "item_wheel_fortune",
-            "name": "命运之轮",
-            "description": "+30 幸运, -10 护甲",
-            "rarity": "epic",
-            "base_price": 100,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "luck": 30,
-                "armor": -10
-            }
-        },
-        {
-            "item_id": "item_inquisitor_chain",
-            "name": "审判官锁链",
-            "description": "+20% 伤害, -10% 攻速",
-            "rarity": "epic",
-            "base_price": 115,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "global_attack_percent": 20,
-                "attack_speed_mult": 0.90
-            }
-        },
-        {
-            "item_id": "item_temperance_sacrament",
-            "name": "节制圣餐",
-            "description": "+5 生命回复, -35% 移速",
-            "rarity": "epic",
-            "base_price": 105,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "hp_regen": 5,
-                "player_move_speed": -77
-            }
-        },
-        {
-            "item_id": "item_demon_contract",
-            "name": "恶魔契约",
-            "description": "+50% 伤害, +20 收获",
-            "rarity": "epic",
-            "base_price": 130,
-            "price_wave_scale": 1.08,
-            "weight": 0.4,
-            "effects": {
-                "global_attack_percent": 50,
-                "harvest": 20
-            }
-        },
-        {
-            "item_id": "item_alchemist_crucible",
-            "name": "炼金坩埚",
-            "description": "+15% 金币收益, +5 伤害, -10 护甲",
-            "rarity": "epic",
-            "base_price": 120,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "gold_gain_multiplier": 1.15,
-                "attack_damage_flat": 5,
-                "armor": -10
-            }
-        },
-        {
-            "item_id": "item_moon_veil",
-            "name": "月之纱幔",
-            "description": "+20% 闪避, -10 最大生命",
-            "rarity": "epic",
-            "base_price": 115,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "dodge_chance": 0.20,
-                "max_hp_flat": -10
-            }
-        },
-        {
-            "item_id": "item_justice_guillotine",
-            "name": "正义断头台",
-            "description": "+25% 伤害, -5 护甲",
-            "rarity": "epic",
-            "base_price": 120,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "global_attack_percent": 25,
-                "armor": -5
-            }
-        },
-        {
-            "item_id": "item_world_tree_sapling",
-            "name": "世界树幼苗",
-            "description": "+100 最大生命, -30% 伤害",
-            "rarity": "epic",
-            "base_price": 140,
-            "price_wave_scale": 1.08,
-            "weight": 0.4,
-            "effects": {
-                "max_hp_flat": 100,
-                "global_attack_percent": -30
-            }
-        },
-        {
-            "item_id": "item_glutton_greed",
-            "name": "暴食者贪婪",
-            "description": "+20 收获, -10% 闪避",
-            "rarity": "epic",
-            "base_price": 100,
-            "price_wave_scale": 1.08,
-            "weight": 0.5,
-            "effects": {
-                "harvest": 20,
-                "dodge_chance": -0.10
-            }
-        },
-        {
-            "item_id": "item_emperor_throne",
-            "name": "皇帝至尊宝座",
-            "description": "+40% 伤害, +40% 攻速, -25% 移速",
-            "rarity": "legendary",
-            "base_price": 220,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "global_attack_percent": 40,
-                "attack_speed_mult": 1.40,
-                "player_move_speed": -55
-            }
-        },
-        {
-            "item_id": "item_astronomy_orb",
-            "name": "全知星象仪",
-            "description": "+25 幸运, +25 收获, +25% 经验",
-            "rarity": "legendary",
-            "base_price": 200,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "luck": 25,
-                "harvest": 25,
-                "xp_gain_mult": 1.25
-            }
-        },
-        {
-            "item_id": "item_fool_pocket",
-            "name": "愚者万能口袋",
-            "description": "+20% 攻速, +20% 金币收益",
-            "rarity": "legendary",
-            "base_price": 210,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "attack_speed_mult": 1.20,
-                "gold_gain_multiplier": 1.20
-            }
-        },
-        {
-            "item_id": "item_star_source",
-            "name": "星辰之源",
-            "description": "+15% 经验, +15 幸运",
-            "rarity": "legendary",
-            "base_price": 180,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "xp_gain_mult": 1.15,
-                "luck": 15
-            }
-        },
-        {
-            "item_id": "item_world_omni",
-            "name": "世界·全知全能",
-            "description": "+20 生命, +10 护甲, +10% 闪避, +10% 暴击, +10 幸运, +10 收获",
-            "rarity": "legendary",
-            "base_price": 250,
-            "price_wave_scale": 1.10,
-            "weight": 0.2,
-            "effects": {
-                "max_hp_flat": 20,
-                "armor": 10,
-                "dodge_chance": 0.10,
-                "crit_chance": 0.10,
-                "luck": 10,
-                "harvest": 10
-            }
-        }
+  "shop_rules": {
+    "offers_per_wave": 4,
+    "weapon_chance": 0.55,
+    "refresh_base_cost": 20,
+    "refresh_cost_step": 12,
+    "item_rarity_weights": {
+      "common": 0.48,
+      "rare": 0.34,
+      "epic": 0.14,
+      "legendary": 0.04
+    }
+  },
+  "merge_rules": {
+    "rule": "2_to_1_same_weapon_same_rarity",
+    "rarity_order": [
+      "common",
+      "rare",
+      "epic",
+      "legendary"
+    ]
+  },
+  "item_pool": [
+    {
+      "item_id": "item_bible_old",
+      "name": "破旧圣典",
+      "description": "护甲 +2，移动速度 -9",
+      "rarity": "common",
+      "base_price": 26,
+      "price_wave_scale": 1.04,
+      "weight": 1.05,
+      "effects": {
+        "armor": 2,
+        "player_move_speed": -9
+      }
+    },
+    {
+      "item_id": "item_dagger_rusty",
+      "name": "生锈匕首",
+      "description": "攻击速度 +5%，最大生命 -3",
+      "rarity": "common",
+      "base_price": 25,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "attack_speed_mult": 1.05,
+        "max_hp_flat": -3
+      }
+    },
+    {
+      "item_id": "item_lantern_apprentice",
+      "name": "学徒提灯",
+      "description": "拾取范围 +24，幸运 -2",
+      "rarity": "common",
+      "base_price": 23,
+      "price_wave_scale": 1.04,
+      "weight": 1.05,
+      "effects": {
+        "pickup_radius": 24,
+        "luck": -2
+      }
+    },
+    {
+      "item_id": "item_herb_dry",
+      "name": "干燥草药",
+      "description": "生命回复 +1，伤害 -3%",
+      "rarity": "common",
+      "base_price": 25,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "hp_regen": 1,
+        "global_attack_percent": -3
+      }
+    },
+    {
+      "item_id": "item_mirror_crude",
+      "name": "粗制护心镜",
+      "description": "护甲 +2，闪避 -1%",
+      "rarity": "common",
+      "base_price": 24,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "armor": 2,
+        "dodge_chance": -0.01
+      }
+    },
+    {
+      "item_id": "item_bullet_lead",
+      "name": "铅制弹丸",
+      "description": "远程伤害 +2，攻击速度 -2%",
+      "rarity": "common",
+      "base_price": 26,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "ranged_damage_flat": 2,
+        "attack_speed_mult": 0.98
+      }
+    },
+    {
+      "item_id": "item_whetstone_heavy",
+      "name": "沉重磨刀石",
+      "description": "近战伤害 +2，攻击速度 -2%",
+      "rarity": "common",
+      "base_price": 26,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "melee_damage_flat": 2,
+        "attack_speed_mult": 0.98
+      }
+    },
+    {
+      "item_id": "item_coin_broken",
+      "name": "破损古币",
+      "description": "收获 +7，闪避 -2%",
+      "rarity": "common",
+      "base_price": 22,
+      "price_wave_scale": 1.04,
+      "weight": 1.05,
+      "effects": {
+        "harvest": 7,
+        "dodge_chance": -0.02
+      }
+    },
+    {
+      "item_id": "item_rabbit_foot",
+      "name": "幸运兔脚",
+      "description": "幸运 +8，最大生命 -3",
+      "rarity": "common",
+      "base_price": 23,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "luck": 8,
+        "max_hp_flat": -3
+      }
+    },
+    {
+      "item_id": "item_feather_light",
+      "name": "轻快羽毛",
+      "description": "移动速度 +11，护甲 -1",
+      "rarity": "common",
+      "base_price": 24,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "player_move_speed": 11,
+        "armor": -1
+      }
+    },
+    {
+      "item_id": "item_tarot_fragment",
+      "name": "塔罗残页",
+      "description": "经验获取 +5%，幸运 -2",
+      "rarity": "common",
+      "base_price": 25,
+      "price_wave_scale": 1.04,
+      "weight": 0.95,
+      "effects": {
+        "xp_gain_mult": 1.05,
+        "luck": -2
+      }
+    },
+    {
+      "item_id": "item_lens_shard",
+      "name": "透镜碎片",
+      "description": "索敌范围 +28，攻击速度 -3%",
+      "rarity": "common",
+      "base_price": 24,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "bonus_target_range": 28,
+        "attack_speed_mult": 0.97
+      }
+    },
+    {
+      "item_id": "item_bandage_bloody",
+      "name": "带血绷带",
+      "description": "吸血 +1%，护甲 -1",
+      "rarity": "common",
+      "base_price": 28,
+      "price_wave_scale": 1.04,
+      "weight": 0.9,
+      "effects": {
+        "lifesteal": 0.01,
+        "armor": -1
+      }
+    },
+    {
+      "item_id": "item_alchemist_coin",
+      "name": "炼金金币",
+      "description": "收获 +10，移动速度 -7",
+      "rarity": "common",
+      "base_price": 28,
+      "price_wave_scale": 1.04,
+      "weight": 0.95,
+      "effects": {
+        "harvest": 10,
+        "player_move_speed": -7
+      }
+    },
+    {
+      "item_id": "item_shield_wood",
+      "name": "木制圆盾",
+      "description": "闪避 +4%，伤害 -3%",
+      "rarity": "common",
+      "base_price": 24,
+      "price_wave_scale": 1.04,
+      "weight": 1,
+      "effects": {
+        "dodge_chance": 0.04,
+        "global_attack_percent": -3
+      }
+    },
+    {
+      "item_id": "item_beads_meditation",
+      "name": "冥想念珠",
+      "description": "生命回复 +1，攻击速度 -4%",
+      "rarity": "common",
+      "base_price": 26,
+      "price_wave_scale": 1.04,
+      "weight": 0.95,
+      "effects": {
+        "hp_regen": 1,
+        "attack_speed_mult": 0.96
+      }
+    },
+    {
+      "item_id": "item_potion_strange",
+      "name": "怪味药水",
+      "description": "伤害 +8%，最大生命 -5",
+      "rarity": "common",
+      "base_price": 30,
+      "price_wave_scale": 1.04,
+      "weight": 0.9,
+      "effects": {
+        "global_attack_percent": 8,
+        "max_hp_flat": -5
+      }
+    },
+    {
+      "item_id": "item_bottle_empty",
+      "name": "空酒瓶",
+      "description": "攻击速度 +5%，移动速度 +9，护甲 -3",
+      "rarity": "common",
+      "base_price": 30,
+      "price_wave_scale": 1.04,
+      "weight": 0.85,
+      "effects": {
+        "attack_speed_mult": 1.05,
+        "player_move_speed": 9,
+        "armor": -3
+      }
+    },
+    {
+      "item_id": "item_candle_ritual",
+      "name": "仪式蜡烛",
+      "description": "暴击率 +4%，护甲 -2",
+      "rarity": "common",
+      "base_price": 27,
+      "price_wave_scale": 1.04,
+      "weight": 0.95,
+      "effects": {
+        "crit_chance": 0.04,
+        "armor": -2
+      }
+    },
+    {
+      "item_id": "item_boots_iron",
+      "name": "沉重铁靴",
+      "description": "护甲 +4，移动速度 -15",
+      "rarity": "common",
+      "base_price": 28,
+      "price_wave_scale": 1.04,
+      "weight": 0.85,
+      "effects": {
+        "armor": 4,
+        "player_move_speed": -15
+      }
+    },
+    {
+      "item_id": "item_pope_robe",
+      "name": "教皇法袍",
+      "description": "护甲 +4，最大生命 +8，移动速度 -11",
+      "rarity": "rare",
+      "base_price": 58,
+      "price_wave_scale": 1.06,
+      "weight": 0.78,
+      "effects": {
+        "armor": 4,
+        "max_hp_flat": 8,
+        "player_move_speed": -11
+      }
+    },
+    {
+      "item_id": "item_magician_poker",
+      "name": "魔术师扑克牌",
+      "description": "暴击率 +8%，暴击转化 +0.10，最大生命 -5",
+      "rarity": "rare",
+      "base_price": 62,
+      "price_wave_scale": 1.06,
+      "weight": 0.75,
+      "effects": {
+        "crit_chance": 0.08,
+        "crit_multiplier_flat": 0.1,
+        "max_hp_flat": -5
+      }
+    },
+    {
+      "item_id": "item_chariot_wheel",
+      "name": "战车轮毂",
+      "description": "移动速度 +26，拾取范围 +18，护甲 -2",
+      "rarity": "rare",
+      "base_price": 52,
+      "price_wave_scale": 1.06,
+      "weight": 0.8,
+      "effects": {
+        "player_move_speed": 26,
+        "pickup_radius": 18,
+        "armor": -2
+      }
+    },
+    {
+      "item_id": "item_priestess_mercy",
+      "name": "女祭司慈悲",
+      "description": "吸血 +2%，生命回复 +2，伤害 -5%",
+      "rarity": "rare",
+      "base_price": 60,
+      "price_wave_scale": 1.06,
+      "weight": 0.75,
+      "effects": {
+        "lifesteal": 0.02,
+        "hp_regen": 2,
+        "global_attack_percent": -5
+      }
+    },
+    {
+      "item_id": "item_hermit_candle",
+      "name": "隐者蜡灯",
+      "description": "伤害 +16%，攻击速度 -8%",
+      "rarity": "rare",
+      "base_price": 66,
+      "price_wave_scale": 1.06,
+      "weight": 0.75,
+      "effects": {
+        "global_attack_percent": 16,
+        "attack_speed_mult": 0.92
+      }
+    },
+    {
+      "item_id": "item_piggy_bank",
+      "name": "储蓄罐",
+      "description": "收获 +16，伤害 -5%",
+      "rarity": "rare",
+      "base_price": 50,
+      "price_wave_scale": 1.06,
+      "weight": 0.82,
+      "effects": {
+        "harvest": 16,
+        "global_attack_percent": -5
+      }
+    },
+    {
+      "item_id": "item_merchant_scale",
+      "name": "商人的天平",
+      "description": "收获 +20，伤害 -8%",
+      "rarity": "rare",
+      "base_price": 54,
+      "price_wave_scale": 1.06,
+      "weight": 0.78,
+      "effects": {
+        "harvest": 20,
+        "global_attack_percent": -8
+      }
+    },
+    {
+      "item_id": "item_revenge_arrow",
+      "name": "复仇之箭",
+      "description": "远程伤害 +5，闪避 -4%",
+      "rarity": "rare",
+      "base_price": 54,
+      "price_wave_scale": 1.06,
+      "weight": 0.78,
+      "effects": {
+        "ranged_damage_flat": 5,
+        "dodge_chance": -0.04
+      }
+    },
+    {
+      "item_id": "item_cursed_eye",
+      "name": "诅咒之眼",
+      "description": "伤害 +14%，攻击速度 +8%，幸运 -18",
+      "rarity": "rare",
+      "base_price": 72,
+      "price_wave_scale": 1.06,
+      "weight": 0.62,
+      "effects": {
+        "global_attack_percent": 14,
+        "attack_speed_mult": 1.08,
+        "luck": -18
+      }
+    },
+    {
+      "item_id": "item_star_dust",
+      "name": "星尘",
+      "description": "经验获取 +15%，幸运 +8，伤害 -6%",
+      "rarity": "rare",
+      "base_price": 62,
+      "price_wave_scale": 1.06,
+      "weight": 0.72,
+      "effects": {
+        "xp_gain_mult": 1.15,
+        "luck": 8,
+        "global_attack_percent": -6
+      }
+    },
+    {
+      "item_id": "item_stake_tough",
+      "name": "坚韧木桩",
+      "description": "最大生命 +16，移动速度 -11",
+      "rarity": "rare",
+      "base_price": 56,
+      "price_wave_scale": 1.06,
+      "weight": 0.8,
+      "effects": {
+        "max_hp_flat": 16,
+        "player_move_speed": -11
+      }
+    },
+    {
+      "item_id": "item_razor_sharp",
+      "name": "锋利剃刀",
+      "description": "近战伤害 +6，攻击速度 +6%，护甲 -4",
+      "rarity": "rare",
+      "base_price": 64,
+      "price_wave_scale": 1.06,
+      "weight": 0.74,
+      "effects": {
+        "melee_damage_flat": 6,
+        "attack_speed_mult": 1.06,
+        "armor": -4
+      }
+    },
+    {
+      "item_id": "item_telescope",
+      "name": "望远镜",
+      "description": "索敌范围 +65，远程伤害 +4，闪避 -4%",
+      "rarity": "rare",
+      "base_price": 60,
+      "price_wave_scale": 1.06,
+      "weight": 0.75,
+      "effects": {
+        "bonus_target_range": 65,
+        "ranged_damage_flat": 4,
+        "dodge_chance": -0.04
+      }
+    },
+    {
+      "item_id": "item_watch_magnetic",
+      "name": "磁力怀表",
+      "description": "拾取范围 +80，伤害 -7%",
+      "rarity": "rare",
+      "base_price": 54,
+      "price_wave_scale": 1.06,
+      "weight": 0.76,
+      "effects": {
+        "pickup_radius": 80,
+        "global_attack_percent": -7
+      }
+    },
+    {
+      "item_id": "item_crown_thorn",
+      "name": "荆棘王冠",
+      "description": "伤害 +14%，最大生命 -12",
+      "rarity": "rare",
+      "base_price": 62,
+      "price_wave_scale": 1.06,
+      "weight": 0.72,
+      "effects": {
+        "global_attack_percent": 14,
+        "max_hp_flat": -12
+      }
+    },
+    {
+      "item_id": "item_death_scythe",
+      "name": "死神权能",
+      "description": "暴击率 +12%，生命回复 -5",
+      "rarity": "epic",
+      "base_price": 108,
+      "price_wave_scale": 1.08,
+      "weight": 0.48,
+      "effects": {
+        "crit_chance": 0.12,
+        "hp_regen": -5
+      }
+    },
+    {
+      "item_id": "item_wheel_fortune",
+      "name": "命运之轮",
+      "description": "幸运 +24，护甲 -6",
+      "rarity": "epic",
+      "base_price": 104,
+      "price_wave_scale": 1.08,
+      "weight": 0.48,
+      "effects": {
+        "luck": 24,
+        "armor": -6
+      }
+    },
+    {
+      "item_id": "item_inquisitor_chain",
+      "name": "审判官锁链",
+      "description": "伤害 +22%，攻击速度 -8%",
+      "rarity": "epic",
+      "base_price": 116,
+      "price_wave_scale": 1.08,
+      "weight": 0.46,
+      "effects": {
+        "global_attack_percent": 22,
+        "attack_speed_mult": 0.92
+      }
+    },
+    {
+      "item_id": "item_temperance_sacrament",
+      "name": "节制圣餐",
+      "description": "生命回复 +5，移动速度 -31",
+      "rarity": "epic",
+      "base_price": 108,
+      "price_wave_scale": 1.08,
+      "weight": 0.48,
+      "effects": {
+        "hp_regen": 5,
+        "player_move_speed": -31
+      }
+    },
+    {
+      "item_id": "item_demon_contract",
+      "name": "恶魔契约",
+      "description": "伤害 +32%，收获 +16，最大生命 -18",
+      "rarity": "epic",
+      "base_price": 132,
+      "price_wave_scale": 1.08,
+      "weight": 0.38,
+      "effects": {
+        "global_attack_percent": 32,
+        "harvest": 16,
+        "max_hp_flat": -18
+      }
+    },
+    {
+      "item_id": "item_alchemist_crucible",
+      "name": "炼金坩埚",
+      "description": "金币收益 +15%，攻击 +4，护甲 -6",
+      "rarity": "epic",
+      "base_price": 122,
+      "price_wave_scale": 1.08,
+      "weight": 0.45,
+      "effects": {
+        "gold_gain_multiplier": 1.15,
+        "attack_damage_flat": 4,
+        "armor": -6
+      }
+    },
+    {
+      "item_id": "item_moon_veil",
+      "name": "月之纱帘",
+      "description": "闪避 +14%，最大生命 -10",
+      "rarity": "epic",
+      "base_price": 112,
+      "price_wave_scale": 1.08,
+      "weight": 0.46,
+      "effects": {
+        "dodge_chance": 0.14,
+        "max_hp_flat": -10
+      }
+    },
+    {
+      "item_id": "item_justice_guillotine",
+      "name": "正义断头台",
+      "description": "伤害 +24%，护甲 -5",
+      "rarity": "epic",
+      "base_price": 120,
+      "price_wave_scale": 1.08,
+      "weight": 0.45,
+      "effects": {
+        "global_attack_percent": 24,
+        "armor": -5
+      }
+    },
+    {
+      "item_id": "item_world_tree_sapling",
+      "name": "世界树幼苗",
+      "description": "最大生命 +38，伤害 -18%",
+      "rarity": "epic",
+      "base_price": 136,
+      "price_wave_scale": 1.08,
+      "weight": 0.38,
+      "effects": {
+        "max_hp_flat": 38,
+        "global_attack_percent": -18
+      }
+    },
+    {
+      "item_id": "item_glutton_greed",
+      "name": "暴食贪念",
+      "description": "收获 +18，闪避 -8%",
+      "rarity": "epic",
+      "base_price": 102,
+      "price_wave_scale": 1.08,
+      "weight": 0.45,
+      "effects": {
+        "harvest": 18,
+        "dodge_chance": -0.08
+      }
+    },
+    {
+      "item_id": "item_emperor_throne",
+      "name": "皇帝御座",
+      "description": "伤害 +26%，攻击速度 +18%，移动速度 -40",
+      "rarity": "legendary",
+      "base_price": 230,
+      "price_wave_scale": 1.1,
+      "weight": 0.18,
+      "effects": {
+        "global_attack_percent": 26,
+        "attack_speed_mult": 1.18,
+        "player_move_speed": -40
+      }
+    },
+    {
+      "item_id": "item_astronomy_orb",
+      "name": "星象宝珠",
+      "description": "幸运 +20，收获 +18，经验获取 +12%",
+      "rarity": "legendary",
+      "base_price": 205,
+      "price_wave_scale": 1.1,
+      "weight": 0.2,
+      "effects": {
+        "luck": 20,
+        "harvest": 18,
+        "xp_gain_mult": 1.12
+      }
+    },
+    {
+      "item_id": "item_fool_pocket",
+      "name": "愚者口袋",
+      "description": "攻击速度 +14%，金币收益 +15%，护甲 -4",
+      "rarity": "legendary",
+      "base_price": 215,
+      "price_wave_scale": 1.1,
+      "weight": 0.18,
+      "effects": {
+        "attack_speed_mult": 1.14,
+        "gold_gain_multiplier": 1.15,
+        "armor": -4
+      }
+    },
+    {
+      "item_id": "item_star_source",
+      "name": "星辰源泉",
+      "description": "经验获取 +12%，幸运 +14，生命回复 +2",
+      "rarity": "legendary",
+      "base_price": 185,
+      "price_wave_scale": 1.1,
+      "weight": 0.22,
+      "effects": {
+        "xp_gain_mult": 1.12,
+        "luck": 14,
+        "hp_regen": 2
+      }
+    },
+    {
+      "item_id": "item_world_omni",
+      "name": "世界全仪",
+      "description": "最大生命 +12，护甲 +5，闪避 +5%，暴击率 +5%，幸运 +8，收获 +8",
+      "rarity": "legendary",
+      "base_price": 240,
+      "price_wave_scale": 1.1,
+      "weight": 0.16,
+      "effects": {
+        "max_hp_flat": 12,
+        "armor": 5,
+        "dodge_chance": 0.05,
+        "crit_chance": 0.05,
+        "luck": 8,
+        "harvest": 8
+      }
+    }
+  ],
+  "weapon_pool": [
+    {
+      "weapon_id": "kunai",
+      "name": "Kunai",
+      "description": "Fast melee thrust weapon with quick close-range pressure.",
+      "starter": true,
+      "tags": [
+        "melee",
+        "fast"
+      ],
+      "base_price": 44,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "kunai",
+      "level": 1,
+      "attack_profile": {
+        "mode": "melee_arc",
+        "base_damage": 10,
+        "interval": 0.36,
+        "range": 95
+      },
+      "effects": {
+        "bonus_attack_damage": 0
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "eagle_eye",
+        "rapid"
+      ]
+    },
+    {
+      "weapon_id": "road_sign",
+      "name": "Road Sign",
+      "description": "Slow heavy melee weapon with steady strike coverage.",
+      "starter": true,
+      "tags": [
+        "melee",
+        "heavy"
+      ],
+      "base_price": 58,
+      "price_wave_scale": 1.07,
+      "weight": 0.9,
+      "stack_key": "road_sign",
+      "level": 1,
+      "attack_profile": {
+        "mode": "melee_arc",
+        "base_damage": 16,
+        "interval": 0.68,
+        "range": 105
+      },
+      "effects": {
+        "bonus_attack_damage": 1
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "bulwark",
+        "berserker"
+      ]
+    },
+    {
+      "weapon_id": "nail_gun",
+      "name": "Nail Gun",
+      "description": "Mid-range homing ranged weapon with a quick tempo.",
+      "starter": true,
+      "tags": [
+        "ranged",
+        "rapid"
+      ],
+      "base_price": 50,
+      "price_wave_scale": 1.06,
+      "weight": 0.95,
+      "stack_key": "nail_gun",
+      "level": 1,
+      "attack_profile": {
+        "mode": "ranged_homing",
+        "base_damage": 9,
+        "interval": 0.36,
+        "range": 360,
+        "projectile_speed": 600,
+        "projectile_radius": 4
+      },
+      "effects": {
+        "bonus_attack_damage": 0,
+        "bonus_target_range": 8
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "rapid",
+        "eagle_eye"
+      ]
+    },
+    {
+      "weapon_id": "chain_whip",
+      "name": "Chain Whip",
+      "description": "Wide melee sweep weapon for crowd control.",
+      "starter": true,
+      "tags": [
+        "melee",
+        "control"
+      ],
+      "base_price": 46,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "chain_whip",
+      "level": 1,
+      "attack_profile": {
+        "mode": "melee_arc",
+        "base_damage": 12,
+        "interval": 0.44,
+        "range": 115
+      },
+      "effects": {
+        "bonus_attack_damage": 0
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "raider",
+        "rapid"
+      ]
+    },
+    {
+      "weapon_id": "circular_saw",
+      "name": "Circular Saw",
+      "description": "Heavy ranged projectile weapon with high single-hit damage.",
+      "starter": true,
+      "tags": [
+        "ranged",
+        "heavy"
+      ],
+      "base_price": 60,
+      "price_wave_scale": 1.07,
+      "weight": 1,
+      "stack_key": "circular_saw",
+      "level": 1,
+      "attack_profile": {
+        "mode": "ranged_heavy",
+        "base_damage": 18,
+        "interval": 0.7,
+        "range": 420,
+        "projectile_speed": 720,
+        "projectile_radius": 6
+      },
+      "effects": {
+        "bonus_attack_damage": 1
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "berserker",
+        "raider"
+      ]
+    },
+    {
+      "weapon_id": "flare_launcher",
+      "name": "Flare Launcher",
+      "description": "Homing ranged launcher for burst pressure.",
+      "starter": true,
+      "tags": [
+        "ranged",
+        "burst"
+      ],
+      "base_price": 52,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "flare_launcher",
+      "level": 1,
+      "attack_profile": {
+        "mode": "ranged_homing",
+        "base_damage": 11,
+        "interval": 0.42,
+        "range": 350,
+        "projectile_speed": 580,
+        "projectile_radius": 5
+      },
+      "effects": {
+        "bonus_attack_damage": 0
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "eagle_eye",
+        "raider"
+      ]
+    },
+    {
+      "weapon_id": "traffic_cone",
+      "name": "Traffic Cone",
+      "description": "Heavy ranged projectile weapon with slow, steady pressure.",
+      "starter": true,
+      "tags": [
+        "ranged",
+        "heavy"
+      ],
+      "base_price": 56,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "traffic_cone",
+      "level": 1,
+      "attack_profile": {
+        "mode": "ranged_heavy",
+        "base_damage": 16,
+        "interval": 0.62,
+        "range": 390,
+        "projectile_speed": 700,
+        "projectile_radius": 6
+      },
+      "effects": {
+        "bonus_attack_damage": 1
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "bulwark",
+        "sustain"
+      ]
+    },
+    {
+      "weapon_id": "heavy_wrench",
+      "name": "Heavy Wrench",
+      "description": "Reliable close-range heavy strikes.",
+      "starter": true,
+      "tags": [
+        "melee",
+        "heavy"
+      ],
+      "base_price": 55,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "heavy_wrench",
+      "level": 1,
+      "attack_profile": {
+        "mode": "melee_arc",
+        "base_damage": 15,
+        "interval": 0.64,
+        "range": 102
+      },
+      "effects": {
+        "bonus_attack_damage": 1
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "berserker",
+        "bulwark"
+      ]
+    },
+    {
+      "weapon_id": "molotov",
+      "name": "Molotov",
+      "description": "Thrown in an arc, then explodes at the landing point for area damage.",
+      "starter": true,
+      "tags": [
+        "ranged",
+        "burst"
+      ],
+      "base_price": 51,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "molotov",
+      "level": 1,
+      "attack_profile": {
+        "mode": "ranged_lob_aoe",
+        "base_damage": 11,
+        "interval": 1.15,
+        "range": 360,
+        "projectile_speed": 560,
+        "projectile_radius": 6,
+        "aoe_radius": 72,
+        "flight_time": 0.55,
+        "arc_height": 80
+      },
+      "effects": {
+        "bonus_attack_damage": 0
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "raider",
+        "sustain"
+      ]
+    },
+    {
+      "weapon_id": "shuriken_ring",
+      "name": "Shuriken Ring",
+      "description": "Mid-range homing weapon with quick repeated hits.",
+      "starter": true,
+      "tags": [
+        "ranged",
+        "multi_hit"
+      ],
+      "base_price": 49,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "shuriken_ring",
+      "level": 1,
+      "attack_profile": {
+        "mode": "ranged_homing",
+        "base_damage": 9,
+        "interval": 0.34,
+        "range": 330,
+        "projectile_speed": 590,
+        "projectile_radius": 4
+      },
+      "effects": {
+        "bonus_attack_damage": 0
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "rapid",
+        "eagle_eye"
+      ]
+    },
+    {
+      "weapon_id": "steel_pipe",
+      "name": "Steel Pipe",
+      "description": "Stable early melee sweep weapon.",
+      "starter": true,
+      "tags": [
+        "melee",
+        "basic"
+      ],
+      "base_price": 42,
+      "price_wave_scale": 1.05,
+      "weight": 1,
+      "stack_key": "steel_pipe",
+      "level": 1,
+      "attack_profile": {
+        "mode": "melee_arc",
+        "base_damage": 12,
+        "interval": 0.54,
+        "range": 100
+      },
+      "effects": {
+        "bonus_attack_damage": 0
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "sustain",
+        "bulwark"
+      ]
+    },
+    {
+      "weapon_id": "rebar_spear",
+      "name": "Rebar Spear",
+      "description": "Long-reach linear melee thrust weapon.",
+      "starter": true,
+      "tags": [
+        "melee",
+        "pierce"
+      ],
+      "base_price": 54,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "rebar_spear",
+      "level": 1,
+      "attack_profile": {
+        "mode": "melee_arc",
+        "base_damage": 13,
+        "interval": 0.48,
+        "range": 118
+      },
+      "effects": {
+        "bonus_attack_damage": 1
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "eagle_eye",
+        "berserker"
+      ]
+    },
+    {
+      "weapon_id": "mechanical_crossbow",
+      "name": "Mechanical Crossbow",
+      "description": "Stable homing ranged weapon with good tempo.",
+      "starter": true,
+      "tags": [
+        "ranged",
+        "balanced"
+      ],
+      "base_price": 53,
+      "price_wave_scale": 1.06,
+      "weight": 1,
+      "stack_key": "mechanical_crossbow",
+      "level": 1,
+      "attack_profile": {
+        "mode": "ranged_homing",
+        "base_damage": 11,
+        "interval": 0.42,
+        "range": 380,
+        "projectile_speed": 650,
+        "projectile_radius": 4
+      },
+      "effects": {
+        "bonus_attack_damage": 0,
+        "bonus_target_range": 10
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "eagle_eye",
+        "rapid"
+      ]
+    },
+    {
+      "weapon_id": "meteor_hammer",
+      "name": "Meteor Hammer",
+      "description": "Slow high-damage heavy melee weapon with wide clear windows.",
+      "starter": true,
+      "tags": [
+        "melee",
+        "heavy"
+      ],
+      "base_price": 59,
+      "price_wave_scale": 1.07,
+      "weight": 1,
+      "stack_key": "meteor_hammer",
+      "level": 1,
+      "attack_profile": {
+        "mode": "melee_arc",
+        "base_damage": 18,
+        "interval": 0.72,
+        "range": 112
+      },
+      "effects": {
+        "bonus_attack_damage": 1
+      },
+      "rarity_weights": {
+        "common": 82,
+        "rare": 15,
+        "epic": 3
+      },
+      "build_tags": [
+        "berserker",
+        "sustain"
+      ]
+    }
+  ],
+  "weapon_tag_bonus_rules": {
+    "enabled": true,
+    "max_stack_per_tag": 6,
+    "tier_steps": [
+      2,
+      3,
+      4,
+      5,
+      6
     ],
-    "weapon_pool":  [
-                        {
-                            "weapon_id":  "kunai",
-                            "name":  "Kunai",
-                            "description":  "High-speed throw weapon with precise chaining.",
-                            "starter":  true,
-                            "tags":  [
-                                         "melee",
-                                         "fast"
-                                     ],
-                            "base_price":  44,
-                            "price_wave_scale":  1.06,
-                            "weight":  1,
-                            "stack_key":  "kunai",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "melee_arc",
-                                                   "base_damage":  10,
-                                                   "interval":  0.36,
-                                                   "range":  95
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  94,
-                                                   "rare":  6
-                                               },
-                            "build_tags":  [
-                                               "eagle_eye",
-                                               "rapid"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "road_sign",
-                            "name":  "Road Sign",
-                            "description":  "Slow heavy swing weapon with strong control.",
-                            "starter":  true,
-                            "tags":  [
-                                         "melee",
-                                         "heavy"
-                                     ],
-                            "base_price":  58,
-                            "price_wave_scale":  1.07,
-                            "weight":  0.9,
-                            "stack_key":  "road_sign",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "melee_arc",
-                                                   "base_damage":  16,
-                                                   "interval":  0.68,
-                                                   "range":  105
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  1
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  88,
-                                                   "rare":  10,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "bulwark",
-                                               "berserker"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "nail_gun",
-                            "name":  "Nail Gun",
-                            "description":  "Mid-range rapid-fire weapon.",
-                            "starter":  true,
-                            "tags":  [
-                                         "ranged",
-                                         "rapid"
-                                     ],
-                            "base_price":  50,
-                            "price_wave_scale":  1.06,
-                            "weight":  0.95,
-                            "stack_key":  "nail_gun",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "ranged_homing",
-                                                   "base_damage":  9,
-                                                   "interval":  0.36,
-                                                   "range":  360,
-                                                   "projectile_speed":  600,
-                                                   "projectile_radius":  4
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0,
-                                            "bonus_target_range":  8
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  90,
-                                                   "rare":  8,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "rapid",
-                                               "eagle_eye"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "chain_whip",
-                            "name":  "Chain Whip",
-                            "description":  "Sweeping attacks for crowd control.",
-                            "starter":  true,
-                            "tags":  [
-                                         "melee",
-                                         "control"
-                                     ],
-                            "base_price":  46,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "chain_whip",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "melee_arc",
-                                                   "base_damage":  12,
-                                                   "interval":  0.44,
-                                                   "range":  115
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  92,
-                                                   "rare":  8
-                                               },
-                            "build_tags":  [
-                                               "raider",
-                                               "rapid"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "circular_saw",
-                            "name":  "Circular Saw",
-                            "description":  "Heavy projectile with high pierce.",
-                            "starter":  true,
-                            "tags":  [
-                                         "ranged",
-                                         "heavy"
-                                     ],
-                            "base_price":  60,
-                            "price_wave_scale":  1.07,
-                            "weight":  1.0,
-                            "stack_key":  "circular_saw",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "ranged_heavy",
-                                                   "base_damage":  18,
-                                                   "interval":  0.70,
-                                                   "range":  420,
-                                                   "projectile_speed":  720,
-                                                   "projectile_radius":  6
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  1
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  85,
-                                                   "rare":  12,
-                                                   "epic":  3
-                                               },
-                            "build_tags":  [
-                                               "berserker",
-                                               "raider"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "flare_launcher",
-                            "name":  "Flare Launcher",
-                            "description":  "Burst launcher that ignites the battlefield.",
-                            "starter":  true,
-                            "tags":  [
-                                         "ranged",
-                                         "burst"
-                                     ],
-                            "base_price":  52,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "flare_launcher",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "ranged_homing",
-                                                   "base_damage":  11,
-                                                   "interval":  0.42,
-                                                   "range":  350,
-                                                   "projectile_speed":  580,
-                                                   "projectile_radius":  5
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  90,
-                                                   "rare":  8,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "eagle_eye",
-                                               "raider"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "traffic_cone",
-                            "name":  "Traffic Cone",
-                            "description":  "Heavy projectile with stable suppression.",
-                            "starter":  true,
-                            "tags":  [
-                                         "ranged",
-                                         "heavy"
-                                     ],
-                            "base_price":  56,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "traffic_cone",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "ranged_heavy",
-                                                   "base_damage":  16,
-                                                   "interval":  0.62,
-                                                   "range":  390,
-                                                   "projectile_speed":  700,
-                                                   "projectile_radius":  6
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  1
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  88,
-                                                   "rare":  10,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "bulwark",
-                                               "sustain"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "heavy_wrench",
-                            "name":  "Heavy Wrench",
-                            "description":  "Reliable close-range heavy strikes.",
-                            "starter":  true,
-                            "tags":  [
-                                         "melee",
-                                         "heavy"
-                                     ],
-                            "base_price":  55,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "heavy_wrench",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "melee_arc",
-                                                   "base_damage":  15,
-                                                   "interval":  0.64,
-                                                   "range":  102
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  1
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  88,
-                                                   "rare":  10,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "berserker",
-                                               "bulwark"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "molotov",
-                            "name":  "Molotov",
-                            "description":  "Sustained burn damage over area.",
-                            "starter":  true,
-                            "tags":  [
-                                         "ranged",
-                                         "dot"
-                                     ],
-                            "base_price":  51,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "molotov",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "ranged_homing",
-                                                   "base_damage":  11,
-                                                   "interval":  0.43,
-                                                   "range":  340,
-                                                   "projectile_speed":  560,
-                                                   "projectile_radius":  5
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  90,
-                                                   "rare":  8,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "raider",
-                                               "sustain"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "shuriken_ring",
-                            "name":  "Shuriken Ring",
-                            "description":  "Multi-hit weapon for mid-range pressure.",
-                            "starter":  true,
-                            "tags":  [
-                                         "ranged",
-                                         "multi_hit"
-                                     ],
-                            "base_price":  49,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "shuriken_ring",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "ranged_homing",
-                                                   "base_damage":  9,
-                                                   "interval":  0.34,
-                                                   "range":  330,
-                                                   "projectile_speed":  590,
-                                                   "projectile_radius":  4
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  90,
-                                                   "rare":  8,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "rapid",
-                                               "eagle_eye"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "steel_pipe",
-                            "name":  "Steel Pipe",
-                            "description":  "Simple melee weapon for early game stability.",
-                            "starter":  true,
-                            "tags":  [
-                                         "melee",
-                                         "basic"
-                                     ],
-                            "base_price":  42,
-                            "price_wave_scale":  1.05,
-                            "weight":  1.0,
-                            "stack_key":  "steel_pipe",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "melee_arc",
-                                                   "base_damage":  12,
-                                                   "interval":  0.54,
-                                                   "range":  100
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  92,
-                                                   "rare":  8
-                                               },
-                            "build_tags":  [
-                                               "sustain",
-                                               "bulwark"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "rebar_spear",
-                            "name":  "Rebar Spear",
-                            "description":  "Piercing melee thrust with strong linear reach.",
-                            "starter":  true,
-                            "tags":  [
-                                         "melee",
-                                         "pierce"
-                                     ],
-                            "base_price":  54,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "rebar_spear",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "melee_arc",
-                                                   "base_damage":  13,
-                                                   "interval":  0.48,
-                                                   "range":  118
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  1
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  90,
-                                                   "rare":  8,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "eagle_eye",
-                                               "berserker"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "mechanical_crossbow",
-                            "name":  "Mechanical Crossbow",
-                            "description":  "Stable ranged output with good tempo.",
-                            "starter":  true,
-                            "tags":  [
-                                         "ranged",
-                                         "balanced"
-                                     ],
-                            "base_price":  53,
-                            "price_wave_scale":  1.06,
-                            "weight":  1.0,
-                            "stack_key":  "mechanical_crossbow",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "ranged_homing",
-                                                   "base_damage":  11,
-                                                   "interval":  0.42,
-                                                   "range":  380,
-                                                   "projectile_speed":  650,
-                                                   "projectile_radius":  4
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  0,
-                                            "bonus_target_range":  10
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  90,
-                                                   "rare":  8,
-                                                   "epic":  2
-                                               },
-                            "build_tags":  [
-                                               "eagle_eye",
-                                               "rapid"
-                                           ]
-                        },
-                        {
-                            "weapon_id":  "meteor_hammer",
-                            "name":  "Meteor Hammer",
-                            "description":  "High-risk high-reward heavy melee weapon.",
-                            "starter":  true,
-                            "tags":  [
-                                         "melee",
-                                         "heavy"
-                                     ],
-                            "base_price":  59,
-                            "price_wave_scale":  1.07,
-                            "weight":  1.0,
-                            "stack_key":  "meteor_hammer",
-                            "level":  1,
-                            "attack_profile":  {
-                                                   "mode":  "melee_arc",
-                                                   "base_damage":  18,
-                                                   "interval":  0.72,
-                                                   "range":  112
-                                               },
-                            "effects":  {
-                                            "bonus_attack_damage":  1
-                                        },
-                            "rarity_weights":  {
-                                                   "common":  86,
-                                                   "rare":  10,
-                                                   "epic":  4
-                                               },
-                            "build_tags":  [
-                                               "berserker",
-                                               "sustain"
-                                           ]
-                        }
-                    ],
-    "weapon_tag_bonus_rules":  {
-                                   "enabled":  false,
-                                   "max_stack_per_tag":  6,
-                                   "tier_steps":  [
-                                                      2,
-                                                      3,
-                                                      4,
-                                                      5,
-                                                      6
-                                                  ],
-                                   "tag_defs":  {
-                                                    "eagle_eye":  {
-                                                                      "name":  "鹰眼",
-                                                                      "desc":  "暴击向标签，强调精准与暴击收益。",
-                                                                      "tiers":  {
-                                                                                    "2":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD eagle_eye tier2"
-                                                                                          },
-                                                                                    "3":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD eagle_eye tier3"
-                                                                                          },
-                                                                                    "4":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD eagle_eye tier4"
-                                                                                          },
-                                                                                    "5":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD eagle_eye tier5"
-                                                                                          },
-                                                                                    "6":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD eagle_eye tier6"
-                                                                                          }
-                                                                                }
-                                                                  },
-                                                    "berserker":  {
-                                                                      "name":  "狂战",
-                                                                      "desc":  "进攻向标签，强调高压输出与前线压制。",
-                                                                      "tiers":  {
-                                                                                    "2":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD berserker tier2"
-                                                                                          },
-                                                                                    "3":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD berserker tier3"
-                                                                                          },
-                                                                                    "4":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD berserker tier4"
-                                                                                          },
-                                                                                    "5":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD berserker tier5"
-                                                                                          },
-                                                                                    "6":  {
-                                                                                              "effects":  [
-
-                                                                                                          ],
-                                                                                              "note":  "TBD berserker tier6"
-                                                                                          }
-                                                                                }
-                                                                  },
-                                                    "bulwark":  {
-                                                                    "name":  "壁垒",
-                                                                    "desc":  "防御向标签，强调护甲与生存稳态。",
-                                                                    "tiers":  {
-                                                                                  "2":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD bulwark tier2"
-                                                                                        },
-                                                                                  "3":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD bulwark tier3"
-                                                                                        },
-                                                                                  "4":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD bulwark tier4"
-                                                                                        },
-                                                                                  "5":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD bulwark tier5"
-                                                                                        },
-                                                                                  "6":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD bulwark tier6"
-                                                                                        }
-                                                                              }
-                                                                },
-                                                    "rapid":  {
-                                                                  "name":  "急速",
-                                                                  "desc":  "攻速向标签，强调攻击频率与节奏。",
-                                                                  "tiers":  {
-                                                                                "2":  {
-                                                                                          "effects":  [
-
-                                                                                                      ],
-                                                                                          "note":  "TBD rapid tier2"
-                                                                                      },
-                                                                                "3":  {
-                                                                                          "effects":  [
-
-                                                                                                      ],
-                                                                                          "note":  "TBD rapid tier3"
-                                                                                      },
-                                                                                "4":  {
-                                                                                          "effects":  [
-
-                                                                                                      ],
-                                                                                          "note":  "TBD rapid tier4"
-                                                                                      },
-                                                                                "5":  {
-                                                                                          "effects":  [
-
-                                                                                                      ],
-                                                                                          "note":  "TBD rapid tier5"
-                                                                                      },
-                                                                                "6":  {
-                                                                                          "effects":  [
-
-                                                                                                      ],
-                                                                                          "note":  "TBD rapid tier6"
-                                                                                      }
-                                                                            }
-                                                              },
-                                                    "raider":  {
-                                                                   "name":  "掠袭",
-                                                                   "desc":  "机动向标签，强调追击、机动和战场穿插。",
-                                                                   "tiers":  {
-                                                                                 "2":  {
-                                                                                           "effects":  [
-
-                                                                                                       ],
-                                                                                           "note":  "TBD raider tier2"
-                                                                                       },
-                                                                                 "3":  {
-                                                                                           "effects":  [
-
-                                                                                                       ],
-                                                                                           "note":  "TBD raider tier3"
-                                                                                       },
-                                                                                 "4":  {
-                                                                                           "effects":  [
-
-                                                                                                       ],
-                                                                                           "note":  "TBD raider tier4"
-                                                                                       },
-                                                                                 "5":  {
-                                                                                           "effects":  [
-
-                                                                                                       ],
-                                                                                           "note":  "TBD raider tier5"
-                                                                                       },
-                                                                                 "6":  {
-                                                                                           "effects":  [
-
-                                                                                                       ],
-                                                                                           "note":  "TBD raider tier6"
-                                                                                       }
-                                                                             }
-                                                               },
-                                                    "sustain":  {
-                                                                    "name":  "续战",
-                                                                    "desc":  "续航向标签，强调吸血、恢复与长线作战。",
-                                                                    "tiers":  {
-                                                                                  "2":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD sustain tier2"
-                                                                                        },
-                                                                                  "3":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD sustain tier3"
-                                                                                        },
-                                                                                  "4":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD sustain tier4"
-                                                                                        },
-                                                                                  "5":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD sustain tier5"
-                                                                                        },
-                                                                                  "6":  {
-                                                                                            "effects":  [
-
-                                                                                                        ],
-                                                                                            "note":  "TBD sustain tier6"
-                                                                                        }
-                                                                              }
-                                                                }
-                                                }
-                               }
+    "tag_defs": {
+      "eagle_eye": {
+        "name": "鹰眼",
+        "desc": "暴击向标签，强调精准与暴击收益。",
+        "tiers": {
+          "2": {
+            "effects": [
+              {
+                "type": "crit_chance_flat",
+                "value": 0.02
+              }
+            ],
+            "note": "暴击 +2%"
+          },
+          "3": {
+            "effects": [
+              {
+                "type": "crit_chance_flat",
+                "value": 0.03
+              }
+            ],
+            "note": "暴击 +3%"
+          },
+          "4": {
+            "effects": [
+              {
+                "type": "crit_chance_flat",
+                "value": 0.04
+              }
+            ],
+            "note": "暴击 +4%"
+          },
+          "5": {
+            "effects": [
+              {
+                "type": "crit_chance_flat",
+                "value": 0.05
+              }
+            ],
+            "note": "暴击 +5%"
+          },
+          "6": {
+            "effects": [
+              {
+                "type": "crit_chance_flat",
+                "value": 0.06
+              }
+            ],
+            "note": "暴击 +6%"
+          }
+        }
+      },
+      "berserker": {
+        "name": "狂战",
+        "desc": "进攻向标签，强调高压输出与前线压制。",
+        "tiers": {
+          "2": {
+            "effects": [
+              {
+                "type": "global_attack_percent_flat",
+                "value": 3
+              }
+            ],
+            "note": "伤害 +3%"
+          },
+          "3": {
+            "effects": [
+              {
+                "type": "global_attack_percent_flat",
+                "value": 5
+              }
+            ],
+            "note": "伤害 +5%"
+          },
+          "4": {
+            "effects": [
+              {
+                "type": "global_attack_percent_flat",
+                "value": 7
+              }
+            ],
+            "note": "伤害 +7%"
+          },
+          "5": {
+            "effects": [
+              {
+                "type": "global_attack_percent_flat",
+                "value": 9
+              }
+            ],
+            "note": "伤害 +9%"
+          },
+          "6": {
+            "effects": [
+              {
+                "type": "global_attack_percent_flat",
+                "value": 11
+              }
+            ],
+            "note": "伤害 +11%"
+          }
+        }
+      },
+      "bulwark": {
+        "name": "壁垒",
+        "desc": "防御向标签，强调护甲与生存稳态。",
+        "tiers": {
+          "2": {
+            "effects": [
+              {
+                "type": "armor_flat",
+                "value": 1
+              }
+            ],
+            "note": "护甲 +1"
+          },
+          "3": {
+            "effects": [
+              {
+                "type": "armor_flat",
+                "value": 2
+              }
+            ],
+            "note": "护甲 +2"
+          },
+          "4": {
+            "effects": [
+              {
+                "type": "armor_flat",
+                "value": 2
+              },
+              {
+                "type": "dodge_chance_flat",
+                "value": 0.01
+              }
+            ],
+            "note": "护甲 +2，闪避 +1%"
+          },
+          "5": {
+            "effects": [
+              {
+                "type": "armor_flat",
+                "value": 3
+              },
+              {
+                "type": "dodge_chance_flat",
+                "value": 0.01
+              }
+            ],
+            "note": "护甲 +3，闪避 +1%"
+          },
+          "6": {
+            "effects": [
+              {
+                "type": "armor_flat",
+                "value": 4
+              },
+              {
+                "type": "dodge_chance_flat",
+                "value": 0.02
+              }
+            ],
+            "note": "护甲 +4，闪避 +2%"
+          }
+        }
+      },
+      "rapid": {
+        "name": "急速",
+        "desc": "攻速向标签，强调攻击频率与节奏。",
+        "tiers": {
+          "2": {
+            "effects": [
+              {
+                "type": "attack_speed_mult",
+                "value": 1.03
+              }
+            ],
+            "note": "攻速 +3%"
+          },
+          "3": {
+            "effects": [
+              {
+                "type": "attack_speed_mult",
+                "value": 1.05
+              }
+            ],
+            "note": "攻速 +5%"
+          },
+          "4": {
+            "effects": [
+              {
+                "type": "attack_speed_mult",
+                "value": 1.07
+              }
+            ],
+            "note": "攻速 +7%"
+          },
+          "5": {
+            "effects": [
+              {
+                "type": "attack_speed_mult",
+                "value": 1.09
+              }
+            ],
+            "note": "攻速 +9%"
+          },
+          "6": {
+            "effects": [
+              {
+                "type": "attack_speed_mult",
+                "value": 1.11
+              }
+            ],
+            "note": "攻速 +11%"
+          }
+        }
+      },
+      "raider": {
+        "name": "掠袭",
+        "desc": "机动向标签，强调追击、机动和战场穿插。",
+        "tiers": {
+          "2": {
+            "effects": [
+              {
+                "type": "move_speed_flat",
+                "value": 4
+              }
+            ],
+            "note": "移速 +4"
+          },
+          "3": {
+            "effects": [
+              {
+                "type": "move_speed_flat",
+                "value": 6
+              }
+            ],
+            "note": "移速 +6"
+          },
+          "4": {
+            "effects": [
+              {
+                "type": "move_speed_flat",
+                "value": 8
+              },
+              {
+                "type": "luck_flat",
+                "value": 2
+              }
+            ],
+            "note": "移速 +8，幸运 +2"
+          },
+          "5": {
+            "effects": [
+              {
+                "type": "move_speed_flat",
+                "value": 10
+              },
+              {
+                "type": "luck_flat",
+                "value": 3
+              }
+            ],
+            "note": "移速 +10，幸运 +3"
+          },
+          "6": {
+            "effects": [
+              {
+                "type": "move_speed_flat",
+                "value": 12
+              },
+              {
+                "type": "luck_flat",
+                "value": 4
+              }
+            ],
+            "note": "移速 +12，幸运 +4"
+          }
+        }
+      },
+      "sustain": {
+        "name": "续战",
+        "desc": "续航向标签，强调吸血、恢复与长线作战。",
+        "tiers": {
+          "2": {
+            "effects": [
+              {
+                "type": "lifesteal_flat",
+                "value": 0.01
+              }
+            ],
+            "note": "吸血 +1%"
+          },
+          "3": {
+            "effects": [
+              {
+                "type": "lifesteal_flat",
+                "value": 0.01
+              },
+              {
+                "type": "hp_regen_flat",
+                "value": 1
+              }
+            ],
+            "note": "吸血 +1%，生命回复 +1"
+          },
+          "4": {
+            "effects": [
+              {
+                "type": "lifesteal_flat",
+                "value": 0.02
+              },
+              {
+                "type": "hp_regen_flat",
+                "value": 1
+              }
+            ],
+            "note": "吸血 +2%，生命回复 +1"
+          },
+          "5": {
+            "effects": [
+              {
+                "type": "lifesteal_flat",
+                "value": 0.02
+              },
+              {
+                "type": "hp_regen_flat",
+                "value": 2
+              }
+            ],
+            "note": "吸血 +2%，生命回复 +2"
+          },
+          "6": {
+            "effects": [
+              {
+                "type": "lifesteal_flat",
+                "value": 0.03
+              },
+              {
+                "type": "hp_regen_flat",
+                "value": 2
+              }
+            ],
+            "note": "吸血 +3%，生命回复 +2"
+          }
+        }
+      }
+    }
+  }
 }

@@ -72,7 +72,7 @@ func list_save_slots() -> Array[Dictionary]:
             summary["stage_id"] = str(slot_entry.get("stage_id", "stage_001"))
             summary["wave"] = int(slot_entry.get("wave", 1))
             summary["selected_character"] = str(slot_entry.get("selected_character", "the_fool"))
-            summary["difficulty"] = str(slot_entry.get("difficulty", "normal"))
+            summary["difficulty"] = _normalize_difficulty(str(slot_entry.get("difficulty", "danger_1")))
             summary["saved_at"] = str(slot_entry.get("saved_at", ""))
         list.append(summary)
 
@@ -383,7 +383,7 @@ func _default_save() -> Dictionary:
         "run_survival_time": 0.0,
         "selected_character": "the_fool", 
         "selected_starter_weapon_id": "",
-        "difficulty": "normal", 
+        "difficulty": "danger_1",
         "stage_id": "stage_001", 
         "wave": 1, 
         "wave_progress_index": 0,
@@ -428,9 +428,26 @@ func _default_save() -> Dictionary:
 
 func _normalize_difficulty(raw_value: String) -> String:
     var lowered: String = raw_value.to_lower()
-    if lowered == "easy" or lowered == "hard":
-        return lowered
-    return "normal"
+    if lowered.begins_with("danger_"):
+        var danger_value: String = lowered.substr(7)
+        if not danger_value.is_valid_int():
+            return "danger_1"
+        var danger_level: int = clampi(int(danger_value), 0, 5)
+        return "danger_%d" % danger_level
+    if lowered == "easy":
+        return "danger_0"
+    if lowered == "hard":
+        return "danger_4"
+    if lowered == "normal":
+        return "danger_1"
+    if lowered.is_valid_int():
+        var numeric_level: int = clampi(int(lowered), 0, 5)
+        return "danger_%d" % numeric_level
+    if lowered == "d0" or lowered == "d1" or lowered == "d2" or lowered == "d3" or lowered == "d4" or lowered == "d5":
+        return "danger_%s" % lowered.substr(1)
+    if lowered == "danger0" or lowered == "danger1" or lowered == "danger2" or lowered == "danger3" or lowered == "danger4" or lowered == "danger5":
+        return "danger_%s" % lowered.substr(6)
+    return "danger_1"
 
 func _normalize_string_array(value: Variant) -> Array[String]:
     var result: Array[String] = []

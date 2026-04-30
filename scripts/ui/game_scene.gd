@@ -25,6 +25,7 @@ const BG_COMBAT_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_combat
 const BG_BOSS_TEXTURE: Texture2D = preload("res://sprite/maps/map_stage_boss_arena.png")
 const MELEE_ARC_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_arc_effect.gd")
 const MELEE_HIT_EFFECT_SCRIPT: Script = preload("res://scripts/effects/melee_hit_effect.gd")
+const ELITE_CHEST_DROP_SCRIPT: Script = preload("res://scripts/entities/elite_chest_drop.gd")
 const ShopSystemScript: Script = preload("res://scripts/systems/shop_system.gd")
 const WEAPON_ORBIT_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alpha_final_v2/"
 const WEAPON_ORBIT_ICON_TARGET_WIDTH: float = 22.0
@@ -131,6 +132,7 @@ const WEAPON_TAG_ADDITIVE_EFFECT_TYPES: Dictionary = {
     "lifesteal_flat": true,
     "luck_flat": true,
     "harvest_flat": true,
+    "hp_regen_flat": true,
 }
 const WEAPON_TAG_MULTIPLIER_EFFECT_TYPES: Dictionary = {
     "attack_speed_mult": true,
@@ -168,6 +170,15 @@ var _settings_scene_resource: PackedScene
 var _level_reward_panel: PanelContainer
 var _level_reward_title: Label
 var _level_reward_buttons: Array[Button] = []
+var _level_reward_stat_labels: Dictionary = {}
+var _elite_chest_panel: PanelContainer
+var _elite_chest_title: Label
+var _elite_chest_icon: TextureRect
+var _elite_chest_name: Label
+var _elite_chest_rarity: Label
+var _elite_chest_desc: RichTextLabel
+var _elite_chest_claim_button: Button
+var _elite_chest_recycle_button: Button
 var _death_settlement_panel: PanelContainer
 var _death_settlement_title: Label
 var _death_settlement_subtitle: Label
@@ -181,6 +192,8 @@ var _recent_categories_runtime: Array[String] = []
 var _build_tags_runtime: Array[String] = []
 var _reward_pity_state_runtime: Dictionary = {"no_output_streak": 0}
 var _pending_level_up_rewards: int = 0
+var _pending_elite_chests: int = 0
+var _current_elite_chest_offer: Dictionary = {}
 var _wave_end_reward_gate_active: bool = false
 var _pending_wave_shop_snapshot: Dictionary = {}
 var _current_level: int = 1
@@ -196,15 +209,19 @@ var _stage_clear_triggered: bool = false
 var _enemy_hp_multiplier: float = 1.0
 var _enemy_hp_stage_multiplier: float = 1.0
 var _enemy_move_speed_stage_multiplier: float = 1.0
+var _enemy_move_speed_difficulty_multiplier: float = 1.0
 var _enemy_damage_multiplier: float = 1.0
+var _enemy_damage_stage_multiplier: float = 1.0
 var _spawn_interval_multiplier: float = 1.0
+var _enemy_count_multiplier: float = 1.0
 var _xp_multiplier: float = 1.0
 var _gold_multiplier: float = 1.0
+var _stage_xp_drop_multiplier: float = 1.0
+var _stage_gold_drop_multiplier: float = 1.0
 var _run_kill_count: int = 0
 var _run_survival_time_runtime: float = 0.0
 var _arena_half_extents: Vector2 = Vector2(620.0, 340.0)
-var _enemy_ranged_weight_runtime: float = ENEMY_RANGED_WEIGHT
-var _enemy_barrage_weight_runtime: float = ENEMY_BARRAGE_WEIGHT
+var _enemy_spawn_weights_runtime: Dictionary = {}
 var _max_enemy_count_runtime: int = MAX_ENEMY_COUNT
 var _initial_enemy_count_runtime: int = INITIAL_ENEMY_COUNT
 var _enemy_min_spawn_radius_runtime: float = ENEMY_MIN_SPAWN_RADIUS
@@ -256,6 +273,9 @@ const MAX_ENEMY_COUNT: int = 120
 const ENEMY_SPAWN_INTERVAL: float = 0.15
 const ENEMY_MIN_SPAWN_RADIUS: float = 380.0
 const ENEMY_MAX_SPAWN_RADIUS: float = 620.0
+const ENEMY_MELEE_WEIGHT: float = 0.67
+const ENEMY_FAST_MELEE_WEIGHT: float = 0.0
+const ENEMY_CHARGER_WEIGHT: float = 0.0
 const ENEMY_RANGED_WEIGHT: float = 0.25
 const ENEMY_BARRAGE_WEIGHT: float = 0.08
 const DEFAULT_ARENA_HALF_EXTENTS: Vector2 = Vector2(620.0, 340.0)
@@ -310,6 +330,11 @@ const REWARD_TARGET_RANGE_BONUS: float = 80.0
 const REWARD_ATTACK_DAMAGE_BONUS: int = 3
 const REWARD_MOVE_SPEED_BONUS: float = 15.0
 const LEVEL_REWARD_CHOICES_COUNT: int = 3
+const MELEE_TARGET_RANGE_BONUS_RATIO: float = 0.35
+const MELEE_TARGET_RANGE_BONUS_CAP: float = 36.0
+const MELEE_TARGET_RANGE_CAP: float = 150.0
+const MELEE_CLOSE_HIT_EXTRA_RADIUS: float = 12.0
+const MELEE_CLOSE_HIT_MIN_DOT: float = -0.15
 const STAGE_TIMER_DANGER_SECONDS: int = 10
 const STAGE_TIMER_BASE_SECONDS: float = 30.0
 const STAGE_TIMER_GROWTH_SECONDS: float = 5.0
@@ -421,6 +446,8 @@ func _reset_progress_state() -> void :
     _xp_required_multiplier_runtime = _resolve_character_xp_required_multiplier(_current_player_id)
     _xp_to_next_level = _xp_required_for_level(_current_level)
     _pending_level_up_rewards = 0
+    _pending_elite_chests = 0
+    _current_elite_chest_offer = {}
     _reward_opened = false
     _wave_end_reward_gate_active = false
     _pending_wave_shop_snapshot = {}
@@ -519,16 +546,22 @@ func _process(delta: float) -> void :
 func _unhandled_input(event: InputEvent) -> void :
     if not event.is_action_pressed("pause"):
         return
+    if _intro_active:
+        get_viewport().set_input_as_handled()
+        return
     if _is_game_over:
         return
     if _wave_end_reward_gate_active:
+        if _pending_elite_chests > 0:
+            if _elite_chest_panel != null and not _elite_chest_panel.visible:
+                _show_elite_chest_panel()
+            return
         if _pending_level_up_rewards > 0:
             if _level_reward_panel != null and not _level_reward_panel.visible:
                 _show_level_reward_panel()
-        return
+            return
     if _reward_opened:
-        if _level_reward_panel != null and not _level_reward_panel.visible:
-            _show_level_reward_panel()
+        _show_active_reward_panel()
         return
     if _pause_opened:
         if _is_pause_sub_panel_open():
@@ -641,6 +674,8 @@ func _show_death_settlement_panel() -> void:
         _settings_panel.visible = false
     if _level_reward_panel != null:
         _level_reward_panel.visible = false
+    if _elite_chest_panel != null:
+        _elite_chest_panel.visible = false
     _death_settlement_panel.visible = true
 
     var stage_text: String = GameManager.current_stage_id
@@ -698,9 +733,14 @@ func _update_stage_timer(_delta: float) -> void:
         return
     var remain: float = max(0.0, _wave_duration_runtime - _wave_elapsed)
     var timer_tint: Color = _update_stage_timer_color(remain)
-    hud.call("set_stage_timer", true, _format_stage_countdown(remain), timer_tint)
+    hud.call("set_stage_timer", true, _format_stage_timer_text(remain), timer_tint)
     if remain <= 0.0:
         _on_wave_time_up()
+
+func _format_stage_timer_text(remain: float) -> String:
+    var stage_number: int = _extract_stage_number(GameManager.current_stage_id)
+    var stage_text: String = "STAGE %02d" % max(1, stage_number)
+    return "%s  %s" % [stage_text, _format_stage_countdown(remain)]
 
 func _format_stage_countdown(remain: float) -> String:
     var seconds_total: int = max(0, int(ceil(remain)))
@@ -776,6 +816,10 @@ func _begin_wave_end_reward_then_shop(shop_snapshot: Dictionary) -> void:
     if not _tarot_completed_for_wave:
         _show_tarot_choice_panel()
         return
+
+    if _pending_elite_chests > 0:
+        _show_elite_chest_panel()
+        return
         
     if _pending_level_up_rewards > 0:
         _try_open_next_level_reward()
@@ -841,6 +885,13 @@ func _show_tarot_choice_panel() -> void:
     var cards: Array[String] = TarotSystem.get_random_choices(3)
     for card_id in cards:
         var card_data: Dictionary = TarotSystem.CARDS[card_id]
+        var option_box: VBoxContainer = VBoxContainer.new()
+        option_box.custom_minimum_size = Vector2(300, 520)
+        option_box.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+        option_box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+        option_box.alignment = BoxContainer.ALIGNMENT_CENTER
+        option_box.add_theme_constant_override("separation", 12)
+
         var btn: Button = Button.new()
         
         # Style Box Normal
@@ -867,28 +918,29 @@ func _show_tarot_choice_panel() -> void:
         btn.add_theme_stylebox_override("focus", sb_hover)
         
         btn.text = ""
-        btn.custom_minimum_size = Vector2(240, 360)
+        btn.custom_minimum_size = Vector2(300, 460)
         btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
         btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
         btn.pressed.connect(_on_tarot_selected.bind(card_id))
 
         var content_margin: MarginContainer = MarginContainer.new()
         content_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-        content_margin.add_theme_constant_override("margin_left", 14)
-        content_margin.add_theme_constant_override("margin_top", 14)
-        content_margin.add_theme_constant_override("margin_right", 14)
-        content_margin.add_theme_constant_override("margin_bottom", 14)
+        content_margin.add_theme_constant_override("margin_left", 18)
+        content_margin.add_theme_constant_override("margin_top", 18)
+        content_margin.add_theme_constant_override("margin_right", 18)
+        content_margin.add_theme_constant_override("margin_bottom", 18)
         content_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
         btn.add_child(content_margin)
 
         var card_vbox: VBoxContainer = VBoxContainer.new()
-        card_vbox.add_theme_constant_override("separation", 12)
+        card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+        card_vbox.add_theme_constant_override("separation", 10)
         card_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
         content_margin.add_child(card_vbox)
 
         var image_frame: PanelContainer = PanelContainer.new()
-        image_frame.custom_minimum_size = Vector2(212, 170)
-        image_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        image_frame.custom_minimum_size = Vector2(260, 390)
+        image_frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
         image_frame.add_theme_stylebox_override("panel", _build_tarot_image_frame_style())
         image_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
         card_vbox.add_child(image_frame)
@@ -902,7 +954,8 @@ func _show_tarot_choice_panel() -> void:
         image_frame.add_child(image_margin)
 
         var image_rect: TextureRect = TextureRect.new()
-        image_rect.texture = _load_tarot_card_texture(str(card_data.get("image_path", "")))
+        image_rect.custom_minimum_size = Vector2(252, 382)
+        image_rect.texture = _load_tarot_card_texture(card_data)
         image_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
         image_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
         image_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -912,7 +965,7 @@ func _show_tarot_choice_panel() -> void:
         name_label.text = str(card_data.get("name", card_id)).to_upper()
         name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
         name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        name_label.add_theme_font_size_override("font_size", 17)
+        name_label.add_theme_font_size_override("font_size", 16)
         name_label.add_theme_color_override("font_color", Color(0.96, 0.86, 0.67, 1.0))
         name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
         name_label.add_theme_constant_override("outline_size", 4)
@@ -921,14 +974,16 @@ func _show_tarot_choice_panel() -> void:
 
         var desc_label: Label = Label.new()
         desc_label.text = str(card_data.get("desc", ""))
+        desc_label.custom_minimum_size = Vector2(300, 36)
         desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
         desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        desc_label.add_theme_font_size_override("font_size", 15)
+        desc_label.add_theme_font_size_override("font_size", 17)
         desc_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 1.0))
         desc_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-        card_vbox.add_child(desc_label)
+        option_box.add_child(btn)
+        option_box.add_child(desc_label)
 
-        h_box.add_child(btn)
+        h_box.add_child(option_box)
         
     _tarot_choice_panel.visible = true
 
@@ -946,11 +1001,22 @@ func _build_tarot_image_frame_style() -> StyleBoxFlat:
     style.corner_radius_bottom_left = 3
     return style
 
-func _load_tarot_card_texture(path: String) -> Texture2D:
+func _load_tarot_card_texture(card_data: Dictionary) -> Texture2D:
+    var path: String = str(card_data.get("image_path", ""))
     if path.is_empty():
         return null
-    if _tarot_card_texture_cache.has(path):
-        return _tarot_card_texture_cache[path] as Texture2D
+    var crop_region: Array = card_data.get("crop_region", [])
+    var cache_key: String = path
+    if crop_region.size() >= 4:
+        cache_key = "%s:%s,%s,%s,%s" % [
+            path,
+            str(crop_region[0]),
+            str(crop_region[1]),
+            str(crop_region[2]),
+            str(crop_region[3])
+        ]
+    if _tarot_card_texture_cache.has(cache_key):
+        return _tarot_card_texture_cache[cache_key] as Texture2D
 
     var texture: Texture2D = load(path) as Texture2D
     if texture == null and FileAccess.file_exists(path):
@@ -959,7 +1025,18 @@ func _load_tarot_card_texture(path: String) -> Texture2D:
             texture = ImageTexture.create_from_image(image)
 
     if texture != null:
-        _tarot_card_texture_cache[path] = texture
+        if crop_region.size() >= 4:
+            var atlas_texture: AtlasTexture = AtlasTexture.new()
+            atlas_texture.atlas = texture
+            atlas_texture.region = Rect2(
+                float(crop_region[0]),
+                float(crop_region[1]),
+                float(crop_region[2]),
+                float(crop_region[3])
+            )
+            _tarot_card_texture_cache[cache_key] = atlas_texture
+            return atlas_texture
+        _tarot_card_texture_cache[cache_key] = texture
     return texture
 
 func _on_tarot_selected(card_id: String) -> void:
@@ -975,6 +1052,9 @@ var _tarot_completed_for_wave: bool = false
 
 func _open_shop_after_wave_reward() -> void:
     if not _wave_end_reward_gate_active:
+        return
+    if _pending_elite_chests > 0:
+        _show_elite_chest_panel()
         return
     if _pending_level_up_rewards > 0 or _reward_opened:
         return
@@ -1100,17 +1180,34 @@ func _try_spawn_enemy() -> void :
     _cleanup_dead_enemies()
     if _count_active_enemies() >= _max_enemy_count_runtime:
         return
-    var spawn_roll: float = randf()
-    var spawn_type: Enemy.EnemyType = Enemy.EnemyType.MELEE
-    if spawn_roll < _enemy_barrage_weight_runtime:
-        spawn_type = Enemy.EnemyType.BARRAGE
-    elif spawn_roll < _enemy_barrage_weight_runtime + _enemy_ranged_weight_runtime:
-        spawn_type = Enemy.EnemyType.RANGED
+    var spawn_type: Enemy.EnemyType = _roll_enemy_spawn_type()
     _spawn_enemy(spawn_type, _random_spawn_position())
+
+func _roll_enemy_spawn_type() -> Enemy.EnemyType:
+    if _enemy_spawn_weights_runtime.is_empty():
+        return Enemy.EnemyType.MELEE
+
+    var total_weight: float = 0.0
+    for spawn_type: Variant in _enemy_spawn_weights_runtime.keys():
+        total_weight += max(0.0, float(_enemy_spawn_weights_runtime[spawn_type]))
+    if total_weight <= 0.0:
+        return Enemy.EnemyType.MELEE
+
+    var roll: float = randf() * total_weight
+    for spawn_type: Variant in _enemy_spawn_weights_runtime.keys():
+        roll -= max(0.0, float(_enemy_spawn_weights_runtime[spawn_type]))
+        if roll <= 0.0:
+            var selected_type: Enemy.EnemyType = spawn_type
+            return selected_type
+    return Enemy.EnemyType.MELEE
 
 func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy:
     var enemy: Enemy = null
     match spawn_type:
+        Enemy.EnemyType.FAST_MELEE:
+            enemy = FastMeleeEnemy.new()
+        Enemy.EnemyType.CHARGER:
+            enemy = ChargerEnemy.new()
         Enemy.EnemyType.RANGED:
             enemy = RangedEnemy.new()
         Enemy.EnemyType.BARRAGE:
@@ -1124,12 +1221,14 @@ func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy
     enemy.set_target(_player)
     enemy.died.connect(_on_enemy_died)
     enemy.enemy_projectile_fired.connect(_on_enemy_projectile_fired)
+    enemy.damage_multiplier = _get_enemy_damage_scale()
     add_child(enemy)
     var hp_scale: float = max(0.1, _enemy_hp_multiplier * _enemy_hp_stage_multiplier)
     var scaled_max_hp: int = max(1, int(round(float(enemy.max_hp) * hp_scale)))
     enemy.max_hp = scaled_max_hp
     enemy.current_hp = scaled_max_hp
-    enemy.move_speed = max(10.0, enemy.move_speed * max(0.1, _enemy_move_speed_stage_multiplier))
+    var speed_scale: float = max(0.1, _enemy_move_speed_stage_multiplier * _enemy_move_speed_difficulty_multiplier)
+    enemy.move_speed = max(10.0, enemy.move_speed * speed_scale)
     enemy.queue_redraw()
     _enemies.append(enemy)
     return enemy
@@ -1174,10 +1273,16 @@ func _count_alive_elites() -> int:
 func _spawn_elite() -> void :
     if _player == null or not is_instance_valid(_player):
         return
+    if _stage_is_boss_stage:
+        var stage_profile: Dictionary = BalanceService.get_stage_profile(GameManager.current_stage_id)
+        var boss_config: Dictionary = stage_profile.get("boss", {})
+        if not boss_config.is_empty():
+            _spawn_stage_boss(boss_config)
+            return
     var elite_spawn: Vector2 = _random_spawn_position()
     var enemy: Enemy = _spawn_enemy(Enemy.EnemyType.ELITE_WARDEN, elite_spawn)
     if _elite_hp_override_runtime > 0:
-        enemy.max_hp = _elite_hp_override_runtime
+        enemy.max_hp = max(1, int(round(float(_elite_hp_override_runtime) * max(0.1, _enemy_hp_multiplier))))
         enemy.current_hp = enemy.max_hp
         enemy.queue_redraw()
     _active_elite = enemy
@@ -1185,6 +1290,40 @@ func _spawn_elite() -> void :
     print("[Elite] Spawned %s at %.2fs" % [enemy.get_display_name(), _battle_elapsed])
     if hud.has_method("show_boss_bar"):
         hud.call("show_boss_bar", enemy.get_display_name(), float(enemy.max_hp), float(enemy.current_hp))
+
+func _spawn_stage_boss(boss_config: Dictionary) -> Enemy:
+    if _player == null or not is_instance_valid(_player):
+        return null
+    var boss: BossDreamWatcher = BossDreamWatcher.new()
+    boss.global_position = _clamp_position_to_arena(Vector2(0.0, -120.0), 24.0)
+    boss.set_target(_player)
+    boss.died.connect(_on_enemy_died)
+    boss.enemy_projectile_fired.connect(_on_enemy_projectile_fired)
+    boss.summon_requested.connect(_on_boss_summon_requested)
+    boss.damage_multiplier = _get_enemy_damage_scale()
+    add_child(boss)
+    boss.configure_from_stage(boss_config)
+    var boss_hp_scale: float = max(0.1, _enemy_hp_multiplier)
+    boss.max_hp = max(1, int(round(float(boss.max_hp) * boss_hp_scale)))
+    boss.current_hp = boss.max_hp
+    boss.global_position = _clamp_position_to_arena(boss.global_position, boss.body_radius)
+    boss.queue_redraw()
+    _enemies.append(boss)
+    _active_elite = boss
+    _elite_spawn_relief_timer = ELITE_SPAWN_RELIEF_DURATION
+    print("[Boss] Spawned %s at %.2fs" % [boss.get_display_name(), _battle_elapsed])
+    if hud.has_method("show_boss_bar"):
+        hud.call("show_boss_bar", boss.get_display_name(), float(boss.max_hp), float(boss.current_hp))
+    return boss
+
+func _on_boss_summon_requested(count: int) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    var summon_count: int = clampi(count, 0, 12)
+    for i: int in range(summon_count):
+        if _count_active_enemies() >= _max_enemy_count_runtime:
+            return
+        _spawn_enemy(Enemy.EnemyType.MELEE, _random_spawn_position())
 
 func _random_spawn_position() -> Vector2:
     var arena_rect: Rect2 = _arena_rect()
@@ -1317,6 +1456,8 @@ func _attack_with_profile(target_enemy: Enemy, attack_profile: Dictionary, slot_
     match mode:
         "melee_arc":
             _perform_melee_arc_attack(target_enemy, attack_profile, slot_index, weapon)
+        "ranged_lob_aoe":
+            _spawn_weapon_projectile(target_enemy, attack_profile, false, slot_index)
         "ranged_heavy":
             _spawn_weapon_projectile(target_enemy, attack_profile, false, slot_index)
         _:
@@ -1351,11 +1492,20 @@ func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, h
     projectile.crit_chance = _player.crit_chance
     projectile.crit_multiplier = _resolve_weapon_crit_multiplier(attack_profile)
     projectile.lifesteal_chance = _resolve_weapon_lifesteal_chance(attack_profile)
+    var lob_target_position: Vector2 = target_enemy.global_position
     match attack_mode:
         "ranged_homing":
             projectile.configure_visual_preset("homing")
         "ranged_heavy":
             projectile.configure_visual_preset("heavy")
+        "ranged_lob_aoe":
+            projectile.configure_visual_preset("lob_aoe")
+            projectile.impact_mode = "aoe"
+            projectile.aoe_radius = max(1.0, float(attack_profile.get("aoe_radius", 72.0)))
+            projectile.life_time = max(
+                float(attack_profile.get("life_time", 0.0)),
+                float(attack_profile.get("flight_time", 0.55)) + 0.15
+            )
         _:
             projectile.configure_visual_preset("default")
     var sprite_node: Sprite2D = null
@@ -1363,16 +1513,22 @@ func _spawn_weapon_projectile(target_enemy: Enemy, attack_profile: Dictionary, h
         sprite_node = _weapon_orbit_nodes[slot_index]
     
     var spawn_pos: Vector2 = _player.global_position
-    var fire_direction: Vector2 = (_player.global_position.direction_to(target_enemy.global_position)).normalized()
+    var fire_direction: Vector2 = (_player.global_position.direction_to(lob_target_position)).normalized()
     
     if sprite_node != null and is_instance_valid(sprite_node):
         spawn_pos = sprite_node.global_position
-        fire_direction = (spawn_pos.direction_to(target_enemy.global_position)).normalized()
+        fire_direction = (spawn_pos.direction_to(lob_target_position)).normalized()
         # Add muzzle offset in the direction of the target
         spawn_pos += fire_direction * WEAPON_ORBIT_MUZZLE_OFFSET
             
     projectile.global_position = spawn_pos
     projectile.direction = fire_direction
+    if attack_mode == "ranged_lob_aoe":
+        projectile.configure_lob(
+            lob_target_position,
+            float(attack_profile.get("flight_time", 0.55)),
+            float(attack_profile.get("arc_height", 80.0))
+        )
     if homing:
         projectile.set_target(target_enemy)
     add_child(projectile)
@@ -1473,19 +1629,25 @@ func _resolve_mode_damage_bonus(mode: String) -> int:
     match mode:
         "melee_arc":
             return _player.get_melee_attack_damage_bonus()
-        "ranged_homing", "ranged_heavy":
+        "ranged_homing", "ranged_heavy", "ranged_lob_aoe":
             return _player.get_ranged_attack_damage_bonus()
         _:
             return 0
 
 func _resolve_weapon_attack_range(attack_profile: Dictionary) -> float:
     var mode: String = str(attack_profile.get("mode", "ranged_homing"))
-    var profile_range: float = float(attack_profile.get("range", _player.get_current_target_range()))
-    var range_bonus_ratio: float = 1.0
     if mode == "melee_arc":
-        range_bonus_ratio = 0.5
-    var final_range: float = profile_range + _player.bonus_target_range * range_bonus_ratio
+        return _resolve_melee_effective_range(attack_profile)
+    var profile_range: float = float(attack_profile.get("range", _player.get_current_target_range()))
+    var final_range: float = profile_range + _player.bonus_target_range
     return max(1.0, final_range)
+
+func _resolve_melee_effective_range(attack_profile: Dictionary) -> float:
+    var profile_range: float = float(attack_profile.get("range", 95.0))
+    var bonus_range: float = 0.0
+    if _player != null and is_instance_valid(_player):
+        bonus_range = min(_player.bonus_target_range * MELEE_TARGET_RANGE_BONUS_RATIO, MELEE_TARGET_RANGE_BONUS_CAP)
+    return clampf(profile_range + bonus_range, 1.0, MELEE_TARGET_RANGE_CAP)
 
 func _resolve_melee_splash_radius(attack_profile: Dictionary) -> float:
     var melee_range: float = clampf(float(attack_profile.get("range", 95.0)), 55.0, 130.0)
@@ -1576,6 +1738,11 @@ func _build_melee_attack_runtime(
 
     var tip_forward_distance: float = float(alignment.get("tip_forward_distance", 0.0))
     var lateral_offset_distance: float = float(alignment.get("lateral_offset_distance", 0.0))
+    var min_attack_radius: float = max(12.0, rest_radius + 4.0)
+    var max_attack_radius: float = max(min_attack_radius, (attack_range - tip_forward_distance - 2.0) / 1.06)
+    attack_radius = clampf(attack_radius, min_attack_radius, max_attack_radius)
+    hitbox_length = min(hitbox_length, max(16.0, attack_radius * 0.58))
+    hitbox_width = min(hitbox_width, max(12.0, attack_radius * 0.4))
     current_global_point = _player.global_position + forward * (rest_radius + tip_forward_distance) + forward.orthogonal() * lateral_offset_distance
 
     return {
@@ -1589,6 +1756,7 @@ func _build_melee_attack_runtime(
         "active_end_time": duration * active_end_ratio,
         "direction": forward,
         "base_angle": forward.angle(),
+        "melee_effective_range": attack_range,
         "attack_radius": attack_radius,
         "rest_radius": rest_radius,
         "hitbox_length": hitbox_length,
@@ -1619,6 +1787,7 @@ func _build_melee_attack_runtime(
         "last_damage_point": current_global_point,
         "last_tip_global_position": current_global_point,
         "last_grip_global_position": _player.global_position + forward * max(4.0, rest_radius - float(alignment.get("grip_back_distance", 4.0))),
+        "close_hit_extra_radius": MELEE_CLOSE_HIT_EXTRA_RADIUS,
         "hit_segment_thickness": max(6.0, hitbox_width * 0.72),
         "was_active": false,
         "hit_enemy_ids": {},
@@ -1867,7 +2036,10 @@ func _apply_melee_attack_hits(
             current_tip_global
         )
         if float(contact_info.get("distance_sq", INF)) > effective_radius * effective_radius:
-            continue
+            var close_contact_info: Dictionary = _resolve_melee_close_enemy_contact(enemy, state)
+            if not bool(close_contact_info.get("hit", false)):
+                continue
+            contact_info = close_contact_info
         var outgoing_damage: int = _player.roll_outgoing_damage(
             int(state.get("base_damage", 1)),
             _player.crit_chance,
@@ -1958,6 +2130,30 @@ func _reset_melee_camera_punch() -> void:
     _melee_camera_punch_velocity = Vector2.ZERO
     if _player_camera != null and is_instance_valid(_player_camera):
         _player_camera.offset = Vector2.ZERO
+
+func _resolve_melee_close_enemy_contact(enemy: Enemy, state: Dictionary) -> Dictionary:
+    if _player == null or not is_instance_valid(_player):
+        return {"hit": false}
+    if not _is_enemy_combat_active(enemy):
+        return {"hit": false}
+    var to_enemy: Vector2 = enemy.global_position - _player.global_position
+    var distance: float = to_enemy.length()
+    var close_radius: float = _player.body_radius + enemy.body_radius + float(state.get("close_hit_extra_radius", MELEE_CLOSE_HIT_EXTRA_RADIUS))
+    if distance > close_radius:
+        return {"hit": false}
+    var attack_direction: Vector2 = Vector2(state.get("direction", Vector2.RIGHT)).normalized()
+    if attack_direction.length_squared() <= 0.0001:
+        attack_direction = Vector2.RIGHT
+    var enemy_direction: Vector2 = to_enemy.normalized()
+    if enemy_direction.length_squared() > 0.0001 and enemy_direction.dot(attack_direction) < MELEE_CLOSE_HIT_MIN_DOT:
+        return {"hit": false}
+    var impact_direction: Vector2 = enemy_direction if enemy_direction.length_squared() > 0.0001 else attack_direction
+    var closest_point: Vector2 = _player.global_position + impact_direction * min(_player.body_radius + 2.0, max(2.0, distance * 0.5))
+    return {
+        "hit": true,
+        "distance_sq": 0.0,
+        "closest_point": closest_point,
+    }
 
 func _distance_squared_point_to_segment(point: Vector2, segment_from: Vector2, segment_to: Vector2) -> float:
     var ab: Vector2 = segment_to - segment_from
@@ -2384,14 +2580,20 @@ func _handle_projectile_hits() -> void :
     for projectile: Projectile in _projectiles:
         if projectile == null or not is_instance_valid(projectile):
             continue
+        if projectile.is_aoe_projectile() and projectile.consume_impact_request():
+            _explode_projectile_aoe(projectile, Vector2.ZERO)
+            continue
         for enemy: Enemy in _enemies:
             if not _is_enemy_combat_active(enemy):
                 continue
             var hit_distance: float = projectile.hit_radius + enemy.body_radius
             if projectile.global_position.distance_squared_to(enemy.global_position) <= hit_distance * hit_distance:
+                var impact_direction: Vector2 = enemy.global_position - projectile.global_position
+                if projectile.is_aoe_projectile():
+                    _explode_projectile_aoe(projectile, impact_direction)
+                    break
                 var projectile_owner: Player = projectile.owner_player
                 var outgoing_damage: int = projectile.damage
-                var impact_direction: Vector2 = enemy.global_position - projectile.global_position
                 if projectile_owner != null and is_instance_valid(projectile_owner):
                     outgoing_damage = projectile_owner.roll_outgoing_damage(
                         projectile.damage,
@@ -2404,6 +2606,32 @@ func _handle_projectile_hits() -> void :
                 projectile.despawn(true, impact_direction)
                 break
     _cleanup_dead_enemies()
+
+func _explode_projectile_aoe(projectile: Projectile, impact_direction: Vector2) -> void:
+    if projectile == null or not is_instance_valid(projectile):
+        return
+    var explosion_position: Vector2 = projectile.global_position
+    var explosion_radius: float = max(projectile.hit_radius, projectile.aoe_radius)
+    var projectile_owner: Player = projectile.owner_player
+    if (projectile_owner == null or not is_instance_valid(projectile_owner)) and _player != null and is_instance_valid(_player):
+        projectile_owner = _player
+    for enemy: Enemy in _enemies:
+        if not _is_enemy_combat_active(enemy):
+            continue
+        var hit_distance: float = explosion_radius + enemy.body_radius
+        if explosion_position.distance_squared_to(enemy.global_position) > hit_distance * hit_distance:
+            continue
+        var outgoing_damage: int = projectile.damage
+        if projectile_owner != null and is_instance_valid(projectile_owner):
+            outgoing_damage = projectile_owner.roll_outgoing_damage(
+                projectile.damage,
+                projectile.crit_chance,
+                projectile.crit_multiplier
+            )
+        var dealt_damage: int = enemy.take_damage(outgoing_damage)
+        if projectile_owner != null and is_instance_valid(projectile_owner):
+            projectile_owner.heal_from_lifesteal(dealt_damage, projectile.lifesteal_chance)
+    projectile.despawn(true, impact_direction)
 
 func _on_enemy_projectile_fired(
     shooter: Enemy,
@@ -2440,10 +2668,12 @@ func _flush_pending_enemy_shots() -> void:
         projectile.global_position = shot.get("origin", Vector2.ZERO)
         projectile.direction = Vector2(shot.get("direction", Vector2.ZERO))
         projectile.speed = float(shot.get("speed", 0.0))
-        projectile.damage = max(
-            1,
-            int(round(float(shot.get("damage", 1)) * _enemy_damage_multiplier))
-        )
+        var base_damage: int = max(1, int(shot.get("damage", 1)))
+        var shooter_enemy: Enemy = shooter_value as Enemy
+        if shooter_enemy != null:
+            projectile.damage = shooter_enemy.scale_outgoing_damage(base_damage)
+        else:
+            projectile.damage = _scale_enemy_damage(base_damage)
         projectile.hit_radius = float(shot.get("hit_radius", 4.0))
         projectile.life_time = float(shot.get("life_time", 3.0))
         projectile.tint = shot.get("tint", Color(1.0, 0.36, 0.3, 1.0))
@@ -2480,9 +2710,14 @@ func _handle_enemy_contact_damage() -> void :
     if not touched:
         return
     _contact_damage_timer = _contact_damage_interval_runtime
-    var scaled_contact_damage: int = max(1, int(round(float(_contact_damage_runtime) * _enemy_damage_multiplier)))
-    _player.take_damage(scaled_contact_damage)
+    _player.take_damage(_scale_enemy_damage(_contact_damage_runtime))
     _refresh_player_hud()
+
+func _get_enemy_damage_scale() -> float:
+    return max(0.1, _enemy_damage_multiplier * _enemy_damage_stage_multiplier)
+
+func _scale_enemy_damage(base_damage: int) -> int:
+    return max(1, int(round(float(max(1, base_damage)) * _get_enemy_damage_scale())))
 
 func _cleanup_dead_projectiles() -> void :
     var alive: Array[Projectile] = []
@@ -2635,6 +2870,7 @@ func _create_pause_sub_panels() -> void :
                 _settings_panel.connect("request_close", Callable(self, "_on_settings_panel_close_requested"))
 
     _create_level_reward_panel()
+    _create_elite_chest_panel()
     _create_death_settlement_panel()
 
 func _prepare_pause_sub_scenes() -> void :
@@ -2662,45 +2898,216 @@ func _add_pause_sub_panel(panel: Control) -> void :
 func _create_level_reward_panel() -> void :
     var panel: PanelContainer = PanelContainer.new()
     panel.visible = false
-    panel.custom_minimum_size = Vector2(460.0, 320.0)
+    panel.custom_minimum_size = Vector2(980.0, 390.0)
     panel.anchors_preset = Control.PRESET_CENTER
     panel.anchor_left = 0.5
     panel.anchor_top = 0.5
     panel.anchor_right = 0.5
     panel.anchor_bottom = 0.5
-    panel.offset_left = -230.0
-    panel.offset_top = -160.0
-    panel.offset_right = 230.0
-    panel.offset_bottom = 160.0
+    panel.offset_left = -490.0
+    panel.offset_top = -195.0
+    panel.offset_right = 490.0
+    panel.offset_bottom = 195.0
     panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
     panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+    panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
+        Color(0.012, 0.045, 0.07, 0.94),
+        Color(0.0, 0.82, 0.9, 0.85),
+        2,
+        20
+    ))
 
     var margin: MarginContainer = MarginContainer.new()
-    margin.add_theme_constant_override("margin_left", 16)
-    margin.add_theme_constant_override("margin_top", 14)
-    margin.add_theme_constant_override("margin_right", 16)
-    margin.add_theme_constant_override("margin_bottom", 14)
+    margin.add_theme_constant_override("margin_left", 20)
+    margin.add_theme_constant_override("margin_top", 16)
+    margin.add_theme_constant_override("margin_right", 20)
+    margin.add_theme_constant_override("margin_bottom", 18)
     panel.add_child(margin)
 
     var vbox: VBoxContainer = VBoxContainer.new()
-    vbox.add_theme_constant_override("separation", 8)
+    vbox.add_theme_constant_override("separation", 14)
     margin.add_child(vbox)
 
     _level_reward_title = Label.new()
     _level_reward_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _level_reward_title.add_theme_font_size_override("font_size", 28)
+    _level_reward_title.add_theme_font_size_override("font_size", 30)
+    _level_reward_title.add_theme_color_override("font_color", Color(0.86, 0.98, 1.0, 1.0))
     vbox.add_child(_level_reward_title)
 
-    vbox.add_spacer(false)
+    var body: HBoxContainer = HBoxContainer.new()
+    body.add_theme_constant_override("separation", 16)
+    body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    vbox.add_child(body)
+
+    var cards_row: HBoxContainer = HBoxContainer.new()
+    cards_row.add_theme_constant_override("separation", 12)
+    cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    body.add_child(cards_row)
 
     _level_reward_buttons.clear()
     for i: int in range(LEVEL_REWARD_CHOICES_COUNT):
         var button: Button = _build_reward_button("Loading...", "none")
         _level_reward_buttons.append(button)
-        vbox.add_child(button)
+        cards_row.add_child(button)
+
+    var stat_panel: PanelContainer = PanelContainer.new()
+    stat_panel.custom_minimum_size = Vector2(250.0, 0.0)
+    stat_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    stat_panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
+        Color(0.008, 0.035, 0.055, 0.9),
+        Color(0.12, 0.62, 0.72, 0.78),
+        1,
+        8
+    ))
+    body.add_child(stat_panel)
+
+    var stat_margin: MarginContainer = MarginContainer.new()
+    stat_margin.add_theme_constant_override("margin_left", 12)
+    stat_margin.add_theme_constant_override("margin_top", 10)
+    stat_margin.add_theme_constant_override("margin_right", 12)
+    stat_margin.add_theme_constant_override("margin_bottom", 10)
+    stat_panel.add_child(stat_margin)
+
+    var stat_box: VBoxContainer = VBoxContainer.new()
+    stat_box.add_theme_constant_override("separation", 6)
+    stat_margin.add_child(stat_box)
+
+    var stat_title: Label = Label.new()
+    stat_title.text = "玩家属性"
+    stat_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    stat_title.add_theme_font_size_override("font_size", 20)
+    stat_title.add_theme_color_override("font_color", Color(0.58, 1.0, 0.96, 1.0))
+    stat_box.add_child(stat_title)
+
+    _level_reward_stat_labels.clear()
+    var stat_grid: GridContainer = GridContainer.new()
+    stat_grid.columns = 2
+    stat_grid.add_theme_constant_override("h_separation", 10)
+    stat_grid.add_theme_constant_override("v_separation", 4)
+    stat_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    stat_box.add_child(stat_grid)
+    var stat_defs: Array[Dictionary] = [
+        {"key": "hp", "label": "生命"},
+        {"key": "damage", "label": "攻击"},
+        {"key": "melee", "label": "近战"},
+        {"key": "ranged", "label": "远程"},
+        {"key": "attack_speed", "label": "攻速"},
+        {"key": "crit", "label": "暴击"},
+        {"key": "armor", "label": "护甲"},
+        {"key": "dodge", "label": "闪避"},
+        {"key": "move", "label": "移速"},
+        {"key": "range", "label": "射程"},
+        {"key": "lifesteal", "label": "吸血"},
+        {"key": "luck", "label": "幸运"},
+        {"key": "harvest", "label": "收获"},
+        {"key": "xp", "label": "经验"},
+        {"key": "gold", "label": "金币"},
+    ]
+    for stat_def: Dictionary in stat_defs:
+        _create_level_reward_stat_row(stat_grid, str(stat_def.get("key", "")), str(stat_def.get("label", "")))
 
     _level_reward_panel = panel
     _add_pause_sub_panel(_level_reward_panel)
+
+func _create_elite_chest_panel() -> void:
+    var panel: PanelContainer = PanelContainer.new()
+    panel.visible = false
+    panel.custom_minimum_size = Vector2(560.0, 390.0)
+    panel.anchors_preset = Control.PRESET_CENTER
+    panel.anchor_left = 0.5
+    panel.anchor_top = 0.5
+    panel.anchor_right = 0.5
+    panel.anchor_bottom = 0.5
+    panel.offset_left = -280.0
+    panel.offset_top = -195.0
+    panel.offset_right = 280.0
+    panel.offset_bottom = 195.0
+    panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
+        Color(0.015, 0.05, 0.085, 0.96),
+        Color(0.0, 0.85, 0.9, 0.92),
+        2,
+        22
+    ))
+
+    var margin: MarginContainer = MarginContainer.new()
+    margin.add_theme_constant_override("margin_left", 18)
+    margin.add_theme_constant_override("margin_top", 16)
+    margin.add_theme_constant_override("margin_right", 18)
+    margin.add_theme_constant_override("margin_bottom", 16)
+    panel.add_child(margin)
+
+    var vbox: VBoxContainer = VBoxContainer.new()
+    vbox.add_theme_constant_override("separation", 12)
+    margin.add_child(vbox)
+
+    _elite_chest_title = Label.new()
+    _elite_chest_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _elite_chest_title.add_theme_font_size_override("font_size", 30)
+    _elite_chest_title.add_theme_color_override("font_color", Color(0.55, 1.0, 0.96, 1.0))
+    vbox.add_child(_elite_chest_title)
+
+    var body: HBoxContainer = HBoxContainer.new()
+    body.add_theme_constant_override("separation", 14)
+    body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    vbox.add_child(body)
+
+    var icon_frame: PanelContainer = PanelContainer.new()
+    icon_frame.custom_minimum_size = Vector2(116.0, 116.0)
+    icon_frame.add_theme_stylebox_override("panel", _build_neon_panel_style(
+        Color(0.02, 0.07, 0.11, 0.92),
+        Color(1.0, 0.66, 0.0, 0.86),
+        2,
+        10
+    ))
+    body.add_child(icon_frame)
+
+    _elite_chest_icon = TextureRect.new()
+    _elite_chest_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    _elite_chest_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    _elite_chest_icon.custom_minimum_size = Vector2(96.0, 96.0)
+    icon_frame.add_child(_elite_chest_icon)
+
+    var text_box: VBoxContainer = VBoxContainer.new()
+    text_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    text_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    text_box.add_theme_constant_override("separation", 6)
+    body.add_child(text_box)
+
+    _elite_chest_name = Label.new()
+    _elite_chest_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _elite_chest_name.add_theme_font_size_override("font_size", 24)
+    text_box.add_child(_elite_chest_name)
+
+    _elite_chest_rarity = Label.new()
+    _elite_chest_rarity.add_theme_font_size_override("font_size", 18)
+    text_box.add_child(_elite_chest_rarity)
+
+    _elite_chest_desc = RichTextLabel.new()
+    _elite_chest_desc.bbcode_enabled = true
+    _elite_chest_desc.fit_content = false
+    _elite_chest_desc.scroll_active = false
+    _elite_chest_desc.custom_minimum_size = Vector2(0.0, 120.0)
+    _elite_chest_desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    text_box.add_child(_elite_chest_desc)
+
+    var button_row: HBoxContainer = HBoxContainer.new()
+    button_row.alignment = BoxContainer.ALIGNMENT_CENTER
+    button_row.add_theme_constant_override("separation", 12)
+    vbox.add_child(button_row)
+
+    _elite_chest_claim_button = Button.new()
+    _style_neon_action_button(_elite_chest_claim_button, "领取")
+    _elite_chest_claim_button.pressed.connect(_on_elite_chest_claim_pressed)
+    button_row.add_child(_elite_chest_claim_button)
+
+    _elite_chest_recycle_button = Button.new()
+    _style_neon_action_button(_elite_chest_recycle_button, "回收")
+    _elite_chest_recycle_button.pressed.connect(_on_elite_chest_recycle_pressed)
+    button_row.add_child(_elite_chest_recycle_button)
+
+    _elite_chest_panel = panel
+    _add_pause_sub_panel(_elite_chest_panel)
 
 func _create_death_settlement_panel() -> void:
     var panel: PanelContainer = PanelContainer.new()
@@ -2868,6 +3275,22 @@ func _set_death_settlement_value(key: String, value: String) -> void:
         var target_label: Label = entry
         target_label.text = value
 
+func _create_level_reward_stat_row(parent: GridContainer, key: String, label_text: String) -> void:
+    var label: Label = Label.new()
+    label.text = label_text
+    label.add_theme_font_size_override("font_size", 15)
+    label.add_theme_color_override("font_color", Color(0.48, 0.88, 0.92, 0.95))
+    parent.add_child(label)
+
+    var value: Label = Label.new()
+    value.text = "--"
+    value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+    value.add_theme_font_size_override("font_size", 15)
+    value.add_theme_color_override("font_color", Color(0.92, 0.98, 1.0, 1.0))
+    value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    parent.add_child(value)
+    _level_reward_stat_labels[key] = value
+
 func _style_neon_action_button(button: Button, text: String) -> void:
     if button == null:
         return
@@ -2879,10 +3302,63 @@ func _style_neon_action_button(button: Button, text: String) -> void:
 
 func _build_reward_button(text: String, reward_id: String) -> Button:
     var button: Button = Button.new()
-    button.custom_minimum_size = Vector2(400.0, 52.0)
-    button.text = text
-    button.add_theme_font_size_override("font_size", 24)
+    button.custom_minimum_size = Vector2(210.0, 250.0)
+    button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    button.text = ""
+    button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+    button.add_theme_font_size_override("font_size", 21)
     button.set_meta("reward_id", reward_id)
+    button.tooltip_text = ""
+
+    var margin: MarginContainer = MarginContainer.new()
+    margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+    margin.offset_left = 12.0
+    margin.offset_top = 12.0
+    margin.offset_right = -12.0
+    margin.offset_bottom = -12.0
+    button.add_child(margin)
+
+    var vbox: VBoxContainer = VBoxContainer.new()
+    vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    vbox.add_theme_constant_override("separation", 8)
+    margin.add_child(vbox)
+
+    var title: Label = Label.new()
+    title.name = "RewardTitle"
+    title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    title.add_theme_font_size_override("font_size", 22)
+    title.add_theme_color_override("font_color", Color(0.95, 1.0, 1.0, 1.0))
+    vbox.add_child(title)
+
+    var rarity: Label = Label.new()
+    rarity.name = "RewardRarity"
+    rarity.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    rarity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    rarity.add_theme_font_size_override("font_size", 17)
+    vbox.add_child(rarity)
+
+    var divider: ColorRect = ColorRect.new()
+    divider.name = "RewardDivider"
+    divider.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    divider.custom_minimum_size = Vector2(0.0, 1.0)
+    divider.color = Color(0.2, 0.9, 0.95, 0.32)
+    vbox.add_child(divider)
+
+    var effect: Label = Label.new()
+    effect.name = "RewardEffect"
+    effect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    effect.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+    effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    effect.add_theme_font_size_override("font_size", 21)
+    effect.add_theme_color_override("font_color", Color(0.88, 0.96, 1.0, 1.0))
+    effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    vbox.add_child(effect)
+
     button.pressed.connect(_on_level_reward_button_pressed.bind(button))
     return button
 
@@ -2904,7 +3380,7 @@ func _open_pause_menu() -> void :
 
 func _resume_game_from_pause() -> void :
     if _reward_opened:
-        _show_level_reward_panel()
+        _show_active_reward_panel()
         return
     _pause_opened = false
     _hide_pause_sub_panels()
@@ -2995,7 +3471,7 @@ func _stop_pause_transition_tween() -> void:
 
 func _on_resume_button_pressed() -> void :
     if _reward_opened:
-        _show_level_reward_panel()
+        _show_active_reward_panel()
         return
     _resume_game_from_pause()
 
@@ -3013,7 +3489,7 @@ func _on_settings_button_pressed() -> void :
 
 func _show_slot_panel(mode: String) -> void :
     if _reward_opened:
-        _show_level_reward_panel()
+        _show_active_reward_panel()
         return
     if _slot_panel == null:
         return
@@ -3026,7 +3502,7 @@ func _show_slot_panel(mode: String) -> void :
 
 func _show_settings_panel() -> void :
     if _reward_opened:
-        _show_level_reward_panel()
+        _show_active_reward_panel()
         return
     if _settings_panel == null:
         return
@@ -3046,8 +3522,10 @@ func _hide_pause_sub_panels() -> void :
         if _death_settlement_panel != null:
             _death_settlement_panel.visible = false
         pause_panel.visible = false
+        if _elite_chest_panel != null:
+            _elite_chest_panel.visible = _pending_elite_chests > 0
         if _level_reward_panel != null:
-            _level_reward_panel.visible = true
+            _level_reward_panel.visible = _pending_elite_chests <= 0
         return
     _set_crt_effects_enabled(true)
     if _slot_panel != null:
@@ -3056,6 +3534,8 @@ func _hide_pause_sub_panels() -> void :
         _settings_panel.visible = false
     if _level_reward_panel != null:
         _level_reward_panel.visible = false
+    if _elite_chest_panel != null:
+        _elite_chest_panel.visible = false
     if _death_settlement_panel != null:
         _death_settlement_panel.visible = false
     pause_panel.visible = true
@@ -3064,8 +3544,9 @@ func _is_pause_sub_panel_open() -> bool:
     var slot_open: bool = _slot_panel != null and _slot_panel.visible
     var settings_open: bool = _settings_panel != null and _settings_panel.visible
     var reward_open: bool = _level_reward_panel != null and _level_reward_panel.visible
+    var chest_open: bool = _elite_chest_panel != null and _elite_chest_panel.visible
     var death_summary_open: bool = _death_settlement_panel != null and _death_settlement_panel.visible
-    return slot_open or settings_open or reward_open or death_summary_open
+    return slot_open or settings_open or reward_open or chest_open or death_summary_open
 
 func _on_death_retry_pressed() -> void:
     get_tree().paused = false
@@ -3097,8 +3578,7 @@ func _on_enemy_died(enemy: Enemy) -> void :
         if hud.has_method("hide_boss_bar"):
             hud.call("hide_boss_bar")
     
-    var gold_amount: int = _resolve_enemy_gold_drop(enemy)
-    _spawn_experience_orb(enemy.global_position, enemy.xp_drop_amount, gold_amount)
+    _spawn_enemy_resource_drops(enemy)
     
     # Roll for consumable drop (from monsters)
     var luck: float = 0.0
@@ -3108,12 +3588,27 @@ func _on_enemy_died(enemy: Enemy) -> void :
     var final_drop_chance: float = CONSUMABLE_DROP_CHANCE_BASE * (1.0 + luck / 100.0)
     if enemy.is_elite:
         final_drop_chance = 0.20 * (1.0 + luck / 100.0) 
-        # Brotato style: Elite drop 3 instant level-up rewards (like a legendary chest)
-        _pending_level_up_rewards += 3
-        _try_open_next_level_reward()
+        _pending_elite_chests += 1
+        _spawn_elite_chest_reward_visual(enemy.global_position)
         
     if randf() < final_drop_chance:
         _spawn_consumable(enemy.global_position)
+
+func _spawn_elite_chest_reward_visual(pos: Vector2) -> void:
+    if ELITE_CHEST_DROP_SCRIPT == null:
+        return
+    var chest: Node2D = ELITE_CHEST_DROP_SCRIPT.new() as Node2D
+    if chest == null:
+        return
+    chest.global_position = pos
+    add_child(chest)
+    var target_position: Vector2 = pos + Vector2(0.0, -72.0)
+    if _player != null and is_instance_valid(_player):
+        target_position = _player.global_position + Vector2(0.0, -76.0)
+    var impulse: Vector2 = _random_drop_impulse(90.0, 165.0)
+    if chest.has_method("setup"):
+        chest.call("setup", impulse, target_position)
+    _spawn_pickup_hint(pos, "CHEST", Color(1.0, 0.68, 0.0, 0.96), 18, Vector2(-28.0, -34.0), 0.85, 54.0)
 
 func _resolve_enemy_gold_drop(enemy: Enemy) -> int:
     var combat_params: Dictionary = BalanceService.get_global_combat_params()
@@ -3123,6 +3618,53 @@ func _resolve_enemy_gold_drop(enemy: Enemy) -> int:
     if enemy.enemy_type == Enemy.EnemyType.RANGED or enemy.enemy_type == Enemy.EnemyType.BARRAGE:
         return int(gold_drop.get("ranged", 2))
     return int(gold_drop.get("melee", 1))
+
+func _spawn_enemy_resource_drops(enemy: Enemy) -> void:
+    var xp_total: int = _randomized_scaled_resource_amount(enemy.xp_drop_amount, _stage_xp_drop_multiplier)
+    var gold_total: int = _randomized_scaled_resource_amount(_resolve_enemy_gold_drop(enemy), _stage_gold_drop_multiplier)
+    var xp_count: int = 1
+    var gold_count: int = 1
+    if enemy.is_elite:
+        xp_count = randi_range(4, 6)
+        gold_count = randi_range(2, 4)
+    elif enemy.enemy_type == Enemy.EnemyType.RANGED or enemy.enemy_type == Enemy.EnemyType.BARRAGE:
+        xp_count = randi_range(2, 3)
+        gold_count = randi_range(1, 2)
+    else:
+        xp_count = randi_range(1, 2)
+        gold_count = 1
+    _spawn_split_resource_orbs(enemy.global_position, xp_total, 0, xp_count)
+    _spawn_split_resource_orbs(enemy.global_position, 0, gold_total, gold_count)
+
+func _randomized_scaled_resource_amount(base_amount: int, multiplier: float) -> int:
+    if base_amount <= 0:
+        return 0
+    var scaled_value: float = max(0.0, float(base_amount) * max(0.0, multiplier))
+    var guaranteed: int = int(floor(scaled_value))
+    var fractional: float = scaled_value - float(guaranteed)
+    if randf() < fractional:
+        guaranteed += 1
+    return max(0, guaranteed)
+
+func _spawn_split_resource_orbs(spawn_position: Vector2, xp_total: int, gold_total: int, desired_count: int) -> void:
+    var total: int = max(0, xp_total + gold_total)
+    if total <= 0:
+        return
+    var count: int = clampi(desired_count, 1, total)
+    var remaining: int = total
+    for i: int in range(count):
+        var slots_left: int = count - i
+        var amount: int = 1
+        if slots_left <= 1:
+            amount = remaining
+        else:
+            var max_for_slot: int = max(1, remaining - (slots_left - 1))
+            amount = randi_range(1, max_for_slot)
+        remaining -= amount
+        if xp_total > 0:
+            _spawn_experience_orb(spawn_position, amount, 0)
+        else:
+            _spawn_experience_orb(spawn_position, 0, amount)
 
 func _add_gold(amount: int) -> void:
     if amount <= 0:
@@ -3236,6 +3778,8 @@ func _cleanup_dead_consumables() -> void:
     _consumables = alive
 
 func _spawn_experience_orb(spawn_position: Vector2, xp_value: int, gold_value: int = 0) -> void :
+    if xp_value <= 0 and gold_value <= 0:
+        return
     var orb: ExperienceOrb = ExperienceOrb.new()
     var impulse: Vector2 = _random_drop_impulse(56.0, 128.0)
     orb.global_position = spawn_position + impulse.normalized() * randf_range(2.0, 10.0)
@@ -3396,6 +3940,13 @@ func _try_open_next_level_reward() -> void :
         return
     _show_level_reward_panel()
 
+func _show_active_reward_panel() -> void:
+    if _pending_elite_chests > 0:
+        _show_elite_chest_panel()
+        return
+    if _pending_level_up_rewards > 0:
+        _show_level_reward_panel()
+
 func _show_level_reward_panel() -> void :
     if _level_reward_panel == null:
         return
@@ -3411,6 +3962,168 @@ func _show_level_reward_panel() -> void :
     _level_reward_panel.visible = true
     if _level_reward_title != null:
         _level_reward_title.text = _tf("ui.game_scene.level_reward_title_fmt", [_current_level], "Level %d Reward Choice")
+
+func _show_elite_chest_panel() -> void:
+    if _elite_chest_panel == null or _shop_system_runtime == null:
+        return
+    if _pending_elite_chests <= 0:
+        _open_shop_after_wave_reward()
+        return
+    _reward_opened = true
+    get_tree().paused = true
+    _set_pause_overlay_visible(true)
+    pause_panel.visible = false
+    if _slot_panel != null:
+        _slot_panel.visible = false
+    if _settings_panel != null:
+        _settings_panel.visible = false
+    if _level_reward_panel != null:
+        _level_reward_panel.visible = false
+    if _current_elite_chest_offer.is_empty():
+        _current_elite_chest_offer = _shop_system_runtime.roll_elite_chest_item(_build_elite_chest_context())
+    _refresh_elite_chest_panel()
+    _elite_chest_panel.visible = true
+
+func _build_elite_chest_context() -> Dictionary:
+    var context: Dictionary = _build_wave_runtime_snapshot()
+    var player_luck: float = 0.0
+    if _player != null and is_instance_valid(_player):
+        player_luck = _player.luck
+    context["luck"] = player_luck
+    context["wave"] = max(1, GameManager.current_wave)
+    return context
+
+func _refresh_elite_chest_panel() -> void:
+    var offer: Dictionary = _current_elite_chest_offer
+    var rarity: String = str(offer.get("rarity", "common")).to_lower()
+    var rarity_color: Color = _elite_chest_rarity_color(rarity)
+    if _elite_chest_panel != null:
+        _elite_chest_panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
+            Color(0.015, 0.05, 0.085, 0.96),
+            rarity_color,
+            2,
+            22
+        ))
+    if _elite_chest_title != null:
+        _elite_chest_title.text = "精英宝箱  %d" % _pending_elite_chests
+    if _elite_chest_name != null:
+        _elite_chest_name.text = _resolve_item_display_name(offer)
+        _elite_chest_name.add_theme_color_override("font_color", Color(0.92, 0.98, 1.0, 1.0))
+    if _elite_chest_rarity != null:
+        _elite_chest_rarity.text = _elite_chest_rarity_label(rarity)
+        _elite_chest_rarity.add_theme_color_override("font_color", rarity_color)
+    if _elite_chest_desc != null:
+        _elite_chest_desc.text = _resolve_item_display_desc(offer)
+    if _elite_chest_icon != null:
+        _elite_chest_icon.texture = _load_reward_icon_texture(str(offer.get("icon_path", "")))
+    if _elite_chest_claim_button != null:
+        _elite_chest_claim_button.text = "领取"
+    if _elite_chest_recycle_button != null:
+        _elite_chest_recycle_button.text = "回收 +%dG" % max(1, int(offer.get("recycle_value", 1)))
+
+func _on_elite_chest_claim_pressed() -> void:
+    if _current_elite_chest_offer.is_empty() or _shop_system_runtime == null:
+        return
+    var result: Dictionary = _shop_system_runtime.claim_item_reward(
+        _current_elite_chest_offer,
+        _build_wave_runtime_snapshot()
+    )
+    if bool(result.get("ok", false)):
+        _apply_item_reward_runtime_state(result.get("state", {}))
+        _finish_one_elite_chest_reward()
+
+func _on_elite_chest_recycle_pressed() -> void:
+    if _current_elite_chest_offer.is_empty() or _shop_system_runtime == null:
+        return
+    var result: Dictionary = _shop_system_runtime.recycle_item_reward(
+        _current_elite_chest_offer,
+        _build_wave_runtime_snapshot()
+    )
+    if bool(result.get("ok", false)):
+        _apply_item_reward_runtime_state(result.get("state", {}))
+        _finish_one_elite_chest_reward()
+
+func _finish_one_elite_chest_reward() -> void:
+    _pending_elite_chests = max(0, _pending_elite_chests - 1)
+    _current_elite_chest_offer = {}
+    if _pending_elite_chests > 0:
+        _show_elite_chest_panel()
+        return
+    _close_elite_chest_panel()
+    if _pending_level_up_rewards > 0:
+        _try_open_next_level_reward()
+        return
+    _open_shop_after_wave_reward()
+
+func _close_elite_chest_panel() -> void:
+    _reward_opened = false
+    _current_elite_chest_offer = {}
+    if _elite_chest_panel != null:
+        _elite_chest_panel.visible = false
+    get_tree().paused = false
+    _set_pause_overlay_visible(false)
+
+func _apply_item_reward_runtime_state(raw_state: Variant) -> void:
+    if not (raw_state is Dictionary):
+        return
+    var state: Dictionary = raw_state
+    _current_gold_runtime = max(0, int(state.get("current_gold", _current_gold_runtime)))
+    _shop_runtime_state = _normalize_shop_runtime_state(state.get("shop_runtime_state", _shop_runtime_state))
+    _gold_multiplier = max(0.1, float(state.get("gold_gain_multiplier", _gold_multiplier)))
+    _xp_multiplier = max(0.1, float(state.get("xp_gain_mult", _xp_multiplier)))
+    if _player != null and is_instance_valid(_player):
+        _player.max_hp = max(1, int(state.get("player_max_hp", _player.max_hp)))
+        _player.current_hp = clampi(int(state.get("player_hp", _player.current_hp)), 0, _player.max_hp)
+        _player.move_speed = float(state.get("player_move_speed", _player.move_speed))
+        _player.bonus_target_range = float(state.get("bonus_target_range", _player.bonus_target_range))
+        _player.pickup_radius = float(state.get("pickup_radius", _player.pickup_radius))
+        var stats_value: Variant = state.get("player_stats", {})
+        if stats_value is Dictionary:
+            _player.import_runtime_stats((stats_value as Dictionary).duplicate(true))
+    _refresh_weapon_tag_state_runtime(true)
+    _refresh_player_hud()
+
+func _resolve_item_display_name(offer: Dictionary) -> String:
+    var item_id: String = str(offer.get("item_id", ""))
+    if LocaleService != null and not item_id.is_empty():
+        return LocaleService.t_data("item", item_id, "name", str(offer.get("name", "Item")))
+    return str(offer.get("name", "Item"))
+
+func _resolve_item_display_desc(offer: Dictionary) -> String:
+    var item_id: String = str(offer.get("item_id", ""))
+    if LocaleService != null and not item_id.is_empty():
+        return LocaleService.t_data("item", item_id, "desc", str(offer.get("description", "")))
+    return str(offer.get("description", ""))
+
+func _load_reward_icon_texture(path: String) -> Texture2D:
+    if path.is_empty():
+        return null
+    var resource: Resource = ResourceLoader.load(path)
+    if resource is Texture2D:
+        return resource as Texture2D
+    return null
+
+func _elite_chest_rarity_color(rarity: String) -> Color:
+    match rarity:
+        "rare":
+            return Color(0.0, 1.0, 1.0, 0.92)
+        "epic":
+            return Color(0.73, 0.4, 1.0, 0.94)
+        "legendary":
+            return Color(1.0, 0.68, 0.0, 0.96)
+        _:
+            return Color(0.55, 0.62, 0.72, 0.9)
+
+func _elite_chest_rarity_label(rarity: String) -> String:
+    match rarity:
+        "rare":
+            return "稀有 / Rare"
+        "epic":
+            return "史诗 / Epic"
+        "legendary":
+            return "传说 / Legendary"
+        _:
+            return "普通 / Common"
 
 func _on_level_reward_selected(reward_id: String) -> void :
     if _player == null or not is_instance_valid(_player):
@@ -3441,21 +4154,229 @@ func _close_level_reward_panel() -> void :
 func _refresh_level_reward_choices() -> void:
     var reward_context: Dictionary = UpgradeSystem.build_reward_context(_build_reward_run_state())
     _level_reward_choices = UpgradeSystem.get_reward_choices(reward_context)
+    _refresh_level_reward_stat_panel()
     for i: int in range(_level_reward_buttons.size()):
         var button: Button = _level_reward_buttons[i]
         if button == null:
             continue
         if i >= _level_reward_choices.size():
             button.disabled = true
-            button.text = _tx("ui.game_scene.no_weapon", "No Weapon")
             button.set_meta("reward_id", "none")
             button.tooltip_text = ""
+            _set_reward_card_labels(button, _tx("ui.game_scene.no_weapon", "No Reward"), "", "", Color(0.62, 0.72, 0.78, 0.9))
+            button.add_theme_stylebox_override("normal", _build_reward_card_style("common", false))
+            button.add_theme_stylebox_override("hover", _build_reward_card_style("common", true))
+            button.add_theme_stylebox_override("pressed", _build_reward_card_style("common", true))
             continue
         var reward: Dictionary = _level_reward_choices[i]
+        var rarity: String = str(reward.get("rarity", "common")).to_lower()
+        var rarity_color: Color = _level_reward_rarity_color(rarity)
+        var effect_text: String = _format_reward_effects(reward.get("effects", []))
         button.disabled = false
-        button.text = str(reward.get("name", "Unknown Weapon"))
+        button.text = ""
         button.set_meta("reward_id", str(reward.get("id", "")))
-        button.tooltip_text = str(reward.get("desc", ""))
+        button.tooltip_text = ""
+        var body_effect_text: String = effect_text
+        if _reward_effect_line_count(reward.get("effects", [])) <= 1:
+            body_effect_text = ""
+        _set_reward_card_labels(
+            button,
+            _format_level_reward_title(reward),
+            _level_reward_rarity_label(rarity),
+            body_effect_text,
+            rarity_color
+        )
+        button.add_theme_color_override("font_color", Color(0.92, 0.98, 1.0, 1.0))
+        button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 1.0))
+        button.add_theme_stylebox_override("normal", _build_reward_card_style(rarity, false))
+        button.add_theme_stylebox_override("hover", _build_reward_card_style(rarity, true))
+        button.add_theme_stylebox_override("pressed", _build_reward_card_style(rarity, true))
+
+func _set_reward_card_labels(button: Button, title_text: String, rarity_text: String, effect_text: String, rarity_color: Color) -> void:
+    var title := button.find_child("RewardTitle", true, false) as Label
+    if title != null:
+        title.text = title_text
+    var rarity := button.find_child("RewardRarity", true, false) as Label
+    if rarity != null:
+        rarity.text = rarity_text
+        rarity.add_theme_color_override("font_color", rarity_color)
+    var divider := button.find_child("RewardDivider", true, false) as ColorRect
+    if divider != null:
+        divider.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.34)
+    var effect := button.find_child("RewardEffect", true, false) as Label
+    if effect != null:
+        effect.text = effect_text
+
+func _format_level_reward_title(reward: Dictionary) -> String:
+    var effect_text: String = _format_reward_effects(reward.get("effects", []))
+    var first_line_index: int = effect_text.find("\n")
+    if first_line_index >= 0:
+        return effect_text.substr(0, first_line_index)
+    if not effect_text.is_empty():
+        return effect_text
+    return str(reward.get("name", "Reward"))
+
+func _format_reward_effects(raw_effects: Variant) -> String:
+    if not (raw_effects is Array):
+        return ""
+    var lines: PackedStringArray = PackedStringArray()
+    for effect_value: Variant in raw_effects:
+        if not (effect_value is Dictionary):
+            continue
+        var effect: Dictionary = effect_value
+        var effect_type: String = str(effect.get("type", ""))
+        var value: float = float(effect.get("value", 0.0))
+        var line: String = _format_reward_effect_line(effect_type, value)
+        if not line.is_empty():
+            lines.append(line)
+    return "\n".join(lines)
+
+func _reward_effect_line_count(raw_effects: Variant) -> int:
+    if not (raw_effects is Array):
+        return 0
+    var count: int = 0
+    for effect_value: Variant in raw_effects:
+        if not (effect_value is Dictionary):
+            continue
+        var effect: Dictionary = effect_value
+        if not _format_reward_effect_line(str(effect.get("type", "")), float(effect.get("value", 0.0))).is_empty():
+            count += 1
+    return count
+
+func _format_reward_effect_line(effect_type: String, value: float) -> String:
+    match effect_type:
+        "attack_damage_flat":
+            return "攻击 %s" % _format_signed_number(value)
+        "melee_damage_flat":
+            return "近战伤害 %s" % _format_signed_number(value)
+        "ranged_damage_flat":
+            return "远程伤害 %s" % _format_signed_number(value)
+        "global_attack_percent_flat":
+            return "伤害 %s" % _format_signed_percent(value / 100.0)
+        "target_range_flat":
+            return "射程 %s" % _format_signed_number(value)
+        "move_speed_flat":
+            return "移速 %s" % _format_signed_number(value)
+        "max_hp_flat":
+            return "最大生命 %s" % _format_signed_number(value)
+        "heal_flat":
+            return "立即治疗 %s" % _format_signed_number(value)
+        "armor_flat":
+            return "护甲 %s" % _format_signed_number(value)
+        "dodge_chance_flat":
+            return "闪避 %s" % _format_signed_percent(value)
+        "crit_chance_flat":
+            return "暴击率 %s" % _format_signed_percent(value)
+        "crit_multiplier_flat":
+            return "暴击收益 %s" % _format_signed_percent(value)
+        "lifesteal_flat":
+            return "吸血 %s" % _format_signed_percent(value)
+        "luck_flat":
+            return "幸运 %s" % _format_signed_number(value)
+        "harvest_flat":
+            return "收获 %s" % _format_signed_number(value)
+        "hp_regen_flat":
+            return "生命回复 %s" % _format_signed_number(value)
+        "xp_gain_mult":
+            return "经验获取 %s" % _format_multiplier_bonus(value)
+        "gold_gain_mult":
+            return "金币获取 %s" % _format_multiplier_bonus(value)
+        "stamina_recover_mult":
+            return "体力回复 %s" % _format_multiplier_bonus(value)
+        "auto_attack_interval_mult":
+            return "攻速 %s" % _format_interval_multiplier_as_attack_speed(value)
+        "attack_speed_mult":
+            return "攻速 %s" % _format_multiplier_bonus(value)
+        _:
+            return ""
+
+func _refresh_level_reward_stat_panel() -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    _set_level_reward_stat("hp", "%d/%d" % [_player.current_hp, _player.max_hp])
+    _set_level_reward_stat("damage", "+%d / +%s" % [_player.get_attack_damage_bonus(), _format_percent_plain(_player.get_global_attack_percent() / 100.0)])
+    _set_level_reward_stat("melee", "+%d" % _player.get_melee_attack_damage_bonus())
+    _set_level_reward_stat("ranged", "+%d" % _player.get_ranged_attack_damage_bonus())
+    _set_level_reward_stat("attack_speed", _format_percent_plain(_player.get_attack_speed_multiplier() - 1.0))
+    _set_level_reward_stat("crit", _format_percent_plain(_player.crit_chance))
+    _set_level_reward_stat("armor", _format_number(_player.armor))
+    _set_level_reward_stat("dodge", _format_percent_plain(_player.dodge_chance))
+    _set_level_reward_stat("move", _format_number(_player.move_speed))
+    _set_level_reward_stat("range", _format_number(_player.get_current_target_range()))
+    _set_level_reward_stat("lifesteal", _format_percent_plain(_player.lifesteal))
+    _set_level_reward_stat("luck", _format_number(_player.luck))
+    _set_level_reward_stat("harvest", _format_number(_player.get_harvest()))
+    _set_level_reward_stat("xp", _format_percent_plain(_player.get_xp_gain_multiplier() - 1.0))
+    _set_level_reward_stat("gold", _format_percent_plain(_gold_multiplier - 1.0))
+
+func _set_level_reward_stat(key: String, value: String) -> void:
+    var label_value: Variant = _level_reward_stat_labels.get(key, null)
+    if label_value is Label:
+        var label: Label = label_value
+        label.text = value
+
+func _build_reward_card_style(rarity: String, highlighted: bool) -> StyleBoxFlat:
+    var border: Color = _level_reward_rarity_color(rarity)
+    var fill_alpha: float = 0.88 if highlighted else 0.78
+    var style: StyleBoxFlat = _build_neon_panel_style(
+        Color(0.01, 0.04, 0.065, fill_alpha),
+        border,
+        2,
+        10 if highlighted else 6
+    )
+    style.content_margin_left = 12
+    style.content_margin_top = 12
+    style.content_margin_right = 12
+    style.content_margin_bottom = 12
+    return style
+
+func _level_reward_rarity_color(rarity: String) -> Color:
+    match rarity:
+        "rare":
+            return Color(0.0, 0.92, 1.0, 0.95)
+        "epic":
+            return Color(0.72, 0.38, 1.0, 0.95)
+        "legendary":
+            return Color(1.0, 0.68, 0.0, 0.98)
+        _:
+            return Color(0.62, 0.72, 0.78, 0.9)
+
+func _level_reward_rarity_label(rarity: String) -> String:
+    match rarity:
+        "rare":
+            return "稀有"
+        "epic":
+            return "史诗"
+        "legendary":
+            return "传说"
+        _:
+            return "普通"
+
+func _format_signed_number(value: float) -> String:
+    var prefix: String = "+" if value >= 0.0 else ""
+    return "%s%s" % [prefix, _format_number(value)]
+
+func _format_number(value: float) -> String:
+    if absf(value - round(value)) < 0.01:
+        return str(int(round(value)))
+    return "%.1f" % value
+
+func _format_signed_percent(value: float) -> String:
+    var prefix: String = "+" if value >= 0.0 else ""
+    return "%s%s" % [prefix, _format_percent_plain(value)]
+
+func _format_percent_plain(value: float) -> String:
+    var percent_value: float = value * 100.0
+    if absf(percent_value - round(percent_value)) < 0.01:
+        return "%d%%" % int(round(percent_value))
+    return "%.1f%%" % percent_value
+
+func _format_multiplier_bonus(multiplier: float) -> String:
+    return _format_signed_percent(multiplier - 1.0)
+
+func _format_interval_multiplier_as_attack_speed(multiplier: float) -> String:
+    var safe_multiplier: float = max(0.05, multiplier)
+    return _format_signed_percent((1.0 / safe_multiplier) - 1.0)
 
 func _build_reward_run_state() -> Dictionary:
     var player_luck: float = 0.0
@@ -3618,6 +4539,7 @@ func _build_runtime_save_payload() -> Dictionary:
         "gold_gain_multiplier": _gold_multiplier,
         "run_kill_count": _run_kill_count,
         "run_survival_time": _run_survival_time_runtime + _battle_elapsed,
+        "pending_elite_chests": _pending_elite_chests,
         "shop_runtime_state": _shop_runtime_state.duplicate(true),
         "equipped_weapons": _extract_weapon_list_from_shop_state(_shop_runtime_state),
         "locked_shop_offers": _extract_locked_offer_list_from_shop_state(_shop_runtime_state),
@@ -3629,10 +4551,7 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
         selected_id = "the_fool"
     var stage_id: String = str(slot_data.get("stage_id", GameManager.current_stage_id))
     var wave_id: int = 1
-    var loaded_difficulty: String = str(slot_data.get("difficulty", "normal")).to_lower()
-    if loaded_difficulty != "easy" and loaded_difficulty != "hard":
-        loaded_difficulty = "normal"
-    GameManager.current_difficulty = loaded_difficulty
+    GameManager.current_difficulty = GameManager._normalize_difficulty(str(slot_data.get("difficulty", "danger_1")))
     _refresh_difficulty_modifiers()
 
     GameManager.selected_character = selected_id
@@ -3701,6 +4620,8 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
         _current_level += 1
         _xp_to_next_level = _xp_required_for_level(_current_level)
     _pending_level_up_rewards = 0
+    _pending_elite_chests = max(0, int(slot_data.get("pending_elite_chests", 0)))
+    _current_elite_chest_offer = {}
     _reward_opened = false
     _wave_end_reward_gate_active = false
     _pending_wave_shop_snapshot = {}
@@ -3826,6 +4747,8 @@ func _refresh_difficulty_modifiers() -> void :
     _enemy_hp_multiplier = max(0.1, float(difficulty_modifiers.get("enemy_hp", 1.0)))
     _enemy_damage_multiplier = max(0.1, float(difficulty_modifiers.get("enemy_damage", 1.0)))
     _spawn_interval_multiplier = max(0.1, float(difficulty_modifiers.get("spawn_interval", 1.0)))
+    _enemy_count_multiplier = max(0.1, float(difficulty_modifiers.get("enemy_count", 1.0)))
+    _enemy_move_speed_difficulty_multiplier = max(0.1, float(difficulty_modifiers.get("enemy_speed", 1.0)))
     _xp_multiplier = max(0.1, float(difficulty_modifiers.get("xp", 1.0)))
     _gold_multiplier = max(0.1, float(difficulty_modifiers.get("gold", 1.0)))
 
@@ -3856,20 +4779,24 @@ func _apply_enemy_mix_from_balance(stage_id: String) -> void:
     var stage_profile: Dictionary = BalanceService.get_stage_profile(stage_id)
     var enemy_mix: Dictionary = stage_profile.get("enemy_mix", {})
 
+    var melee_weight: float = float(enemy_mix.get("melee_weight", ENEMY_MELEE_WEIGHT))
+    var fast_melee_weight: float = float(enemy_mix.get("fast_melee_weight", ENEMY_FAST_MELEE_WEIGHT))
+    var charger_weight: float = float(enemy_mix.get("charger_weight", ENEMY_CHARGER_WEIGHT))
     var ranged_weight: float = float(enemy_mix.get("ranged_weight", ENEMY_RANGED_WEIGHT))
     var barrage_weight: float = float(enemy_mix.get("barrage_weight", ENEMY_BARRAGE_WEIGHT))
-    ranged_weight = clampf(ranged_weight, 0.0, 1.0)
-    barrage_weight = clampf(barrage_weight, 0.0, 1.0)
+    melee_weight = max(0.0, melee_weight)
+    fast_melee_weight = max(0.0, fast_melee_weight)
+    charger_weight = max(0.0, charger_weight)
+    ranged_weight = max(0.0, ranged_weight)
+    barrage_weight = max(0.0, barrage_weight)
 
-    # Prevent overflow so melee always has room in the spawn pool.
-    var combined: float = ranged_weight + barrage_weight
-    if combined > 0.95:
-        var weight_scale: float = 0.95 / combined
-        ranged_weight *= weight_scale
-        barrage_weight *= weight_scale
-
-    _enemy_ranged_weight_runtime = ranged_weight
-    _enemy_barrage_weight_runtime = barrage_weight
+    _enemy_spawn_weights_runtime = {
+        Enemy.EnemyType.MELEE: melee_weight,
+        Enemy.EnemyType.FAST_MELEE: fast_melee_weight,
+        Enemy.EnemyType.CHARGER: charger_weight,
+        Enemy.EnemyType.RANGED: ranged_weight,
+        Enemy.EnemyType.BARRAGE: barrage_weight,
+    }
 
 func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     var stage_profile: Dictionary = BalanceService.get_stage_profile(stage_id)
@@ -3882,6 +4809,7 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
         0.1,
         3.0
     )
+    _enemy_damage_stage_multiplier = clampf(float(stage_profile.get("enemy_damage_multiplier", 1.0)), 0.1, 10.0)
     var wave_profile: Dictionary = {}
     if wave_manager != null and wave_manager.has_method("get_current_wave_definition"):
         wave_profile = wave_manager.get_current_wave_definition()
@@ -3889,8 +4817,10 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     # 加载生成配置
     var combat_params: Dictionary = BalanceService.get_global_combat_params()
     var spawn_profile: Dictionary = stage_profile.get("spawn_profile", {})
+    var resource_profile: Dictionary = stage_profile.get("resource_profile", {})
     
-    _initial_enemy_count_runtime = int(combat_params.get("initial_enemy_count", INITIAL_ENEMY_COUNT))
+    var base_initial_enemy_count: int = int(combat_params.get("initial_enemy_count", INITIAL_ENEMY_COUNT))
+    _initial_enemy_count_runtime = max(0, int(round(float(base_initial_enemy_count) * _enemy_count_multiplier)))
     _enemy_min_spawn_radius_runtime = max(
         0.0,
         float(combat_params.get("enemy_min_spawn_radius", ENEMY_MIN_SPAWN_RADIUS))
@@ -3904,9 +4834,12 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
         0.01,
         float(combat_params.get("contact_damage_interval", CONTACT_DAMAGE_INTERVAL))
     )
-    _max_enemy_count_runtime = int(spawn_profile.get("max_enemy_count", MAX_ENEMY_COUNT))
+    var base_max_enemy_count: int = int(spawn_profile.get("max_enemy_count", MAX_ENEMY_COUNT))
+    _max_enemy_count_runtime = max(1, int(round(float(base_max_enemy_count) * _enemy_count_multiplier)))
     _spawn_interval_start_runtime = float(spawn_profile.get("spawn_interval_start", ENEMY_SPAWN_INTERVAL))
     _spawn_interval_end_runtime = float(spawn_profile.get("spawn_interval_end", ENEMY_SPAWN_INTERVAL))
+    _stage_xp_drop_multiplier = max(0.0, float(resource_profile.get("xp_drop_multiplier", 1.0)))
+    _stage_gold_drop_multiplier = max(0.0, float(resource_profile.get("gold_drop_multiplier", 1.0)))
 
     _stage_target_duration = _resolve_stage_duration_runtime(stage_id, stage_profile, wave_profile)
     _wave_duration_runtime = _stage_target_duration
@@ -3926,13 +4859,13 @@ func _apply_elite_schedule_from_stage_profile(stage_profile: Dictionary) -> void
     if elite_schedule.is_empty() and bool(stage_profile.get("is_boss_stage", false)):
         var boss_config: Dictionary = stage_profile.get("boss", {})
         if not boss_config.is_empty():
-            # Fallback: Convert boss config to an immediate elite spawn schedule
+            # Boss stages reuse the elite scheduling gate, then spawn the dedicated boss class.
             _elite_schedule_enabled = true
             _next_elite_spawn_time = 0.5
             _elite_respawn_check_interval_runtime = 999.0 # Don't respawn
             _elite_max_alive_runtime = 1
-            _elite_hp_override_runtime = int(boss_config.get("hp", 2000))
-            print("[Boss] Auto-scheduled boss as elite with HP %d" % _elite_hp_override_runtime)
+            _elite_hp_override_runtime = 0
+            print("[Boss] Scheduled stage boss with HP %d" % int(boss_config.get("hp", 2000)))
             return
 
     _elite_schedule_enabled = not elite_schedule.is_empty()

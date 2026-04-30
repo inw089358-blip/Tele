@@ -755,7 +755,7 @@ func _build_dynamic_bottom_sections() -> void:
 
 func _build_weapon_action_panel() -> void:
     _weapon_action_panel = HBoxContainer.new()
-    _weapon_action_panel.custom_minimum_size = Vector2(560, 300)
+    _weapon_action_panel.custom_minimum_size = Vector2(620, 300)
     _weapon_action_panel.size = _weapon_action_panel.custom_minimum_size
     _weapon_action_panel.z_index = FLOATING_DETAIL_Z_INDEX
     _weapon_action_panel.visible = false
@@ -844,7 +844,7 @@ func _build_weapon_action_panel() -> void:
     actions.add_child(_weapon_cancel_button)
 
     var tags_panel: PanelContainer = PanelContainer.new()
-    tags_panel.custom_minimum_size = Vector2(240, 300)
+    tags_panel.custom_minimum_size = Vector2(300, 300)
     tags_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
     tags_panel.add_theme_stylebox_override(
         "panel",
@@ -863,10 +863,11 @@ func _build_weapon_action_panel() -> void:
     _weapon_action_tags.bbcode_enabled = true
     _weapon_action_tags.fit_content = false
     _weapon_action_tags.scroll_active = true
+    _weapon_action_tags.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     _weapon_action_tags.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    _weapon_action_tags.add_theme_font_size_override("normal_font_size", 11)
-    _weapon_action_tags.add_theme_font_size_override("bold_font_size", 12)
-    _weapon_action_tags.add_theme_constant_override("line_separation", 0)
+    _weapon_action_tags.add_theme_font_size_override("normal_font_size", 13)
+    _weapon_action_tags.add_theme_font_size_override("bold_font_size", 14)
+    _weapon_action_tags.add_theme_constant_override("line_separation", 2)
     tags_margin.add_child(_weapon_action_tags)
 
 func _make_shop_action_button(text_value: String) -> Button:
@@ -1771,17 +1772,17 @@ func _refresh_weapon_tag_state_snapshot() -> void:
 
 func _append_weapon_tag_lines(lines: Array[String], tag_state: Dictionary) -> void:
     lines.append("")
-    lines.append(_tx("ui.shop.weapon_tag_bonus_title_bb", "[b]Weapon Tag Bonuses[/b]"))
+    lines.append(_tx("ui.shop.weapon_tag_bonus_title_bb", "[b]武器标签加成[/b]"))
 
     if tag_state.is_empty():
-        lines.append(_tx("ui.shop.weapon_tag_empty", "No active weapon tags"))
+        lines.append(_tx("ui.shop.weapon_tag_empty", "暂无武器标签"))
         return
 
     var enabled: bool = bool(tag_state.get("enabled", false))
     var max_stack: int = max(1, int(tag_state.get("max_stack_per_tag", WEAPON_SLOT_COUNT)))
     var counts_raw: Variant = tag_state.get("counts", {})
     if not (counts_raw is Dictionary) or (counts_raw as Dictionary).is_empty():
-        lines.append(_tx("ui.shop.weapon_tag_empty", "No active weapon tags"))
+        lines.append(_tx("ui.shop.weapon_tag_empty", "暂无武器标签"))
         return
 
     var counts: Dictionary = counts_raw
@@ -1815,16 +1816,16 @@ func _append_weapon_tag_lines(lines: Array[String], tag_state: Dictionary) -> vo
         lines.append(_format_weapon_tag_line(tag_name, count, max_stack, active_tier, next_tier))
 
     if not enabled:
-        lines.append(_tx("ui.shop.weapon_tag_preview_hint", "(Rules disabled; showing tier preview only)"))
+        lines.append(_tx("ui.shop.weapon_tag_preview_hint", "规则未启用，仅显示层级预览"))
 
 func _format_weapon_tag_line(tag_name: String, count: int, max_stack: int, active_tier: int, next_tier: int) -> String:
-    var line: String = "- %s %d/%d" % [tag_name, count, max_stack]
+    var line: String = "%s %d/%d" % [tag_name, count, max_stack]
     if active_tier > 0:
-        line += "  " + _tf("ui.shop.weapon_tag_active_tier_fmt", [active_tier], "Active T%d")
+        line += " | " + _tf("ui.shop.weapon_tag_active_tier_fmt", [active_tier], "已激活 %d")
     if next_tier > 0:
-        line += "  " + _tf("ui.shop.weapon_tag_next_tier_fmt", [next_tier], "Next T%d")
+        line += " | " + _tf("ui.shop.weapon_tag_next_tier_fmt", [next_tier], "下档 %d")
     else:
-        line += "  " + _tx("ui.shop.weapon_tag_capped", "Capped")
+        line += " | " + _tx("ui.shop.weapon_tag_capped", "已封顶")
     return line
 
 func _rebuild_owned_items_grid() -> void:
@@ -2036,8 +2037,12 @@ func _build_weapon_action_tags(weapon: Dictionary) -> String:
 
     var lines: Array[String] = []
     if tags.is_empty():
-        return "[center][b][color=#f1f1e8]标签[/color][/b][/center]\n[color=#7f8c8d]无标签[/color]"
+        return "[center][b][color=#f1f1e8]%s[/color][/b][/center]\n[color=#7f8c8d]%s[/color]" % [
+            _tx("ui.shop.weapon_tag_panel_title", "标签"),
+            _tx("ui.shop.weapon_tag_none", "无标签"),
+        ]
 
+    lines.append("[center][b][color=#f1f1e8]%s[/color][/b][/center]" % _tx("ui.shop.weapon_tag_panel_title", "标签"))
     for tag_value: Variant in tags:
         var tag_id: String = str(tag_value)
         if tag_id.is_empty():
@@ -2052,17 +2057,25 @@ func _build_weapon_action_tags(weapon: Dictionary) -> String:
         var current_count: int = int(counts.get(tag_id, 0))
         if not lines.is_empty():
             lines.append("")
-        lines.append("[font_size=15][b][color=#00f0ff]%s (%d)[/color][/b][/font_size]" % [tag_name, current_count])
-        lines.append("[font_size=9][color=#1f6f78]────────────[/color][/font_size]")
+        lines.append("[font_size=14][b][color=#00f0ff]%s[/color][/b] [color=#aeb6b8]%s[/color][/font_size]" % [
+            tag_name,
+            _tf("ui.shop.weapon_tag_count_fmt", [current_count], "当前 %d"),
+        ])
+        lines.append("[font_size=9][color=#1f6f78]----------------[/color][/font_size]")
         for step_idx: int in range(tier_steps.size()):
             var step_count: int = int(tier_steps[step_idx])
-            var step_tier: int = step_idx + 1
-            var tier_info: Dictionary = tiers_data.get(str(step_tier), {})
-            var bonus_text: String = str(tier_info.get("note", "Bonus T%d" % step_tier))
-            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_tier], bonus_text)
+            var tier_info: Dictionary = tiers_data.get(str(step_count), {})
+            var bonus_text: String = str(tier_info.get("note", "Bonus %d" % step_count))
+            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_count], bonus_text)
             var line_color: String = "#f1f1e8" if current_count >= step_count else "#6f7678"
-            lines.append("[font_size=13][color=%s](%d) %s[/color][/font_size]" % [line_color, step_count, bonus_text])
+            lines.append("[font_size=13][color=%s]%s[/color][/font_size]" % [
+                line_color,
+                _format_weapon_tag_detail_line(step_count, bonus_text),
+            ])
     return "\n".join(lines)
+
+func _format_weapon_tag_detail_line(step_count: int, bonus_text: String) -> String:
+    return _tf("ui.shop.weapon_tag_tier_detail_fmt", [step_count, bonus_text], "%d件：%s")
 
 func _find_merge_partner_for_slot(slots: Array, source_index: int) -> int:
     if source_index < 0 or source_index >= slots.size():
@@ -2297,7 +2310,7 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
     var tag_state: Dictionary = _shop_system.resolve_weapon_tag_state(shop_state)
     var counts: Dictionary = tag_state.get("counts", {})
     var screen_size: Vector2 = get_viewport_rect().size
-    var tooltip_w: float = 240.0
+    var tooltip_w: float = 300.0
     var spacing: float = 10.0
     
     # 智能定位：优先右侧，如果右侧出界则显示在左侧
@@ -2305,6 +2318,7 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
     var target_x: float = anchor_pos.x + anchor.size.x + spacing
     if target_x + tooltip_w > screen_size.x - 20:
         target_x = anchor_pos.x - tooltip_w - spacing
+    target_x = clampf(target_x, 10.0, max(10.0, screen_size.x - tooltip_w - 10.0))
     
     var start_y: float = anchor_pos.y
     
@@ -2314,15 +2328,15 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
         var tag_name: String = tag_def.get("name", tag_id)
         
         var panel: PanelContainer = PanelContainer.new()
-        panel.custom_minimum_size = Vector2(240, 0)
+        panel.custom_minimum_size = Vector2(tooltip_w, 0)
         # 使用霓虹风格
         panel.add_theme_stylebox_override("panel", _build_neon_style(Color(0.08, 0.1, 0.12, 0.96), Color(0.0, 0.94, 1.0, 0.6), 1, 6))
         _tag_tooltip_container.add_child(panel)
         
         # 垂直堆叠定位，并防止底部出界
-        var panel_y: float = start_y + (i * 145)
+        var panel_y: float = start_y + (i * 164)
         # 如果整组太长，整体向上偏移
-        var total_height_needed: float = tag_ids.size() * 145
+        var total_height_needed: float = tag_ids.size() * 164
         if start_y + total_height_needed > screen_size.y - 20:
              panel_y -= (start_y + total_height_needed - (screen_size.y - 20))
         
@@ -2342,9 +2356,13 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
         # 标题：标签名 + 当前拥有数量
         var title_lbl: Label = Label.new()
         var current_count: int = int(counts.get(tag_id, 0))
-        title_lbl.text = "%s (%d)" % [tag_name, current_count]
+        title_lbl.text = "%s  %s" % [
+            tag_name,
+            _tf("ui.shop.weapon_tag_count_fmt", [current_count], "当前 %d"),
+        ]
         title_lbl.add_theme_color_override("font_color", Color("#00f0ff"))
         title_lbl.add_theme_font_size_override("font_size", 18)
+        title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         vb.add_child(title_lbl)
         
         # 分割线
@@ -2357,23 +2375,23 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
         var tiers_data: Dictionary = tag_def.get("tiers", {})
         for step_idx in range(tier_steps.size()):
             var step_count: int = int(tier_steps[step_idx])
-            var step_tier: int = step_idx + 1
-            var tier_info: Dictionary = tiers_data.get(str(step_tier), {})
+            var tier_info: Dictionary = tiers_data.get(str(step_count), {})
             
             var tier_lbl: Label = Label.new()
             var is_active: bool = current_count >= step_count
             
-            var bonus_text: String = tier_info.get("note", "Bonus T%d" % step_tier)
+            var bonus_text: String = tier_info.get("note", "Bonus %d" % step_count)
             # 翻译（如果可用）
-            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_tier], bonus_text)
+            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_count], bonus_text)
             
-            tier_lbl.text = "(%d) %s" % [step_count, bonus_text]
+            tier_lbl.text = _format_weapon_tag_detail_line(step_count, bonus_text)
             if is_active:
                 tier_lbl.add_theme_color_override("font_color", Color.WHITE)
             else:
                 tier_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 0.6))
             
             tier_lbl.add_theme_font_size_override("font_size", 14)
+            tier_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
             vb.add_child(tier_lbl)
 
 func _resolve_next_stage_id(current_stage_id: String) -> String:

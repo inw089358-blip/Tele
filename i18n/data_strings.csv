@@ -16,33 +16,33 @@ data.item.item_crit_lens.desc,暴击率 +3%,Crit chance +3%
 data.item.item_vampire_fang.name,吸血獠牙,Vampire Fang
 data.item.item_vampire_fang.desc,吸血 +2%,Lifesteal +2%
 data.weapon.kunai.name,苦无,Kunai
-data.weapon.kunai.desc,高速投掷武器，具备精准连锁能力。,High-speed throw weapon with precise chaining.
+data.weapon.kunai.desc,快速近战突刺武器，节奏快，适合贴近连续打击。,Fast melee thrust weapon with quick close-range pressure.
 data.weapon.road_sign.name,路牌,Road Sign
-data.weapon.road_sign.desc,慢速重挥，具备强控场能力。,Slow heavy swing weapon with strong control.
+data.weapon.road_sign.desc,慢速近战重击武器，单次打击范围稳定。,Slow heavy melee weapon with steady strike coverage.
 data.weapon.nail_gun.name,钉枪,Nail Gun
-data.weapon.nail_gun.desc,中距离高频射击武器。,Mid-range rapid-fire weapon.
+data.weapon.nail_gun.desc,中距离追踪射击武器，输出节奏快。,Mid-range homing ranged weapon with a quick tempo.
 data.weapon.chain_whip.name,锁链鞭,Chain Whip
-data.weapon.chain_whip.desc,大范围横扫，擅长清杂与控场。,Sweeping attacks for crowd control.
+data.weapon.chain_whip.desc,大范围近战横扫武器，擅长清杂与控场。,Wide melee sweep weapon for crowd control.
 data.weapon.circular_saw.name,圆锯,Circular Saw
-data.weapon.circular_saw.desc,重型投射物，穿透力高。,Heavy projectile with high pierce.
+data.weapon.circular_saw.desc,重型远程投射武器，单发伤害高。,Heavy ranged projectile weapon with high single-hit damage.
 data.weapon.flare_launcher.name,信号弹发射器,Flare Launcher
-data.weapon.flare_launcher.desc,爆发型发射器，可点燃战场。,Burst launcher that ignites the battlefield.
+data.weapon.flare_launcher.desc,远程追踪发射器，擅长爆发压制。,Homing ranged launcher for burst pressure.
 data.weapon.traffic_cone.name,路障锥,Traffic Cone
-data.weapon.traffic_cone.desc,稳定压制的重型投射物。,Heavy projectile with stable suppression.
+data.weapon.traffic_cone.desc,重型远程投射武器，节奏较慢但压制稳定。,Heavy ranged projectile weapon with slow, steady pressure.
 data.weapon.heavy_wrench.name,重型扳手,Heavy Wrench
 data.weapon.heavy_wrench.desc,可靠的近战重击武器。,Reliable close-range heavy strikes.
 data.weapon.molotov.name,燃烧瓶,Molotov
-data.weapon.molotov.desc,范围持续燃烧伤害。,Sustained burn damage over area.
+data.weapon.molotov.desc,远程追踪投掷物，造成范围持续伤害。,Homing ranged projectile that deals sustained area damage.
 data.weapon.shuriken_ring.name,手里剑环,Shuriken Ring
-data.weapon.shuriken_ring.desc,多段命中，擅长中距离压制。,Multi-hit weapon for mid-range pressure.
+data.weapon.shuriken_ring.desc,中距离追踪远程武器，命中节奏快。,Mid-range homing weapon with quick repeated hits.
 data.weapon.steel_pipe.name,钢管,Steel Pipe
-data.weapon.steel_pipe.desc,朴素稳定的前期近战武器。,Simple melee weapon for early game stability.
+data.weapon.steel_pipe.desc,稳定的前期近战横扫武器。,Stable early melee sweep weapon.
 data.weapon.rebar_spear.name,钢筋矛,Rebar Spear
-data.weapon.rebar_spear.desc,强线性穿刺，突进能力突出。,Piercing melee thrust with strong linear reach.
+data.weapon.rebar_spear.desc,长距离线性突刺近战武器，攻击距离较长。,Long-reach linear melee thrust weapon.
 data.weapon.mechanical_crossbow.name,机械弩,Mechanical Crossbow
-data.weapon.mechanical_crossbow.desc,稳定节奏的远程输出武器。,Stable ranged output with good tempo.
+data.weapon.mechanical_crossbow.desc,稳定节奏的追踪远程输出武器。,Stable homing ranged weapon with good tempo.
 data.weapon.meteor_hammer.name,流星锤,Meteor Hammer
-data.weapon.meteor_hammer.desc,高风险高回报的重型近战武器。,High-risk high-reward heavy melee weapon.
+data.weapon.meteor_hammer.desc,慢速高伤的重型近战武器，清怪窗口大。,Slow high-damage heavy melee weapon with wide clear windows.
 data.reward.atk_flat_1.name,攻击 +1,Attack +1
 data.reward.atk_flat_1.desc,基础攻击伤害 +1,Base attack damage +1
 data.reward.range_up_40.name,射程 +40,Range +40
