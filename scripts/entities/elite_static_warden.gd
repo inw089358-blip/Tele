@@ -20,22 +20,29 @@ const ENEMY_WARNING_ZONE_SCRIPT: Script = preload("res://scripts/effects/enemy_w
 @export var shield_shock_projectile_count: int = 8
 @export var shield_shock_damage: int = 1
 @export var shield_shock_speed: float = 180.0
+@export var desired_min_distance: float = 230.0
+@export var desired_max_distance: float = 340.0
 
 var _shield_cooldown_timer: float = 0.0
 var _shield_timer: float = 0.0
 var _heavy_bolt_timer: float = 0.0
 var _tri_burst_timer: float = 0.0
 var _static_mine_timer: float = 0.0
+var _strafe_sign: float = 1.0
+var _strafe_timer: float = 0.0
+var _action_lockout_timer: float = 0.0
 var _pending_mechanic_attacks: Array[Dictionary] = []
 
 func _ready() -> void :
     enemy_type = EnemyType.ELITE_WARDEN
     is_elite = true
+    _strafe_sign = -1.0 if randi() % 2 == 0 else 1.0
     super._ready()
     _shield_cooldown_timer = shield_interval
     _heavy_bolt_timer = heavy_bolt_interval * 0.6
     _tri_burst_timer = tri_burst_interval
     _static_mine_timer = static_mine_interval * 0.5
+    _strafe_timer = randf_range(1.2, 2.8)
     _pending_mechanic_attacks.clear()
 
 func _apply_profile_from_balance() -> void:
@@ -61,6 +68,8 @@ func _apply_profile_from_balance() -> void:
     shield_shock_projectile_count = int(profile.get("shield_shock_projectile_count", shield_shock_projectile_count))
     shield_shock_damage = int(profile.get("shield_shock_damage", shield_shock_damage))
     shield_shock_speed = float(profile.get("shield_shock_speed", shield_shock_speed))
+    desired_min_distance = float(profile.get("desired_min_distance", desired_min_distance))
+    desired_max_distance = float(profile.get("desired_max_distance", desired_max_distance))
     _hit_sfx_path = str(profile.get("hit_sfx_path", _hit_sfx_path))
     _hit_sfx_volume_db = float(profile.get("hit_sfx_volume_db", _hit_sfx_volume_db))
     _hit_sfx_cooldown = max(0.0, float(profile.get("hit_sfx_cooldown", _hit_sfx_cooldown)))
@@ -74,60 +83,84 @@ func tick_ai(delta: float) -> void :
     var distance: float = to_player.length()
     if distance > 0.001:
         var dir_to_player: Vector2 = to_player / distance
-        if distance > 300.0:
-            velocity = dir_to_player * move_speed
-        elif distance < 210.0:
-            velocity = -dir_to_player * move_speed * 0.65
+        _strafe_timer = max(0.0, _strafe_timer - delta)
+        if _strafe_timer <= 0.0:
+            _strafe_sign *= -1.0
+            _strafe_timer = randf_range(1.4, 3.1)
+        if distance > desired_max_distance:
+            velocity = (dir_to_player + dir_to_player.orthogonal() * _strafe_sign * 0.28).normalized() * move_speed
+        elif distance < desired_min_distance:
+            velocity = (-dir_to_player + dir_to_player.orthogonal() * _strafe_sign * 0.35).normalized() * move_speed * 0.9
         else:
-            velocity = dir_to_player.orthogonal() * move_speed * 0.4
+            velocity = dir_to_player.orthogonal() * _strafe_sign * move_speed * 0.48
     else:
         velocity = Vector2.ZERO
 
     _tick_pending_mechanic_attacks(delta)
+    _action_lockout_timer = max(0.0, _action_lockout_timer - delta)
 
     _shield_cooldown_timer = max(0.0, _shield_cooldown_timer - delta)
     if _shield_timer > 0.0:
         _shield_timer = max(0.0, _shield_timer - delta)
-    elif _shield_cooldown_timer <= 0.0:
+    elif _shield_cooldown_timer <= 0.0 and _action_lockout_timer <= 0.0:
         _shield_timer = shield_duration
         _shield_cooldown_timer = shield_interval
         _fire_shield_shock()
+        _action_lockout_timer = 0.35
 
     damage_reduction_ratio = shield_damage_reduction if _shield_timer > 0.0 else 0.0
 
     _static_mine_timer = max(0.0, _static_mine_timer - delta)
-    if _static_mine_timer <= 0.0:
+    if _static_mine_timer <= 0.0 and _action_lockout_timer <= 0.0:
         _static_mine_timer = static_mine_interval
         _schedule_static_mine()
+        _action_lockout_timer = 0.2
 
     _heavy_bolt_timer = max(0.0, _heavy_bolt_timer - delta)
-    if _heavy_bolt_timer <= 0.0 and to_player.length_squared() > 0.0001:
+    if _heavy_bolt_timer <= 0.0 and to_player.length_squared() > 0.0001 and _action_lockout_timer <= 0.0:
         _heavy_bolt_timer = heavy_bolt_interval
         try_fire_projectile(
-            to_player.normalized(),
+            _aim_at_target(heavy_bolt_speed, 0.55),
             heavy_bolt_speed,
             heavy_bolt_damage,
             6.0,
             4.6,
             Color(1.0, 0.36, 0.3, 1.0)
         )
+        _action_lockout_timer = 0.22
 
     _tri_burst_timer = max(0.0, _tri_burst_timer - delta)
-    if _tri_burst_timer <= 0.0 and to_player.length_squared() > 0.0001:
+    if _tri_burst_timer <= 0.0 and to_player.length_squared() > 0.0001 and _action_lockout_timer <= 0.0:
         _tri_burst_timer = tri_burst_interval
-        var base_dir: Vector2 = to_player.normalized()
+        var base_dir: Vector2 = _aim_at_target(tri_burst_speed, 0.45)
         var angle: float = deg_to_rad(tri_burst_angle_deg)
         try_fire_projectile(base_dir, tri_burst_speed, tri_burst_damage, 5.0, 4.2, Color(0.94, 0.58, 0.34, 1.0))
         try_fire_projectile(base_dir.rotated(angle), tri_burst_speed, tri_burst_damage, 5.0, 4.2, Color(0.94, 0.58, 0.34, 1.0))
         try_fire_projectile(base_dir.rotated( - angle), tri_burst_speed, tri_burst_damage, 5.0, 4.2, Color(0.94, 0.58, 0.34, 1.0))
+        _action_lockout_timer = 0.35
 
     queue_redraw()
+
+func _aim_at_target(projectile_speed: float, lead_factor: float) -> Vector2:
+    if _target == null or not is_instance_valid(_target):
+        return Vector2.RIGHT
+    var target_position: Vector2 = _target.global_position
+    if _target is CharacterBody2D:
+        var body: CharacterBody2D = _target as CharacterBody2D
+        var travel_time: float = global_position.distance_to(target_position) / max(1.0, projectile_speed)
+        target_position += body.velocity * clampf(travel_time * lead_factor, 0.0, 0.65)
+    var aim_vector: Vector2 = target_position - global_position
+    return aim_vector.normalized() if aim_vector.length_squared() > 0.0001 else Vector2.RIGHT
 
 func _schedule_static_mine() -> void:
     if _target == null or not is_instance_valid(_target):
         return
+    var predicted_position: Vector2 = _target.global_position
+    if _target is CharacterBody2D:
+        var body: CharacterBody2D = _target as CharacterBody2D
+        predicted_position += body.velocity * clampf(static_mine_warning * 0.45, 0.0, 0.45)
     var offset: Vector2 = Vector2.RIGHT.rotated(randf() * TAU) * randf_range(12.0, 86.0)
-    var center: Vector2 = _target.global_position + offset
+    var center: Vector2 = predicted_position + offset
     _spawn_warning_circle(center, static_mine_radius, static_mine_warning, Color(0.34, 0.95, 1.0, 1.0))
     _pending_mechanic_attacks.append({
         "delay": static_mine_warning,
