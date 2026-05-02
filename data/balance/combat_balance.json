@@ -922,7 +922,7 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 80000,
+                "elite_hp_override": 8000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -1037,7 +1037,7 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 11000,
+                "elite_hp_override": 10000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -1090,7 +1090,7 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 12000,
+                "elite_hp_override": 11000,
                 "elite_pool": [
                     {
                         "type": "elite_rift_charger",
@@ -1172,7 +1172,7 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 15000,
+                "elite_hp_override": 12000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -1288,7 +1288,7 @@
                 "mine_seeder_weight": 0.02
             },
             "boss": {
-                "hp": 26000,
+                "hp": 22000,
                 "damage_multiplier": 1,
                 "contact_damage": 2,
                 "p1_beam_cd": 2,

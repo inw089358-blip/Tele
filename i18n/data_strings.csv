@@ -178,7 +178,7 @@ data.item.item_boots_iron.desc,"护甲 +4, 移动速度 -12","Armor +4, Move Spe
 data.item.item_pope_robe.name,教皇长袍,Pope Robe
 data.item.item_pope_robe.desc,"护甲 +4, 最大生命 +8, 移动速度 -9","Armor +4, Max HP +8, Move Speed -9"
 data.item.item_magician_poker.name,魔术师扑克,Magician Poker
-data.item.item_magician_poker.desc,"暴击率 +8%, crit_multiplier_flat +0.1, 最大生命 -4","Crit Chance +8%, crit_multiplier_flat +0.1, Max HP -4"
+data.item.item_magician_poker.desc,"暴击率 +8%，暴击伤害 +10%，最大生命 -4","Crit Chance +8%, crit_multiplier_flat +0.1, Max HP -4"
 data.item.item_chariot_wheel.name,战车之轮,Chariot Wheel
 data.item.item_chariot_wheel.desc,"移动速度 +26, 拾取范围 +24, 护甲 -1","Move Speed +26, Pickup Range +24, Armor -1"
 data.item.item_priestess_mercy.name,女祭司慈悲,Priestess Mercy
@@ -216,7 +216,7 @@ data.item.item_temperance_sacrament.desc,"生命回复 +5, 移动速度 -26","HP
 data.item.item_demon_contract.name,恶魔契约,Demon Contract
 data.item.item_demon_contract.desc,"全局伤害 +32, 收获 +16, 最大生命 -16","Global Damage +32, harvest +16, Max HP -16"
 data.item.item_alchemist_crucible.name,炼金坩埚,Alchemist Crucible
-data.item.item_alchemist_crucible.desc,"金币获取 +15%, attack_damage_flat +4, 护甲 -5","Gold Gain +15%, attack_damage_flat +4, Armor -5"
+data.item.item_alchemist_crucible.desc,"金币获取 +15%，攻击 +4，护甲 -5","Gold Gain +15%, attack_damage_flat +4, Armor -5"
 data.item.item_moon_veil.name,月之面纱,Moon Veil
 data.item.item_moon_veil.desc,"闪避 +14%, 最大生命 -8","Dodge +14%, Max HP -8"
 data.item.item_justice_guillotine.name,正义断头台,Justice Guillotine

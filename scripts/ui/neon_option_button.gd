@@ -138,6 +138,20 @@ func _current_color() -> Color:
         return color_hover
     return color_normal
 
+func refresh_interaction_state() -> void:
+    if disabled or not is_visible_in_tree():
+        _hovered = false
+        _held = false
+    else:
+        var local_mouse_pos: Vector2 = get_local_mouse_position()
+        _hovered = Rect2(Vector2.ZERO, size).has_point(local_mouse_pos)
+        _held = false
+        if _hovered:
+            _scanline_y = 8.0
+            _trigger_focus_sweep()
+    _apply_font_color()
+    queue_redraw()
+
 func _apply_font_color() -> void:
     var c: Color = _current_color()
     add_theme_color_override("font_color", c)

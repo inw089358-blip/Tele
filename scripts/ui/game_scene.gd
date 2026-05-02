@@ -247,6 +247,7 @@ var _stage_clear_triggered: bool = false
 var _is_endless_mode: bool = false
 var _endless_elapsed: float = 0.0
 var _endless_level: int = 0
+var _endless_damage_level: int = 0
 var _endless_shop_timer: float = 0.0
 var _endless_base_max_enemy_count: int = 0
 var _endless_shop_transitioning: bool = false
@@ -266,6 +267,7 @@ var _run_kill_count: int = 0
 var _run_survival_time_runtime: float = 0.0
 var _arena_half_extents: Vector2 = Vector2(620.0, 340.0)
 var _enemy_spawn_weights_runtime: Dictionary = {}
+var _enemy_extra_damage_multipliers: Dictionary = {}
 var _max_enemy_count_runtime: int = MAX_ENEMY_COUNT
 var _initial_enemy_count_runtime: int = INITIAL_ENEMY_COUNT
 var _enemy_min_spawn_radius_runtime: float = ENEMY_MIN_SPAWN_RADIUS
@@ -325,6 +327,7 @@ var _stage_retry_snapshot: Dictionary = {}
 const INITIAL_ENEMY_COUNT: int = 40
 const MAX_ENEMY_COUNT: int = 120
 const HARD_MAX_ACTIVE_ENEMY_COUNT: int = 120
+const MAX_RANGED_ENEMY_COUNT: int = 15
 const ENEMY_SPAWN_INTERVAL: float = 0.15
 const ENEMY_MIN_SPAWN_RADIUS: float = 380.0
 const ENEMY_MAX_SPAWN_RADIUS: float = 620.0
@@ -434,6 +437,7 @@ const CONSUMABLE_DROP_CHANCE_BASE: float = 0.015
 const ENDLESS_ENTRY_STAGE_ID: String = "stage_020"
 const ENDLESS_SHOP_INTERVAL: float = 80.0
 const ENDLESS_LEVEL_INTERVAL: float = 60.0
+const ENDLESS_DAMAGE_LEVEL_INTERVAL: float = 30.0
 const ENDLESS_HP_PER_LEVEL: float = 0.12
 const ENDLESS_DAMAGE_PER_LEVEL: float = 0.08
 const ENDLESS_SPEED_PER_LEVEL: float = 0.02
@@ -572,9 +576,11 @@ func _reset_progress_state() -> void :
     _is_endless_mode = false
     _endless_elapsed = 0.0
     _endless_level = 0
+    _endless_damage_level = 0
     _endless_shop_timer = 0.0
     _endless_base_max_enemy_count = 0
     _endless_shop_transitioning = false
+    _enemy_extra_damage_multipliers.clear()
     _next_elite_spawn_time = ELITE_FIRST_SPAWN_TIME
     _elite_spawn_relief_timer = 0.0
     _elite_schedule_enabled = false
@@ -626,6 +632,7 @@ func _process(delta: float) -> void :
     if _is_endless_mode:
         _endless_elapsed += delta
         _refresh_endless_level()
+        _refresh_endless_damage_level()
     _update_stage_timer(delta)
     if _stage_clear_triggered:
         return
@@ -1299,6 +1306,8 @@ func _start_endless_mode() -> void:
     _endless_shop_timer = 0.0
     _endless_shop_transitioning = false
     _endless_level = 0
+    _endless_damage_level = 0
+    _enemy_extra_damage_multipliers.clear()
     _endless_base_max_enemy_count = _max_enemy_count_runtime
     _apply_endless_elite_schedule()
     _active_elite = null
@@ -1417,6 +1426,21 @@ func _count_active_enemies() -> int:
             total += 1
     return total
 
+func _count_active_ranged_enemies() -> int:
+    var total: int = 0
+    for enemy: Enemy in _enemies:
+        if _is_enemy_combat_active(enemy) and _is_ranged_resource_enemy(enemy):
+            total += 1
+    return total
+
+func _is_ranged_spawn_type(spawn_type: Enemy.EnemyType) -> bool:
+    return (
+        spawn_type == Enemy.EnemyType.RANGED
+        or spawn_type == Enemy.EnemyType.BARRAGE
+        or spawn_type == Enemy.EnemyType.SNIPER
+        or spawn_type == Enemy.EnemyType.MINE_SEEDER
+    )
+
 func _try_spawn_enemy() -> void :
     if _enemies.size() >= _get_active_max_enemy_count():
         return
@@ -1426,6 +1450,8 @@ func _try_spawn_enemy() -> void :
     if _count_active_enemies() >= _get_active_max_enemy_count():
         return
     var spawn_type: Enemy.EnemyType = _roll_enemy_spawn_type()
+    if _is_ranged_spawn_type(spawn_type) and _count_active_ranged_enemies() >= MAX_RANGED_ENEMY_COUNT:
+        spawn_type = _roll_melee_pressure_spawn_type()
     _spawn_enemy(spawn_type, _random_spawn_position())
 
 func _try_spawn_enemy_batch(batch_count: int) -> void:
@@ -1484,6 +1510,8 @@ func _roll_melee_pressure_spawn_type() -> Enemy.EnemyType:
 func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy:
     if _count_active_enemies() >= _get_active_max_enemy_count():
         return null
+    if _is_ranged_spawn_type(spawn_type) and _count_active_ranged_enemies() >= MAX_RANGED_ENEMY_COUNT:
+        spawn_type = _roll_melee_pressure_spawn_type()
     var enemy: Enemy = null
     match spawn_type:
         Enemy.EnemyType.FAST_MELEE:
@@ -1513,7 +1541,7 @@ func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy
     enemy.set_target(_player)
     enemy.died.connect(_on_enemy_died)
     enemy.enemy_projectile_fired.connect(_on_enemy_projectile_fired)
-    enemy.damage_multiplier = _get_enemy_damage_scale()
+    enemy.damage_multiplier = _get_enemy_damage_scale() * _get_enemy_extra_damage_multiplier(enemy)
     add_child(enemy)
     var hp_scale: float = max(0.1, _enemy_hp_multiplier * _enemy_hp_stage_multiplier * _get_endless_hp_multiplier())
     var scaled_max_hp: int = max(1, int(round(float(enemy.max_hp) * hp_scale)))
@@ -1623,7 +1651,8 @@ func _apply_endless_elite_spawn_enrage(enemy: Enemy) -> void:
     var final_hp: int = max(1, int(round(float(ENDLESS_ELITE_BASE_HP) * _get_endless_hp_multiplier() * hp_multiplier)))
     enemy.max_hp = final_hp
     enemy.current_hp = final_hp
-    enemy.damage_multiplier *= damage_multiplier
+    _enemy_extra_damage_multipliers[enemy] = damage_multiplier
+    enemy.damage_multiplier = _get_enemy_damage_scale() * damage_multiplier
     enemy.move_speed = max(10.0, enemy.move_speed * speed_multiplier)
     enemy.queue_redraw()
     print(
@@ -3054,6 +3083,8 @@ func _cleanup_dead_enemies() -> void :
     for enemy: Enemy in _enemies:
         if enemy != null and is_instance_valid(enemy):
             alive.append(enemy)
+        else:
+            _enemy_extra_damage_multipliers.erase(enemy)
     _enemies = alive
     if _active_elite != null and not is_instance_valid(_active_elite):
         _active_elite = null
@@ -3258,6 +3289,29 @@ func _refresh_endless_level() -> void:
         return
     _endless_level = max(0, int(floor(_endless_elapsed / ENDLESS_LEVEL_INTERVAL)))
 
+func _refresh_endless_damage_level() -> void:
+    if not _is_endless_mode:
+        return
+    var previous_level: int = _endless_damage_level
+    _endless_damage_level = max(0, int(floor(_endless_elapsed / ENDLESS_DAMAGE_LEVEL_INTERVAL)))
+    if _endless_damage_level != previous_level:
+        _refresh_active_enemy_damage_multipliers()
+
+func _refresh_active_enemy_damage_multipliers() -> void:
+    if not _is_endless_mode:
+        return
+    var base_damage_scale: float = _get_enemy_damage_scale()
+    for enemy: Enemy in _enemies:
+        if enemy == null or not is_instance_valid(enemy):
+            _enemy_extra_damage_multipliers.erase(enemy)
+            continue
+        enemy.damage_multiplier = base_damage_scale * _get_enemy_extra_damage_multiplier(enemy)
+
+func _get_enemy_extra_damage_multiplier(enemy: Enemy) -> float:
+    if enemy == null:
+        return 1.0
+    return max(0.1, float(_enemy_extra_damage_multipliers.get(enemy, 1.0)))
+
 func _get_endless_hp_multiplier() -> float:
     if not _is_endless_mode:
         return 1.0
@@ -3266,7 +3320,7 @@ func _get_endless_hp_multiplier() -> float:
 func _get_endless_damage_multiplier() -> float:
     if not _is_endless_mode:
         return 1.0
-    return 1.0 + float(_endless_level) * ENDLESS_DAMAGE_PER_LEVEL
+    return 1.0 + float(_endless_damage_level) * ENDLESS_DAMAGE_PER_LEVEL
 
 func _get_endless_speed_multiplier() -> float:
     if not _is_endless_mode:
@@ -3352,6 +3406,7 @@ func _clear_all_enemies() -> void:
         if enemy != null and is_instance_valid(enemy):
             enemy.queue_free()
     _enemies.clear()
+    _enemy_extra_damage_multipliers.clear()
     _active_elite = null
     if hud != null and hud.has_method("hide_boss_bar"):
         hud.call("hide_boss_bar")
@@ -4558,6 +4613,7 @@ func _on_enemy_died(enemy: Enemy) -> void :
         return
     if enemy == null:
         return
+    _enemy_extra_damage_multipliers.erase(enemy)
     _run_kill_count += 1
     if enemy == _active_elite:
         _active_elite = null
@@ -5757,6 +5813,7 @@ func _build_runtime_save_payload() -> Dictionary:
         "is_endless_mode": _is_endless_mode,
         "endless_elapsed": _endless_elapsed,
         "endless_level": _endless_level,
+        "endless_damage_level": _endless_damage_level,
         "endless_shop_timer": _endless_shop_timer,
         "endless_base_max_enemy_count": _endless_base_max_enemy_count,
         "shop_runtime_state": _shop_runtime_state.duplicate(true),
@@ -5851,6 +5908,7 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
     _is_endless_mode = bool(slot_data.get("is_endless_mode", false))
     _endless_elapsed = max(0.0, float(slot_data.get("endless_elapsed", 0.0)))
     _endless_level = max(0, int(slot_data.get("endless_level", 0)))
+    _endless_damage_level = max(0, int(slot_data.get("endless_damage_level", 0)))
     _endless_shop_timer = clampf(float(slot_data.get("endless_shop_timer", 0.0)), 0.0, ENDLESS_SHOP_INTERVAL)
     _endless_base_max_enemy_count = max(0, int(slot_data.get("endless_base_max_enemy_count", _max_enemy_count_runtime)))
     _endless_shop_transitioning = false
@@ -5860,6 +5918,7 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
         _next_elite_spawn_time = _battle_elapsed + randf_range(8.0, ENDLESS_ELITE_FIRST_SPAWN_MAX)
         _active_elite = null
         _refresh_endless_level()
+        _refresh_endless_damage_level()
     var has_explicit_shop_runtime_state: bool = slot_data.has("shop_runtime_state") and slot_data.get("shop_runtime_state", {}) is Dictionary
     _shop_runtime_state = _normalize_shop_runtime_state(slot_data.get("shop_runtime_state", {}))
     if _shop_runtime_state.get("equipped_weapons", []).is_empty():

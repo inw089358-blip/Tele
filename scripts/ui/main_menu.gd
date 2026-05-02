@@ -118,6 +118,7 @@ func _on_continue_slot_closed() -> void :
     if _continue_slot_panel != null:
         _continue_slot_panel.visible = false
     _set_menu_enabled(true)
+    _refresh_menu_button_interaction_state.call_deferred()
     notice_label.text = _tx("msg.common.ready", "Ready")
 
 func _set_menu_enabled(enabled: bool) -> void :
@@ -126,6 +127,23 @@ func _set_menu_enabled(enabled: bool) -> void :
     continue_button.disabled = not enabled
     settings_button.disabled = not enabled
     quit_button.disabled = not enabled
+    if enabled:
+        _refresh_menu_button_interaction_state.call_deferred()
+
+func _refresh_menu_button_interaction_state() -> void:
+    var menu_buttons: Array[Button] = [
+        start_button,
+        boss_test_button,
+        continue_button,
+        settings_button,
+        quit_button,
+    ]
+    for button: Button in menu_buttons:
+        if button == null:
+            continue
+        button.release_focus()
+        if button.has_method("refresh_interaction_state"):
+            button.call("refresh_interaction_state")
 
 func _apply_test_entry_visibility() -> void :
     boss_test_button.visible = false
