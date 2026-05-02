@@ -40,6 +40,9 @@ func _apply_profile_from_balance() -> void:
     ring_projectile_radius = float(profile.get("ring_projectile_radius", ring_projectile_radius))
     ring_projectile_life_time = float(profile.get("ring_projectile_life_time", ring_projectile_life_time))
     ring_rotation_step_deg = float(profile.get("ring_rotation_step_deg", ring_rotation_step_deg))
+    _hit_sfx_path = str(profile.get("hit_sfx_path", _hit_sfx_path))
+    _hit_sfx_volume_db = float(profile.get("hit_sfx_volume_db", _hit_sfx_volume_db))
+    _hit_sfx_cooldown = max(0.0, float(profile.get("hit_sfx_cooldown", _hit_sfx_cooldown)))
 
 func tick_ai(delta: float) -> void :
     if _target == null:

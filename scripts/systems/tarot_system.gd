@@ -20,13 +20,13 @@ const CARDS: Dictionary = {
     },
     "knightofcups": {
         "name": "Knight of Cups",
-        "desc": "吸血 +2",
+        "desc": "吸血 +2%",
         "suit": "cups",
         "rank": "knight",
         "image_path": CARD_IMAGE_DIR + "/knightofcups.png",
         "crop_region": CARD_CROP_REGION_WIDE,
         "effects": [
-            {"type": "lifesteal_flat", "value": 2.0}
+            {"type": "lifesteal_flat", "value": 0.02}
         ]
     },
     "queenofcups": {
@@ -87,13 +87,13 @@ const CARDS: Dictionary = {
     },
     "kingofpentacles": {
         "name": "King of Pentacles",
-        "desc": "经验获取 x1.12",
+        "desc": "下一关怪物掉落 x2",
         "suit": "pentacles",
         "rank": "king",
         "image_path": CARD_IMAGE_DIR + "/kingofpentacles.png",
         "crop_region": CARD_CROP_REGION_LARGE,
         "effects": [
-            {"type": "xp_gain_mult", "value": 1.12}
+            {"type": "next_stage_drop_double", "value": 1}
         ]
     },
     "pageofsword": {
@@ -109,7 +109,7 @@ const CARDS: Dictionary = {
     },
     "knightofsword": {
         "name": "Knight of Swords",
-        "desc": "攻击速度 x1.08",
+        "desc": "攻击速度 +8%",
         "suit": "swords",
         "rank": "knight",
         "image_path": CARD_IMAGE_DIR + "/knightofsword.png",
@@ -131,29 +131,29 @@ const CARDS: Dictionary = {
     },
     "kingofsword": {
         "name": "King of Swords",
-        "desc": "全局攻击 +10%",
+        "desc": "伤害 +10%",
         "suit": "swords",
         "rank": "king",
         "image_path": CARD_IMAGE_DIR + "/kingofsword.png",
         "crop_region": CARD_CROP_REGION_LARGE,
         "effects": [
-            {"type": "global_attack_percent_flat", "value": 0.10}
+            {"type": "global_attack_percent_flat", "value": 10.0}
         ]
     },
     "pageofwands": {
         "name": "Page of Wands",
-        "desc": "移动速度 +8",
+        "desc": "移动速度 +8%",
         "suit": "wands",
         "rank": "page",
         "image_path": CARD_IMAGE_DIR + "/pageofwands.png",
         "crop_region": CARD_CROP_REGION_LARGE,
         "effects": [
-            {"type": "move_speed_flat", "value": 8.0}
+            {"type": "move_speed_mult", "value": 1.08}
         ]
     },
     "knightofwands": {
         "name": "Knight of Wands",
-        "desc": "射程 +35",
+        "desc": "索敌范围 +35",
         "suit": "wands",
         "rank": "knight",
         "image_path": CARD_IMAGE_DIR + "/knightofwands.png",
@@ -164,7 +164,7 @@ const CARDS: Dictionary = {
     },
     "queenofwands": {
         "name": "Queen of Wands",
-        "desc": "攻击速度 x1.12",
+        "desc": "攻击速度 +12%",
         "suit": "wands",
         "rank": "queen",
         "image_path": CARD_IMAGE_DIR + "/queenofwands.png",
@@ -175,14 +175,14 @@ const CARDS: Dictionary = {
     },
     "kingofwands": {
         "name": "King of Wands",
-        "desc": "攻击 +2，移动速度 +4",
+        "desc": "攻击 +2，移动速度 +4%",
         "suit": "wands",
         "rank": "king",
         "image_path": CARD_IMAGE_DIR + "/kingofwands.png",
         "crop_region": CARD_CROP_REGION_LARGE,
         "effects": [
             {"type": "attack_damage_flat", "value": 2},
-            {"type": "move_speed_flat", "value": 4.0}
+            {"type": "move_speed_mult", "value": 1.04}
         ]
     }
 }
@@ -195,6 +195,18 @@ static func get_random_choices(count: int = 3) -> Array[String]:
         result.append(keys[i])
     return result
 
+static func get_card_name(card_id: String) -> String:
+    if not CARDS.has(card_id):
+        return card_id
+    var card: Dictionary = CARDS[card_id]
+    return LocaleService.t_data("tarot", card_id, "name", str(card.get("name", card_id)))
+
+static func get_card_desc(card_id: String) -> String:
+    if not CARDS.has(card_id):
+        return ""
+    var card: Dictionary = CARDS[card_id]
+    return LocaleService.t_data("tarot", card_id, "desc", str(card.get("desc", "")))
+
 static func apply_card_effect(card_id: String, player: Player) -> void:
     if not CARDS.has(card_id):
         return
@@ -203,4 +215,8 @@ static func apply_card_effect(card_id: String, player: Player) -> void:
     for effect in effects:
         var type: String = effect.get("type", "")
         var value: Variant = effect.get("value", 0)
+        if type == "next_stage_drop_double":
+            if GameManager != null and GameManager.has_method("queue_next_stage_drop_double"):
+                GameManager.call("queue_next_stage_drop_double")
+            continue
         player.apply_effect(type, value)

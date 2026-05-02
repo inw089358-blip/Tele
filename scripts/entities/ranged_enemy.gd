@@ -34,6 +34,9 @@ func _apply_profile_from_balance() -> void:
     projectile_speed = float(profile.get("projectile_speed", projectile_speed))
     projectile_radius = float(profile.get("projectile_radius", projectile_radius))
     projectile_life_time = float(profile.get("projectile_life_time", projectile_life_time))
+    _hit_sfx_path = str(profile.get("hit_sfx_path", _hit_sfx_path))
+    _hit_sfx_volume_db = float(profile.get("hit_sfx_volume_db", _hit_sfx_volume_db))
+    _hit_sfx_cooldown = max(0.0, float(profile.get("hit_sfx_cooldown", _hit_sfx_cooldown)))
     var tint_raw: Variant = profile.get("projectile_tint", "")
     if tint_raw is String and not str(tint_raw).is_empty():
         projectile_tint = Color(str(tint_raw))

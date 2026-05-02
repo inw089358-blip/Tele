@@ -17,18 +17,18 @@ shader_parameter/curvature = 0.26
 shader_parameter/clamp_edges = 0.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_panel"]
-bg_color = Color(0.0941176, 0.160784, 0.184314, 0.94)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.203922, 0.298039, 0.333333, 1)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
-shadow_color = Color(0, 0, 0, 0.5)
-shadow_size = 12
+bg_color = Color(0.0352941, 0.0784314, 0.0941176, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.145098, 0.454902, 0.494118, 0.95)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.42)
+shadow_size = 8
 
 [node name="Game" type="Node2D" unique_id=1672259027]
 script = ExtResource("1")
@@ -65,7 +65,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="PauseLayer" type="CanvasLayer" parent="." unique_id=202342762]
-layer = 90
+layer = 110
 
 [node name="PauseOverlay" type="Control" parent="PauseLayer" unique_id=2011478050]
 unique_name_in_owner = true
@@ -94,47 +94,138 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = -180.0
-offset_right = 170.0
-offset_bottom = 180.0
+offset_left = -520.0
+offset_top = -230.0
+offset_right = 520.0
+offset_bottom = 230.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_pause_panel")
 
-[node name="PauseVBox" type="VBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel" unique_id=13137867]
+[node name="PauseMargin" type="MarginContainer" parent="PauseLayer/PauseOverlay/PausePanel" unique_id=13137867]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="PauseRoot" type="HBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin" unique_id=370752420]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="PauseActions" type="VBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot" unique_id=2118432196]
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 theme_override_constants/separation = 14
 alignment = 1
 
-[node name="ResumeButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=619423384]
+[node name="ResumeButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseActions" unique_id=619423384]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 62)
+custom_minimum_size = Vector2(240, 58)
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
-script = ExtResource("5")
+theme_override_font_sizes/font_size = 30
 text = "继续游戏"
-
-[node name="MainMenuButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=952059632]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 62)
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
 script = ExtResource("5")
+
+[node name="MainMenuButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseActions" unique_id=952059632]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
 text = "主界面"
-
-[node name="SaveButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=1086506952]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 62)
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
 script = ExtResource("5")
+
+[node name="SaveButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseActions" unique_id=1086506952]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
 text = "保存"
-
-[node name="SettingsButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseVBox" unique_id=34564584]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 62)
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
 script = ExtResource("5")
+
+[node name="SettingsButton" type="Button" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseActions" unique_id=34564584]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
 text = "设置"
+script = ExtResource("5")
+
+[node name="PauseCenter" type="VBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot" unique_id=308590957]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="CharacterNameLabel" type="Label" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter" unique_id=947237718]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.827451, 1, 0.956863, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="CharacterPreview" type="TextureRect" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter" unique_id=395037671]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 108)
+layout_mode = 2
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WeaponsTitleLabel" type="Label" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter" unique_id=1030398653]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.568627, 0.933333, 1, 0.92)
+theme_override_font_sizes/font_size = 20
+text = "WEAPONS"
+
+[node name="WeaponScroll" type="ScrollContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter" unique_id=783290941]
+custom_minimum_size = Vector2(320, 104)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="WeaponList" type="VBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter/WeaponScroll" unique_id=2120291634]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ItemsTitleLabel" type="Label" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter" unique_id=940760067]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.568627, 1, 0.701961, 0.92)
+theme_override_font_sizes/font_size = 20
+text = "ITEMS"
+
+[node name="ItemScroll" type="ScrollContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter" unique_id=2096945980]
+custom_minimum_size = Vector2(320, 104)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ItemList" type="VBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseCenter/ItemScroll" unique_id=1817782170]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="PauseStatsPanel" type="VBoxContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot" unique_id=56474004]
+custom_minimum_size = Vector2(330, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="StatsTitleLabel" type="Label" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseStatsPanel" unique_id=654866811]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.827451, 1, 0.956863, 1)
+theme_override_font_sizes/font_size = 24
+text = "ATTRIBUTES"
+horizontal_alignment = 1
+
+[node name="PauseStatsGrid" type="GridContainer" parent="PauseLayer/PauseOverlay/PausePanel/PauseMargin/PauseRoot/PauseStatsPanel" unique_id=254060899]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 6
+columns = 2

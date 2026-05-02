@@ -241,6 +241,11 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
         normalized["reward_owned"] = {}
     normalized["auto_attack_interval_multiplier"] = float(input_data.get("auto_attack_interval_multiplier", 1.0))
     normalized["gold_gain_multiplier"] = float(input_data.get("gold_gain_multiplier", 1.0))
+    normalized["is_endless_mode"] = bool(input_data.get("is_endless_mode", false))
+    normalized["endless_elapsed"] = max(0.0, float(input_data.get("endless_elapsed", 0.0)))
+    normalized["endless_level"] = max(0, int(input_data.get("endless_level", 0)))
+    normalized["endless_shop_timer"] = max(0.0, float(input_data.get("endless_shop_timer", 0.0)))
+    normalized["endless_base_max_enemy_count"] = max(0, int(input_data.get("endless_base_max_enemy_count", 0)))
     var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
     var xp_required_mult: float = _resolve_character_xp_required_multiplier(selected_character_id)
     var xp_to_next_default: int = _xp_required_for_level(current_level, xp_required_mult)
@@ -417,13 +422,18 @@ func _default_save() -> Dictionary:
         "build_tags": [],
         "reward_pity_state": {"no_output_streak": 0},
         "reward_owned": {},
-        "auto_attack_interval_multiplier": 1.0,
-        "gold_gain_multiplier": 1.0,
-        "xp_to_next_level": _xp_required_for_level(1), 
-        "player_pos_x": 0.0, 
-        "player_pos_y": 0.0, 
-        "settings": DEFAULT_SETTINGS.duplicate(true), 
-        "saved_at": "", 
+          "auto_attack_interval_multiplier": 1.0,
+          "gold_gain_multiplier": 1.0,
+          "is_endless_mode": false,
+          "endless_elapsed": 0.0,
+          "endless_level": 0,
+          "endless_shop_timer": 0.0,
+          "endless_base_max_enemy_count": 0,
+          "xp_to_next_level": _xp_required_for_level(1),
+          "player_pos_x": 0.0,
+          "player_pos_y": 0.0,
+          "settings": DEFAULT_SETTINGS.duplicate(true),
+          "saved_at": "",
     }
 
 func _normalize_difficulty(raw_value: String) -> String:

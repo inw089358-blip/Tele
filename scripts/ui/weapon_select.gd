@@ -214,6 +214,7 @@ func _refresh_selection_ui() -> void:
     lines.append(_tf("ui.weapon_select.damage_fmt", [str(attack_profile.get("base_damage", 10))], "Damage: %s"))
     lines.append(_tf("ui.weapon_select.interval_fmt", [str(attack_profile.get("interval", 0.35))], "Interval: %s"))
     lines.append(_tf("ui.weapon_select.range_fmt", [str(attack_profile.get("range", 320))], "Range: %s"))
+    lines.append(_tf("ui.weapon_select.crit_mult_fmt", ["%.2f" % float(attack_profile.get("crit_multiplier", 1.5))], "Crit Mult: %s"))
     if attack_profile.has("projectile_speed"):
         lines.append(_tf("ui.weapon_select.projectile_speed_fmt", [str(attack_profile.get("projectile_speed", 520))], "Projectile Speed: %s"))
     if attack_profile.has("projectile_radius"):

@@ -69,7 +69,6 @@
             "dodge_chance": 0.04,
             "attack_speed_mult": 1.08,
             "crit_chance": 0.07,
-            "crit_multiplier": 1.5,
             "lifesteal": 0,
             "luck": 6,
             "harvest": 0,
@@ -84,7 +83,6 @@
             "dodge_chance": 0,
             "attack_speed_mult": 0.96,
             "crit_chance": 0.03,
-            "crit_multiplier": 1.55,
             "lifesteal": 0,
             "luck": 0,
             "harvest": 0,
@@ -99,7 +97,6 @@
             "dodge_chance": 0,
             "attack_speed_mult": 0.98,
             "crit_chance": 0.08,
-            "crit_multiplier": 1.5,
             "lifesteal": 0.04,
             "luck": 0,
             "harvest": 0,
@@ -110,7 +107,7 @@
     "enemies": {
         "melee": {
             "move_speed": 98,
-            "max_hp": 8,
+            "max_hp": 12,
             "xp_drop": 3,
             "body_radius": 11,
             "visual": {
@@ -138,11 +135,14 @@
                 "death_hold_seconds": 0.1,
                 "flip_with_velocity": true,
                 "scale": 1
-            }
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
         },
         "ranged": {
             "move_speed": 90,
-            "max_hp": 7,
+            "max_hp": 10,
             "xp_drop": 4,
             "desired_min_distance": 240,
             "desired_max_distance": 320,
@@ -171,11 +171,14 @@
                     15
                 ],
                 "death_anim_fps": 12
-            }
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
         },
         "barrage": {
             "move_speed": 84,
-            "max_hp": 10,
+            "max_hp": 15,
             "xp_drop": 5,
             "desired_min_distance": 190,
             "desired_max_distance": 280,
@@ -206,11 +209,14 @@
                 ],
                 "death_anim_fps": 12,
                 "scale": 1.25
-            }
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
         },
         "elite_warden": {
             "move_speed": 76,
-            "max_hp": 34,
+            "max_hp": 54,
             "xp_drop": 20,
             "shield_interval": 8,
             "shield_duration": 3,
@@ -254,11 +260,14 @@
                 "scale": 0.36,
                 "elite_scale_multiplier": 1,
                 "apply_elite_tint": false
-            }
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
         },
         "fast_melee": {
             "move_speed": 145,
-            "max_hp": 4,
+            "max_hp": 7,
             "xp_drop": 3,
             "body_radius": 9.5,
             "visual": {
@@ -275,30 +284,10 @@
                     6,
                     7,
                     8,
-                    9,
-                    10,
-                    11,
-                    12,
-                    13,
-                    14,
-                    15,
-                    16,
-                    17,
-                    18,
-                    19
+                    9
                 ],
                 "anim_fps": 12,
                 "death_frames": [
-                    20,
-                    21,
-                    22,
-                    23,
-                    24,
-                    25,
-                    26,
-                    27,
-                    28,
-                    29,
                     30,
                     31,
                     32,
@@ -314,22 +303,19 @@
                 "death_hold_seconds": 0.12,
                 "flip_with_velocity": true,
                 "scale": 1.05
-            }
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
         },
-        "charger": {
-            "move_speed": 70,
-            "max_hp": 20,
-            "xp_drop": 7,
-            "body_radius": 15,
-            "charge_trigger_distance": 220,
-            "charge_cooldown": 4.2,
-            "charge_windup": 0.65,
-            "charge_duration": 0.52,
-            "charge_recover": 0.45,
-            "charge_speed": 340,
+        "splitter": {
+            "move_speed": 118,
+            "max_hp": 10,
+            "xp_drop": 4,
+            "body_radius": 10,
             "visual": {
-                "sprite_sheet_path": "res://sprite/enemies/pixel_snapper/pixel-snapper_chroma.png",
-                "hframes": 4,
+                "sprite_sheet_path": "res://sprite/enemies/pixel_stalker/pixel_stalker_sheet.png",
+                "hframes": 10,
                 "vframes": 4,
                 "move_frames": [
                     0,
@@ -339,21 +325,240 @@
                     4,
                     5,
                     6,
+                    7,
+                    8,
+                    9
+                ],
+                "anim_fps": 10,
+                "death_frames": [
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39
+                ],
+                "death_anim_fps": 14,
+                "death_hold_seconds": 0.1,
+                "flip_with_velocity": true,
+                "scale": 0.92,
+                "tint": "#ff59c8"
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
+        },
+        "sniper": {
+            "move_speed": 72,
+            "max_hp": 12,
+            "xp_drop": 5,
+            "body_radius": 10,
+            "desired_min_distance": 330,
+            "desired_max_distance": 440,
+            "attack_cooldown": 3.4,
+            "attack_windup": 0.82,
+            "attack_damage": 2,
+            "projectile_speed": 420,
+            "projectile_radius": 4,
+            "projectile_life_time": 3.2,
+            "warning_length": 720,
+            "warning_width": 22,
+            "projectile_tint": "#92eaff",
+            "visual": {
+                "sprite_sheet_path": "res://sprite/enemies/ranged_glitch/battle_sheet.png",
+                "hframes": 4,
+                "vframes": 4,
+                "move_frames": [
+                    4,
+                    5,
+                    6,
                     7
                 ],
-                "anim_fps": 8,
+                "anim_fps": 6,
+                "scale": 0.98,
+                "tint": "#b8f4ff",
                 "death_frames": [
+                    12,
+                    13,
+                    14,
+                    15
+                ],
+                "death_anim_fps": 12
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
+        },
+        "mine_seeder": {
+            "move_speed": 86,
+            "max_hp": 14,
+            "xp_drop": 5,
+            "body_radius": 12,
+            "desired_min_distance": 170,
+            "desired_max_distance": 260,
+            "mine_interval": 4.2,
+            "mine_warning": 1.05,
+            "mine_radius": 42,
+            "mine_damage": 1,
+            "mine_offset_min": 20,
+            "mine_offset_max": 110,
+            "visual": {
+                "sprite_sheet_path": "res://sprite/enemies/barrage_glitch/battle_sheet.png",
+                "hframes": 4,
+                "vframes": 4,
+                "move_frames": [
                     8,
                     9,
                     10,
                     11
                 ],
-                "death_anim_fps": 10,
+                "anim_fps": 7,
+                "death_frames": [
+                    12,
+                    13,
+                    14,
+                    15
+                ],
+                "death_anim_fps": 12,
+                "scale": 1.08,
+                "tint": "#baff55"
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
+        },
+        "charger": {
+            "move_speed": 70,
+            "max_hp": 30,
+            "xp_drop": 7,
+            "body_radius": 15,
+            "charge_trigger_distance": 220,
+            "charge_cooldown": 4.2,
+            "charge_windup": 0.65,
+            "charge_duration": 0.52,
+            "charge_recover": 0.45,
+            "charge_speed": 340,
+            "visual": {
+                "sprite_sheet_path": "res://sprite/enemies/barrage_glitch/battle_sheet.png",
+                "hframes": 4,
+                "vframes": 4,
+                "move_frames": [
+                    0,
+                    2,
+                    3,
+                    7
+                ],
+                "anim_fps": 10,
+                "death_frames": [
+                    12,
+                    13,
+                    14,
+                    15
+                ],
+                "death_anim_fps": 12,
                 "death_hold_seconds": 0.12,
                 "flip_with_velocity": true,
-                "scale": 1.32,
+                "scale": 1.35,
                 "tint": "#ff6a4f"
-            }
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
+        },
+        "elite_rift_charger": {
+            "move_speed": 82,
+            "max_hp": 64,
+            "xp_drop": 22,
+            "body_radius": 23,
+            "charge_trigger_distance": 300,
+            "charge_cooldown": 5.2,
+            "charge_windup": 1,
+            "charge_duration": 0.72,
+            "charge_recover": 0.7,
+            "charge_speed": 430,
+            "warning_length": 760,
+            "warning_width": 58,
+            "shock_projectile_count": 6,
+            "shock_projectile_damage": 1,
+            "shock_projectile_speed": 190,
+            "visual": {
+                "sprite_sheet_path": "res://sprite/enemies/barrage_glitch/battle_sheet.png",
+                "hframes": 4,
+                "vframes": 4,
+                "move_frames": [
+                    0,
+                    2,
+                    3,
+                    7
+                ],
+                "anim_fps": 10,
+                "death_frames": [
+                    12,
+                    13,
+                    14,
+                    15
+                ],
+                "death_anim_fps": 12,
+                "scale": 1.75,
+                "elite_scale_multiplier": 1,
+                "tint": "#ff5126"
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
+        },
+        "elite_clockwork_seer": {
+            "move_speed": 70,
+            "max_hp": 58,
+            "xp_drop": 22,
+            "body_radius": 22,
+            "desired_min_distance": 260,
+            "desired_max_distance": 380,
+            "burst_interval": 3.2,
+            "burst_damage": 1,
+            "burst_speed": 230,
+            "burst_angle_deg": 18,
+            "strike_interval": 5.8,
+            "strike_warning": 1.05,
+            "strike_radius": 52,
+            "strike_damage": 2,
+            "radial_interval": 9.5,
+            "radial_count": 8,
+            "radial_damage": 1,
+            "radial_speed": 190,
+            "visual": {
+                "sprite_sheet_path": "res://sprite/boss/glitch_core/battle_sheet.png",
+                "hframes": 6,
+                "vframes": 6,
+                "move_frames": [
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11
+                ],
+                "anim_fps": 8,
+                "death_frames": [
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35
+                ],
+                "death_anim_fps": 14,
+                "scale": 0.34,
+                "elite_scale_multiplier": 1,
+                "tint": "#72f2ff"
+            },
+            "hit_sfx_path": "res://audio/myedit_ai_sfx_0413112248.mp3",
+            "hit_sfx_volume_db": -7,
+            "hit_sfx_cooldown": 0.08
         }
     },
     "stages": {
@@ -363,9 +568,9 @@
             "background_key": "tutorial",
             "spawn_profile": {
                 "target_duration": 20,
-                "spawn_interval_start": 1.45,
-                "spawn_interval_end": 1.05,
-                "max_enemy_count": 18
+                "spawn_interval_start": 1.28,
+                "spawn_interval_end": 0.92,
+                "max_enemy_count": 23
             },
             "waves": [
                 {
@@ -374,15 +579,15 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.85,
-                "fast_melee_weight": 0,
+                "melee_weight": 1,
+                "fast_melee_weight": 0.05,
                 "charger_weight": 0,
                 "ranged_weight": 0.15,
                 "barrage_weight": 0
             },
-            "enemy_hp_multiplier": 1,
+            "enemy_hp_multiplier": 1.15,
             "enemy_move_speed_multiplier": 1,
-            "enemy_damage_multiplier": 1.0,
+            "enemy_damage_multiplier": 1,
             "resource_profile": {
                 "xp_drop_multiplier": 1.3,
                 "gold_drop_multiplier": 1.25
@@ -395,9 +600,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 25,
-                "spawn_interval_start": 1.25,
-                "spawn_interval_end": 0.92,
-                "max_enemy_count": 24
+                "spawn_interval_start": 1.1,
+                "spawn_interval_end": 0.81,
+                "max_enemy_count": 31
             },
             "waves": [
                 {
@@ -406,13 +611,13 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.7,
-                "fast_melee_weight": 0.1,
+                "melee_weight": 0.85,
+                "fast_melee_weight": 0.15,
                 "charger_weight": 0,
                 "ranged_weight": 0.2,
                 "barrage_weight": 0.05
             },
-            "enemy_hp_multiplier": 1.04,
+            "enemy_hp_multiplier": 1.2,
             "enemy_move_speed_multiplier": 1.01,
             "enemy_damage_multiplier": 1.05,
             "resource_profile": {
@@ -427,9 +632,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 30,
-                "spawn_interval_start": 1.08,
-                "spawn_interval_end": 0.82,
-                "max_enemy_count": 30
+                "spawn_interval_start": 0.95,
+                "spawn_interval_end": 0.72,
+                "max_enemy_count": 39
             },
             "waves": [
                 {
@@ -438,13 +643,13 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.62,
-                "fast_melee_weight": 0.13,
+                "melee_weight": 0.77,
+                "fast_melee_weight": 0.18,
                 "charger_weight": 0,
                 "ranged_weight": 0.25,
                 "barrage_weight": 0.1
             },
-            "enemy_hp_multiplier": 1.08,
+            "enemy_hp_multiplier": 1.24,
             "enemy_move_speed_multiplier": 1.03,
             "enemy_damage_multiplier": 1.15,
             "resource_profile": {
@@ -459,9 +664,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 35,
-                "spawn_interval_start": 0.96,
-                "spawn_interval_end": 0.72,
-                "max_enemy_count": 36
+                "spawn_interval_start": 0.84,
+                "spawn_interval_end": 0.63,
+                "max_enemy_count": 47
             },
             "waves": [
                 {
@@ -470,13 +675,14 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.56,
-                "fast_melee_weight": 0.14,
+                "melee_weight": 0.71,
+                "fast_melee_weight": 0.19,
                 "charger_weight": 0,
                 "ranged_weight": 0.3,
-                "barrage_weight": 0.15
+                "barrage_weight": 0.15,
+                "splitter_weight": 0.05
             },
-            "enemy_hp_multiplier": 1.12,
+            "enemy_hp_multiplier": 1.29,
             "enemy_move_speed_multiplier": 1.05,
             "enemy_damage_multiplier": 1.25,
             "resource_profile": {
@@ -491,9 +697,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 40,
-                "spawn_interval_start": 0.86,
-                "spawn_interval_end": 0.64,
-                "max_enemy_count": 44
+                "spawn_interval_start": 0.76,
+                "spawn_interval_end": 0.56,
+                "max_enemy_count": 57
             },
             "waves": [
                 {
@@ -502,13 +708,14 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.5,
-                "fast_melee_weight": 0.15,
+                "melee_weight": 0.65,
+                "fast_melee_weight": 0.2,
                 "charger_weight": 0,
                 "ranged_weight": 0.35,
-                "barrage_weight": 0.2
+                "barrage_weight": 0.2,
+                "splitter_weight": 0.07
             },
-            "enemy_hp_multiplier": 1.17,
+            "enemy_hp_multiplier": 1.35,
             "enemy_move_speed_multiplier": 1.07,
             "enemy_damage_multiplier": 1.4,
             "resource_profile": {
@@ -523,9 +730,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 45,
-                "spawn_interval_start": 0.78,
-                "spawn_interval_end": 0.58,
-                "max_enemy_count": 52
+                "spawn_interval_start": 0.69,
+                "spawn_interval_end": 0.51,
+                "max_enemy_count": 68
             },
             "waves": [
                 {
@@ -534,13 +741,15 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.45,
-                "fast_melee_weight": 0.15,
+                "melee_weight": 0.6,
+                "fast_melee_weight": 0.2,
                 "charger_weight": 0,
                 "ranged_weight": 0.4,
-                "barrage_weight": 0.25
+                "barrage_weight": 0.25,
+                "splitter_weight": 0.08,
+                "sniper_weight": 0.04
             },
-            "enemy_hp_multiplier": 1.23,
+            "enemy_hp_multiplier": 1.41,
             "enemy_move_speed_multiplier": 1.09,
             "enemy_damage_multiplier": 1.5,
             "resource_profile": {
@@ -555,9 +764,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 50,
-                "spawn_interval_start": 0.74,
-                "spawn_interval_end": 0.54,
-                "max_enemy_count": 58
+                "spawn_interval_start": 0.65,
+                "spawn_interval_end": 0.48,
+                "max_enemy_count": 75
             },
             "waves": [
                 {
@@ -566,13 +775,15 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.4,
-                "fast_melee_weight": 0.15,
+                "melee_weight": 0.55,
+                "fast_melee_weight": 0.2,
                 "charger_weight": 0,
                 "ranged_weight": 0.45,
-                "barrage_weight": 0.3
+                "barrage_weight": 0.3,
+                "splitter_weight": 0.1,
+                "sniper_weight": 0.05
             },
-            "enemy_hp_multiplier": 1.3,
+            "enemy_hp_multiplier": 1.5,
             "enemy_move_speed_multiplier": 1.11,
             "enemy_damage_multiplier": 1.6,
             "next_stage_id": "stage_008"
@@ -583,9 +794,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 55,
-                "spawn_interval_start": 0.7,
-                "spawn_interval_end": 0.5,
-                "max_enemy_count": 64
+                "spawn_interval_start": 0.62,
+                "spawn_interval_end": 0.44,
+                "max_enemy_count": 83
             },
             "waves": [
                 {
@@ -594,13 +805,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.35,
-                "fast_melee_weight": 0.14,
+                "melee_weight": 0.5,
+                "fast_melee_weight": 0.19,
                 "charger_weight": 0.06,
                 "ranged_weight": 0.5,
-                "barrage_weight": 0.35
+                "barrage_weight": 0.35,
+                "splitter_weight": 0.1,
+                "sniper_weight": 0.06,
+                "mine_seeder_weight": 0.04
             },
-            "enemy_hp_multiplier": 1.38,
+            "enemy_hp_multiplier": 1.59,
             "enemy_move_speed_multiplier": 1.13,
             "enemy_damage_multiplier": 1.7,
             "next_stage_id": "stage_009"
@@ -611,9 +825,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.66,
-                "spawn_interval_end": 0.46,
-                "max_enemy_count": 70
+                "spawn_interval_start": 0.58,
+                "spawn_interval_end": 0.4,
+                "max_enemy_count": 91
             },
             "waves": [
                 {
@@ -622,13 +836,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.3,
-                "fast_melee_weight": 0.14,
+                "melee_weight": 0.45,
+                "fast_melee_weight": 0.19,
                 "charger_weight": 0.08,
                 "ranged_weight": 0.55,
-                "barrage_weight": 0.4
+                "barrage_weight": 0.4,
+                "splitter_weight": 0.11,
+                "sniper_weight": 0.07,
+                "mine_seeder_weight": 0.05
             },
-            "enemy_hp_multiplier": 1.46,
+            "enemy_hp_multiplier": 1.68,
             "enemy_move_speed_multiplier": 1.15,
             "enemy_damage_multiplier": 1.8,
             "next_stage_id": "stage_010"
@@ -639,9 +856,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.62,
-                "spawn_interval_end": 0.42,
-                "max_enemy_count": 76
+                "spawn_interval_start": 0.55,
+                "spawn_interval_end": 0.37,
+                "max_enemy_count": 99
             },
             "waves": [
                 {
@@ -650,13 +867,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.26,
-                "fast_melee_weight": 0.13,
+                "melee_weight": 0.41,
+                "fast_melee_weight": 0.18,
                 "charger_weight": 0.1,
                 "ranged_weight": 0.6,
-                "barrage_weight": 0.45
+                "barrage_weight": 0.45,
+                "splitter_weight": 0.11,
+                "sniper_weight": 0.08,
+                "mine_seeder_weight": 0.06
             },
-            "enemy_hp_multiplier": 1.55,
+            "enemy_hp_multiplier": 1.78,
             "enemy_move_speed_multiplier": 1.17,
             "enemy_damage_multiplier": 1.9,
             "next_stage_id": "stage_011"
@@ -667,9 +887,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.9,
-                "spawn_interval_end": 0.62,
-                "max_enemy_count": 62
+                "spawn_interval_start": 0.79,
+                "spawn_interval_end": 0.55,
+                "max_enemy_count": 81
             },
             "waves": [
                 {
@@ -678,21 +898,34 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.24,
-                "fast_melee_weight": 0.12,
-                "charger_weight": 0.1,
+                "melee_weight": 0.46,
+                "fast_melee_weight": 0.2,
+                "charger_weight": 0.15,
                 "ranged_weight": 0.65,
-                "barrage_weight": 0.5
+                "barrage_weight": 0.5,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.08,
+                "mine_seeder_weight": 0.06
             },
-            "enemy_hp_multiplier": 1.65,
+            "enemy_hp_multiplier": 1.9,
             "enemy_move_speed_multiplier": 1.18,
-            "enemy_damage_multiplier": 2.0,
+            "enemy_damage_multiplier": 2,
             "next_stage_id": "stage_012",
             "elite_schedule": {
                 "first_spawn_time": 20,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 1200
+                "elite_hp_override": 1800,
+                "elite_pool": [
+                    {
+                        "type": "elite_warden",
+                        "weight": 1
+                    },
+                    {
+                        "type": "elite_rift_charger",
+                        "weight": 1
+                    }
+                ]
             }
         },
         "stage_012": {
@@ -701,9 +934,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.85,
-                "spawn_interval_end": 0.58,
-                "max_enemy_count": 68
+                "spawn_interval_start": 0.75,
+                "spawn_interval_end": 0.51,
+                "max_enemy_count": 88
             },
             "waves": [
                 {
@@ -712,13 +945,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.21,
-                "fast_melee_weight": 0.12,
-                "charger_weight": 0.12,
+                "melee_weight": 0.43,
+                "fast_melee_weight": 0.2,
+                "charger_weight": 0.17,
                 "ranged_weight": 0.7,
-                "barrage_weight": 0.55
+                "barrage_weight": 0.55,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.09,
+                "mine_seeder_weight": 0.07
             },
-            "enemy_hp_multiplier": 1.76,
+            "enemy_hp_multiplier": 2.02,
             "enemy_move_speed_multiplier": 1.19,
             "enemy_damage_multiplier": 2.1,
             "next_stage_id": "stage_013"
@@ -729,9 +965,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.8,
-                "spawn_interval_end": 0.54,
-                "max_enemy_count": 74
+                "spawn_interval_start": 0.7,
+                "spawn_interval_end": 0.48,
+                "max_enemy_count": 96
             },
             "waves": [
                 {
@@ -740,13 +976,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.18,
-                "fast_melee_weight": 0.11,
-                "charger_weight": 0.13,
+                "melee_weight": 0.4,
+                "fast_melee_weight": 0.19,
+                "charger_weight": 0.18,
                 "ranged_weight": 0.75,
-                "barrage_weight": 0.6
+                "barrage_weight": 0.6,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.1,
+                "mine_seeder_weight": 0.08
             },
-            "enemy_hp_multiplier": 1.88,
+            "enemy_hp_multiplier": 2.16,
             "enemy_move_speed_multiplier": 1.2,
             "enemy_damage_multiplier": 2.2,
             "next_stage_id": "stage_014"
@@ -757,9 +996,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.76,
-                "spawn_interval_end": 0.5,
-                "max_enemy_count": 80
+                "spawn_interval_start": 0.67,
+                "spawn_interval_end": 0.44,
+                "max_enemy_count": 104
             },
             "waves": [
                 {
@@ -768,13 +1007,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.16,
-                "fast_melee_weight": 0.1,
-                "charger_weight": 0.14,
+                "melee_weight": 0.38,
+                "fast_melee_weight": 0.18,
+                "charger_weight": 0.19,
                 "ranged_weight": 0.8,
-                "barrage_weight": 0.65
+                "barrage_weight": 0.65,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.1,
+                "mine_seeder_weight": 0.08
             },
-            "enemy_hp_multiplier": 2,
+            "enemy_hp_multiplier": 2.3,
             "enemy_move_speed_multiplier": 1.21,
             "enemy_damage_multiplier": 2.3,
             "next_stage_id": "stage_015",
@@ -782,7 +1024,21 @@
                 "first_spawn_time": 20,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 1400
+                "elite_hp_override": 2100,
+                "elite_pool": [
+                    {
+                        "type": "elite_warden",
+                        "weight": 1
+                    },
+                    {
+                        "type": "elite_rift_charger",
+                        "weight": 1
+                    },
+                    {
+                        "type": "elite_clockwork_seer",
+                        "weight": 1
+                    }
+                ]
             }
         },
         "stage_015": {
@@ -791,9 +1047,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.72,
-                "spawn_interval_end": 0.46,
-                "max_enemy_count": 88
+                "spawn_interval_start": 0.63,
+                "spawn_interval_end": 0.4,
+                "max_enemy_count": 114
             },
             "waves": [
                 {
@@ -802,13 +1058,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.14,
-                "fast_melee_weight": 0.1,
-                "charger_weight": 0.15,
+                "melee_weight": 0.36,
+                "fast_melee_weight": 0.18,
+                "charger_weight": 0.2,
                 "ranged_weight": 0.85,
-                "barrage_weight": 0.7
+                "barrage_weight": 0.7,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.11,
+                "mine_seeder_weight": 0.09
             },
-            "enemy_hp_multiplier": 2.14,
+            "enemy_hp_multiplier": 2.46,
             "enemy_move_speed_multiplier": 1.22,
             "enemy_damage_multiplier": 2.4,
             "next_stage_id": "stage_016",
@@ -816,7 +1075,17 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 1200
+                "elite_hp_override": 1800,
+                "elite_pool": [
+                    {
+                        "type": "elite_rift_charger",
+                        "weight": 1
+                    },
+                    {
+                        "type": "elite_clockwork_seer",
+                        "weight": 1
+                    }
+                ]
             }
         },
         "stage_016": {
@@ -825,9 +1094,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.68,
-                "spawn_interval_end": 0.42,
-                "max_enemy_count": 96
+                "spawn_interval_start": 0.6,
+                "spawn_interval_end": 0.37,
+                "max_enemy_count": 125
             },
             "waves": [
                 {
@@ -836,13 +1105,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.12,
-                "fast_melee_weight": 0.09,
-                "charger_weight": 0.16,
+                "melee_weight": 0.34,
+                "fast_melee_weight": 0.17,
+                "charger_weight": 0.21,
                 "ranged_weight": 0.9,
-                "barrage_weight": 0.75
+                "barrage_weight": 0.75,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.11,
+                "mine_seeder_weight": 0.09
             },
-            "enemy_hp_multiplier": 2.28,
+            "enemy_hp_multiplier": 2.62,
             "enemy_move_speed_multiplier": 1.23,
             "enemy_damage_multiplier": 2.5,
             "next_stage_id": "stage_017"
@@ -853,9 +1125,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.64,
-                "spawn_interval_end": 0.38,
-                "max_enemy_count": 104
+                "spawn_interval_start": 0.56,
+                "spawn_interval_end": 0.33,
+                "max_enemy_count": 135
             },
             "waves": [
                 {
@@ -864,13 +1136,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.1,
-                "fast_melee_weight": 0.08,
-                "charger_weight": 0.17,
+                "melee_weight": 0.32,
+                "fast_melee_weight": 0.16,
+                "charger_weight": 0.22,
                 "ranged_weight": 0.95,
-                "barrage_weight": 0.8
+                "barrage_weight": 0.8,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.12,
+                "mine_seeder_weight": 0.1
             },
-            "enemy_hp_multiplier": 2.42,
+            "enemy_hp_multiplier": 2.78,
             "enemy_move_speed_multiplier": 1.24,
             "enemy_damage_multiplier": 2.6,
             "next_stage_id": "stage_018",
@@ -878,7 +1153,21 @@
                 "first_spawn_time": 20,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 1600
+                "elite_hp_override": 2400,
+                "elite_pool": [
+                    {
+                        "type": "elite_warden",
+                        "weight": 1
+                    },
+                    {
+                        "type": "elite_rift_charger",
+                        "weight": 1
+                    },
+                    {
+                        "type": "elite_clockwork_seer",
+                        "weight": 2
+                    }
+                ]
             }
         },
         "stage_018": {
@@ -887,9 +1176,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.6,
-                "spawn_interval_end": 0.34,
-                "max_enemy_count": 112
+                "spawn_interval_start": 0.53,
+                "spawn_interval_end": 0.3,
+                "max_enemy_count": 146
             },
             "waves": [
                 {
@@ -898,13 +1187,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.08,
-                "fast_melee_weight": 0.08,
-                "charger_weight": 0.18,
+                "melee_weight": 0.3,
+                "fast_melee_weight": 0.16,
+                "charger_weight": 0.23,
                 "ranged_weight": 1,
-                "barrage_weight": 0.85
+                "barrage_weight": 0.85,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.12,
+                "mine_seeder_weight": 0.1
             },
-            "enemy_hp_multiplier": 2.56,
+            "enemy_hp_multiplier": 2.94,
             "enemy_move_speed_multiplier": 1.25,
             "enemy_damage_multiplier": 2.7,
             "next_stage_id": "stage_019"
@@ -915,9 +1207,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.56,
-                "spawn_interval_end": 0.3,
-                "max_enemy_count": 120
+                "spawn_interval_start": 0.49,
+                "spawn_interval_end": 0.26,
+                "max_enemy_count": 156
             },
             "waves": [
                 {
@@ -926,13 +1218,16 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.06,
-                "fast_melee_weight": 0.07,
-                "charger_weight": 0.18,
+                "melee_weight": 0.28,
+                "fast_melee_weight": 0.15,
+                "charger_weight": 0.23,
                 "ranged_weight": 1,
-                "barrage_weight": 0.9
+                "barrage_weight": 0.9,
+                "splitter_weight": 0.12,
+                "sniper_weight": 0.12,
+                "mine_seeder_weight": 0.1
             },
-            "enemy_hp_multiplier": 2.72,
+            "enemy_hp_multiplier": 3.13,
             "enemy_move_speed_multiplier": 1.26,
             "enemy_damage_multiplier": 2.8,
             "next_stage_id": "stage_020"
@@ -947,9 +1242,9 @@
             },
             "spawn_profile": {
                 "target_duration": 90,
-                "spawn_interval_start": 1.2,
-                "spawn_interval_end": 0.85,
-                "max_enemy_count": 60
+                "spawn_interval_start": 1.06,
+                "spawn_interval_end": 0.75,
+                "max_enemy_count": 170
             },
             "waves": [
                 {
@@ -958,14 +1253,17 @@
                 }
             ],
             "enemy_mix": {
-                "melee_weight": 0.5,
-                "fast_melee_weight": 0.1,
-                "charger_weight": 0.08,
+                "melee_weight": 0.7,
+                "fast_melee_weight": 0.15,
+                "charger_weight": 0.11,
                 "ranged_weight": 0.35,
-                "barrage_weight": 0.25
+                "barrage_weight": 0.25,
+                "splitter_weight": 0.08,
+                "sniper_weight": 0.06,
+                "mine_seeder_weight": 0.04
             },
             "boss": {
-                "hp": 4800,
+                "hp": 7200,
                 "contact_damage": 3,
                 "p1_beam_cd": 2,
                 "p1_gaze_cd": 5.5,
@@ -999,9 +1297,9 @@
                 "phase_ring_damage": 1,
                 "phase_ring_speed": 230
             },
-            "enemy_hp_multiplier": 3.1,
+            "enemy_hp_multiplier": 3.55,
             "enemy_move_speed_multiplier": 1.28,
-            "enemy_damage_multiplier": 3.0
+            "enemy_damage_multiplier": 3
         }
     }
 }

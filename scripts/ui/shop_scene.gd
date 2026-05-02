@@ -8,9 +8,9 @@ const WEAPON_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alph
 const ITEM_ICON_DIR: String = "res://sprite/items/"
 const WEAPON_SLOT_COUNT: int = 6
 const WEAPON_GRID_COLUMNS: int = 3
-const ITEMS_PANEL_RATIO: float = 2.1
-const WEAPONS_PANEL_RATIO: float = 1.2
-const NEXT_STAGE_PANEL_RATIO: float = 0.95
+const ITEMS_PANEL_RATIO: float = 1.4
+const WEAPONS_PANEL_RATIO: float = 1.25
+const NEXT_STAGE_PANEL_RATIO: float = 0.9
 const OFFER_ICON_SIZE: Vector2 = Vector2(64, 64)
 const GRID_ICON_SIZE: Vector2 = Vector2(54, 54)
 const PAUSE_OPEN_DURATION: float = 0.18
@@ -563,7 +563,14 @@ func _build_runtime_save_payload() -> Dictionary:
         "reward_owned": _snapshot.get("reward_owned", {}),
         "auto_attack_interval_multiplier": float(_snapshot.get("auto_attack_interval_multiplier", 1.0)),
         "gold_gain_multiplier": float(_snapshot.get("gold_gain_multiplier", 1.0)),
+        "stage_drop_double_active": bool(_snapshot.get("stage_drop_double_active", false)),
+        "next_stage_drop_double_pending": bool(GameManager.next_stage_drop_double_pending) if GameManager != null else bool(_snapshot.get("next_stage_drop_double_pending", false)),
         "run_survival_time": max(0.0, float(_snapshot.get("run_survival_time", 0.0))),
+        "is_endless_mode": bool(_snapshot.get("is_endless_mode", false)),
+        "endless_elapsed": max(0.0, float(_snapshot.get("endless_elapsed", 0.0))),
+        "endless_level": max(0, int(_snapshot.get("endless_level", 0))),
+        "endless_shop_timer": clampf(float(_snapshot.get("endless_shop_timer", 0.0)), 0.0, 80.0),
+        "endless_base_max_enemy_count": max(0, int(_snapshot.get("endless_base_max_enemy_count", 0))),
         "xp_to_next_level": max(1, int(_snapshot.get("xp_to_next_level", 20))),
         "player_pos_x": float(_snapshot.get("player_pos_x", 0.0)),
         "player_pos_y": float(_snapshot.get("player_pos_y", 0.0)),
@@ -685,7 +692,7 @@ func _build_dynamic_bottom_sections() -> void:
     for child: Node in weapon_slots_row.get_children():
         child.queue_free()
 
-    weapon_slots_row.add_theme_constant_override("separation", 16)
+    weapon_slots_row.add_theme_constant_override("separation", 12)
     _reparent_status_hint_to_top_bar()
     bottom_actions.visible = false
     bottom_actions.custom_minimum_size = Vector2.ZERO
@@ -700,12 +707,12 @@ func _build_dynamic_bottom_sections() -> void:
     _owned_items_scroll = ScrollContainer.new()
     _owned_items_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _owned_items_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    _owned_items_scroll.custom_minimum_size = Vector2(0, 132)
+    _owned_items_scroll.custom_minimum_size = Vector2(0, 118)
     var owned_items_scroll_content: VBoxContainer = VBoxContainer.new()
     owned_items_scroll_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     owned_items_scroll_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
     _owned_items_grid = GridContainer.new()
-    _owned_items_grid.columns = 8
+    _owned_items_grid.columns = 6
     _owned_items_grid.add_theme_constant_override("h_separation", 6)
     _owned_items_grid.add_theme_constant_override("v_separation", 6)
     owned_items_scroll_content.add_child(_owned_items_grid)
@@ -734,7 +741,7 @@ func _build_dynamic_bottom_sections() -> void:
     _next_stage_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _next_stage_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
     _next_stage_panel.size_flags_stretch_ratio = NEXT_STAGE_PANEL_RATIO
-    _next_stage_panel.custom_minimum_size = Vector2(220, 0)
+    _next_stage_panel.custom_minimum_size = Vector2(200, 0)
     _next_stage_panel.add_theme_constant_override("separation", 8)
     _next_stage_panel.alignment = BoxContainer.ALIGNMENT_END
 
@@ -751,7 +758,7 @@ func _build_dynamic_bottom_sections() -> void:
     _next_stage_panel.add_child(_elite_hint_label)
     _reparent_next_wave_button_to_next_stage_panel()
     next_wave_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    next_wave_button.custom_minimum_size = Vector2(220, 56)
+    next_wave_button.custom_minimum_size = Vector2(200, 56)
 
 func _build_weapon_action_panel() -> void:
     _weapon_action_panel = HBoxContainer.new()
@@ -933,11 +940,14 @@ func _on_next_wave_pressed() -> void:
     _refresh_weapon_tag_state_snapshot()
     _snapshot["shop_offers"] = []
     
-    # Resolve next stage ID so the game starts the correct next level
-    var current_id: String = str(_snapshot.get("stage_id", "stage_001"))
-    var next_id: String = _resolve_next_stage_id(current_id)
-    if not next_id.is_empty():
-        _snapshot["stage_id"] = next_id
+    if bool(_snapshot.get("is_endless_mode", false)):
+        _snapshot["stage_id"] = "stage_020"
+    else:
+        # Resolve next stage ID so the game starts the correct next level
+        var current_id: String = str(_snapshot.get("stage_id", "stage_001"))
+        var next_id: String = _resolve_next_stage_id(current_id)
+        if not next_id.is_empty():
+            _snapshot["stage_id"] = next_id
         
     GameManager.continue_from_shop(_snapshot)
 
@@ -1320,10 +1330,12 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
         attr_label.fit_content = false
         attr_label.scroll_active = true
         attr_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    if _owned_items_grid != null:
+        _owned_items_grid.columns = 5 if viewport_size.x <= 1300.0 else 6
     if _next_stage_panel != null:
-        _next_stage_panel.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.19, 220.0, 320.0), 0)
+        _next_stage_panel.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.16, 200.0, 300.0), 0)
     if next_wave_button != null:
-        next_wave_button.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.16, 210.0, 300.0), 56.0)
+        next_wave_button.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.15, 190.0, 280.0), 56.0)
 
 func _rebuild_offer_cards() -> void:
     for child: Node in offers_grid.get_children():
@@ -1339,8 +1351,8 @@ func _rebuild_offer_cards() -> void:
         var sold: bool = bool(offer.get("sold", false))
 
         var card: PanelContainer = PanelContainer.new()
-        card.custom_minimum_size = Vector2(210, 198)
-        card.pivot_offset = Vector2(105, 99) # 中心点
+        card.custom_minimum_size = Vector2(190, 198)
+        card.pivot_offset = Vector2(95, 99) # 中心点
         card.add_theme_stylebox_override("panel", _build_offer_card_style(rarity_key, is_locked, sold))
 
         # --- 动态入场动画 ---
@@ -1373,7 +1385,7 @@ func _rebuild_offer_cards() -> void:
         var desc: Label = Label.new()
         desc.text = offer_desc
         desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        desc.max_lines_visible = 4
+        desc.max_lines_visible = 5
         desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
         desc.clip_text = true
         desc.add_theme_font_size_override("font_size", 14)
@@ -1430,8 +1442,8 @@ func _rebuild_offer_cards_brotato() -> void:
         var kind: String = str(offer.get("kind", "item"))
 
         var card: PanelContainer = PanelContainer.new()
-        card.custom_minimum_size = Vector2(224, 260)
-        card.pivot_offset = Vector2(112, 130)
+        card.custom_minimum_size = Vector2(196, 252)
+        card.pivot_offset = Vector2(98, 126)
         card.add_theme_stylebox_override("panel", _build_offer_card_style_brotato(rarity_key, is_locked, sold))
 
         var margin: MarginContainer = MarginContainer.new()
@@ -1462,8 +1474,8 @@ func _rebuild_offer_cards_brotato() -> void:
         var desc: Label = Label.new()
         desc.text = offer_desc
         desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        desc.custom_minimum_size = Vector2(0, 84)
-        desc.max_lines_visible = 5
+        desc.custom_minimum_size = Vector2(0, 90)
+        desc.max_lines_visible = 6
         desc.clip_text = true
         desc.add_theme_font_size_override("font_size", 13)
         desc.add_theme_color_override("font_color", Color(0.86, 0.86, 0.78, 1.0))
@@ -1670,28 +1682,27 @@ func _rebuild_attr_panel() -> void:
         tag_state = (tag_state_raw as Dictionary).duplicate(true)
     if tag_state.is_empty() and _shop_system != null:
         tag_state = _shop_system.resolve_weapon_tag_state(shop_state)
-    
+
     var lines: Array[String] = []
-    lines.append("[center][b][color=#00f0ff]属性状态[/color][/b][/center]")
-    lines.append("") # 留空行增加透气感
-    
+    lines.append("[center][b][color=#00f0ff]%s[/color][/b][/center]" % _tx("ui.shop.attr_status_title", "ATTRIBUTE STATUS"))
+    lines.append("")
     lines.append("[table=2]")
-    _add_stat_line(lines, "生命上限", int(_snapshot.get("player_max_hp", 100)), "", 0, true)
-    _add_stat_line(lines, "生命回复", float(stats.get("hp_regen", 0.0)), "", 0, true)
-    _add_stat_line(lines, "攻击加成", float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
-    _add_stat_line(lines, "近战加成", int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "远程加成", int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "幸运值", float(stats.get("luck", 0.0)), "", 0, true)
-    _add_stat_line(lines, "收益收获", float(stats.get("harvest", 0.0)), "", 0, true)
-    _add_stat_line(lines, "攻击范围", float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
-    _add_stat_line(lines, "移动速度", extra_move_speed, "", 0, true)
-    _add_stat_line(lines, "护甲防御", float(stats.get("armor", 0.0)), "", 0, true)
-    _add_stat_line(lines, "闪避概率", (float(stats.get("dodge_chance", 0.0)) * 100.0), "%", 0, true)
-    _add_stat_line(lines, "攻击频率", extra_attack_speed_percent, "%", 0, true)
-    _add_stat_line(lines, "暴击概率", (float(stats.get("crit_chance", 0.05)) * 100.0), "%", 0, true)
-    _add_stat_line(lines, "生命吸取", (float(stats.get("lifesteal", 0.0)) * 100.0), "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_max_hp", "Max HP"), int(_snapshot.get("player_max_hp", 100)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_hp_regen", "HP Regen"), float(stats.get("hp_regen", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_attack_bonus", "Attack Bonus"), float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_melee_damage", "Melee Damage"), int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_ranged_damage", "Ranged Damage"), int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_luck", "Luck"), float(stats.get("luck", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_harvest", "Harvest"), float(stats.get("harvest", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_range", "Range"), float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_move_speed", "Speed"), extra_move_speed, "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_armor", "Armor"), float(stats.get("armor", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_dodge", "Dodge"), float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_attack_speed", "Attack Speed"), extra_attack_speed_percent, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_crit", "Crit Chance"), float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_lifesteal", "Lifesteal"), float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
     lines.append("[/table]")
-    
+    _append_weapon_tag_lines(lines, tag_state)
     attr_label.text = "\n".join(lines)
 
 func _add_stat_line(lines: Array[String], label: String, val: Variant, unit: String, _base: float, color_logic: bool) -> void:
@@ -1720,28 +1731,28 @@ func _rebuild_attr_panel_brotato() -> void:
     var extra_attack_speed_percent: float = (current_attack_speed_mult / base_attack_speed_mult - 1.0) * 100.0
 
     var lines: Array[String] = []
-    lines.append("[center][b][color=#f1f1e8]属性[/color][/b][/center]")
+    lines.append("[center][b][color=#f1f1e8]%s[/color][/b][/center]" % _tx("ui.shop.attr_title", "ATTRIBUTES"))
     lines.append("")
-    lines.append("[b][color=#d8d8cf]主要[/color][/b]")
+    lines.append("[b][color=#d8d8cf]%s[/color][/b]" % _tx("ui.shop.attr_primary", "PRIMARY"))
     lines.append("[table=2]")
-    _add_stat_line(lines, "最大生命值", int(_snapshot.get("player_max_hp", 100)), "", 0, true)
-    _add_stat_line(lines, "伤害", float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
-    _add_stat_line(lines, "近战伤害", int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "远程伤害", int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "攻击速度", extra_attack_speed_percent, "%", 0, true)
-    _add_stat_line(lines, "范围", float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_max_hp", "Max HP"), int(_snapshot.get("player_max_hp", 100)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_damage", "Damage"), float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_melee_damage", "Melee Damage"), int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_ranged_damage", "Ranged Damage"), int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_attack_speed", "Attack Speed"), extra_attack_speed_percent, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_range", "Range"), float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
     lines.append("[/table]")
     lines.append("")
-    lines.append("[b][color=#d8d8cf]次要[/color][/b]")
+    lines.append("[b][color=#d8d8cf]%s[/color][/b]" % _tx("ui.shop.attr_secondary", "SECONDARY"))
     lines.append("[table=2]")
-    _add_stat_line(lines, "生命再生", float(stats.get("hp_regen", 0.0)), "", 0, true)
-    _add_stat_line(lines, "护甲", float(stats.get("armor", 0.0)), "", 0, true)
-    _add_stat_line(lines, "闪避", float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
-    _add_stat_line(lines, "暴击率", float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
-    _add_stat_line(lines, "生命窃取", float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
-    _add_stat_line(lines, "速度", extra_move_speed, "", 0, true)
-    _add_stat_line(lines, "幸运", float(stats.get("luck", 0.0)), "", 0, true)
-    _add_stat_line(lines, "收获", float(stats.get("harvest", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_hp_regen", "HP Regen"), float(stats.get("hp_regen", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_armor", "Armor"), float(stats.get("armor", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_dodge", "Dodge"), float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_crit", "Crit Chance"), float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_lifesteal", "Lifesteal"), float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_move_speed", "Speed"), extra_move_speed, "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_luck", "Luck"), float(stats.get("luck", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_harvest", "Harvest"), float(stats.get("harvest", 0.0)), "", 0, true)
     lines.append("[/table]")
     attr_label.text = "\n".join(lines)
 
@@ -1999,11 +2010,12 @@ func _build_weapon_action_detail(weapon: Dictionary) -> String:
     var profile: Dictionary = weapon.get("attack_profile", {})
     var parts: Array[String] = []
     if not profile.is_empty():
-        parts.append("[color=#f1f1e8]伤害:[/color] %s" % str(profile.get("base_damage", "-")))
-        parts.append("[color=#f1f1e8]冷却:[/color] %.2fs" % float(profile.get("interval", 0.0)))
-        parts.append("[color=#f1f1e8]范围:[/color] %s" % str(profile.get("range", "-")))
+        parts.append("[color=#f1f1e8]%s:[/color] %s" % [_tx("ui.shop.weapon_detail.damage", "Damage"), str(profile.get("base_damage", "-"))])
+        parts.append("[color=#f1f1e8]%s:[/color] %.2fs" % [_tx("ui.shop.weapon_detail.cooldown", "Cooldown"), float(profile.get("interval", 0.0))])
+        parts.append("[color=#f1f1e8]%s:[/color] %s" % [_tx("ui.shop.weapon_detail.range", "Range"), str(profile.get("range", "-"))])
+        parts.append("[color=#f1f1e8]%s:[/color] %.2f" % [_tx("ui.shop.weapon_detail.crit_mult", "Crit Mult"), float(profile.get("crit_multiplier", 1.5))])
         if profile.has("crit_chance"):
-            parts.append("[color=#f1f1e8]暴击:[/color] %.0f%%" % (float(profile.get("crit_chance", 0.0)) * 100.0))
+            parts.append("[color=#f1f1e8]%s:[/color] %.0f%%" % [_tx("ui.shop.weapon_detail.crit", "Crit"), float(profile.get("crit_chance", 0.0)) * 100.0])
     var effects: Dictionary = weapon.get("effects", {})
     for key: Variant in effects.keys():
         if parts.size() >= 5:
@@ -2018,7 +2030,7 @@ func _build_weapon_action_detail(weapon: Dictionary) -> String:
                 continue
             var sign: String = "+" if numeric_value >= 0.0 else ""
             parts.append("[color=#f1f1e8]%s:[/color] %s%.1f" % [key_text, sign, numeric_value])
-    var stat_text: String = "[color=#aeb6b8]暂无武器属性[/color]"
+    var stat_text: String = "[color=#aeb6b8]%s[/color]" % _tx("ui.shop.weapon_detail.no_stats", "No weapon stats")
     if not parts.is_empty():
         stat_text = "\n".join(parts)
     return "[font_size=18]%s[/font_size]" % stat_text
@@ -2179,7 +2191,7 @@ func _resolve_offer_desc(offer: Dictionary) -> String:
             var dmg: float = float(profile.get("base_damage", 0.0))
             var interval: float = float(profile.get("interval", 1.0))
             var w_range: float = float(profile.get("range", 0.0))
-            var stats_line: String = "\n伤害:%d 频率:%.2fs 范围:%d" % [dmg, interval, w_range]
+            var stats_line: String = "\n%s:%d\n%s:%.2fs\n%s:%d" % [_tx("ui.shop.weapon_detail.damage", "Damage"), dmg, _tx("ui.shop.weapon_detail.cooldown", "Cooldown"), interval, _tx("ui.shop.weapon_detail.range", "Range"), w_range]
             base_desc += stats_line
     else:
         var item_id: String = str(offer.get("item_id", ""))
@@ -2191,9 +2203,27 @@ func _resolve_offer_desc(offer: Dictionary) -> String:
             var parts: Array[String] = []
             for key in effects.keys():
                 parts.append("%s: %s" % [key, str(effects[key])])
-            base_desc = ", ".join(parts)
+            base_desc = "\n".join(parts)
+        elif offer.get("effects", {}) is Dictionary and not (offer.get("effects", {}) as Dictionary).is_empty():
+            base_desc = _split_offer_bonus_lines(base_desc)
             
     return base_desc
+
+func _split_offer_bonus_lines(text: String) -> String:
+    var normalized: String = text.strip_edges()
+    if normalized.is_empty():
+        return ""
+    normalized = normalized.replace("，", "\n")
+    normalized = normalized.replace(", ", "\n")
+    normalized = normalized.replace(",", "\n")
+
+    var lines: Array[String] = []
+    for raw_line: String in normalized.split("\n", false):
+        var line: String = raw_line.strip_edges()
+        if line.is_empty():
+            continue
+        lines.append(line)
+    return "\n".join(lines)
 
 func _load_offer_icon(offer: Dictionary) -> Texture2D:
     var icon_path: String = str(offer.get("icon_path", ""))

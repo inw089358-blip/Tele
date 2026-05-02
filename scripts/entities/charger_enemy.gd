@@ -37,6 +37,9 @@ func _apply_profile_from_balance() -> void:
     charge_duration = float(profile.get("charge_duration", charge_duration))
     charge_recover = float(profile.get("charge_recover", charge_recover))
     charge_speed = float(profile.get("charge_speed", charge_speed))
+    _hit_sfx_path = str(profile.get("hit_sfx_path", _hit_sfx_path))
+    _hit_sfx_volume_db = float(profile.get("hit_sfx_volume_db", _hit_sfx_volume_db))
+    _hit_sfx_cooldown = max(0.0, float(profile.get("hit_sfx_cooldown", _hit_sfx_cooldown)))
 
 func tick_ai(delta: float) -> void:
     if _target == null:

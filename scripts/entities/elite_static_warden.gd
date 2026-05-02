@@ -61,6 +61,9 @@ func _apply_profile_from_balance() -> void:
     shield_shock_projectile_count = int(profile.get("shield_shock_projectile_count", shield_shock_projectile_count))
     shield_shock_damage = int(profile.get("shield_shock_damage", shield_shock_damage))
     shield_shock_speed = float(profile.get("shield_shock_speed", shield_shock_speed))
+    _hit_sfx_path = str(profile.get("hit_sfx_path", _hit_sfx_path))
+    _hit_sfx_volume_db = float(profile.get("hit_sfx_volume_db", _hit_sfx_volume_db))
+    _hit_sfx_cooldown = max(0.0, float(profile.get("hit_sfx_cooldown", _hit_sfx_cooldown)))
 
 func tick_ai(delta: float) -> void :
     if _target == null:

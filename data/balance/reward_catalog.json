@@ -5,79 +5,17 @@
         "choices_count": 3,
         "require_two_axes": true
     },
-    "rarity_weights_by_stage": {
-        "stage_001": {
-            "common": 0.82,
-            "rare": 0.18
-        },
-        "stage_002": {
-            "common": 0.82,
-            "rare": 0.18
-        },
-        "stage_003": {
-            "common": 0.82,
-            "rare": 0.18
-        },
-        "stage_004": {
-            "common": 0.72,
-            "rare": 0.25,
-            "epic": 0.03
-        },
-        "stage_005": {
-            "common": 0.72,
-            "rare": 0.25,
-            "epic": 0.03
-        },
-        "stage_006": {
-            "common": 0.62,
-            "rare": 0.31,
-            "epic": 0.07
-        },
-        "stage_007": {
-            "common": 0.62,
-            "rare": 0.31,
-            "epic": 0.07
-        },
-        "stage_008": {
-            "common": 0.62,
-            "rare": 0.31,
-            "epic": 0.07
-        },
-        "stage_009": {
-            "common": 0.52,
-            "rare": 0.36,
-            "epic": 0.12
-        },
-        "stage_010": {
-            "common": 0.52,
-            "rare": 0.36,
-            "epic": 0.12
-        },
-        "stage_011": {
-            "common": 0.52,
-            "rare": 0.36,
-            "epic": 0.12
-        },
-        "stage_012": {
-            "common": 0.44,
-            "rare": 0.4,
-            "epic": 0.16
-        },
-        "stage_013": {
-            "common": 0.44,
-            "rare": 0.4,
-            "epic": 0.16
-        },
-        "stage_014": {
-            "common": 0.44,
-            "rare": 0.4,
-            "epic": 0.16
-        },
-        "stage_015": {
-            "common": 0.44,
-            "rare": 0.4,
-            "epic": 0.16
-        }
+    "rarity_weights": {
+        "common": 0.72,
+        "rare": 0.24,
+        "epic": 0.035,
+        "legendary": 0.005
+    },
+    "rarity_stage_gates": {
+        "common": 1,
+        "rare": 1,
+        "epic": 6,
+        "legendary": 11
     },
     "pools": {
         "basic_growth": {

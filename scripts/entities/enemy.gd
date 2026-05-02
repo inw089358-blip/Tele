@@ -3,6 +3,10 @@ extends CharacterBody2D
 
 static var _runtime_texture_cache: Dictionary = {}
 const ENEMY_DEATH_VISUAL_FX_SCRIPT: Script = preload("res://scripts/effects/enemy_death_visual_fx.gd")
+const DEFAULT_HIT_SFX_COOLDOWN: float = 0.08
+const ELITE_KNOCKBACK_MULTIPLIER: float = 0.48
+const KNOCKBACK_BASE_VELOCITY_FACTOR: float = 0.18
+const KNOCKBACK_ELITE_BASE_VELOCITY_FACTOR: float = 0.34
 
 enum EnemyType {
     MELEE,
@@ -11,6 +15,11 @@ enum EnemyType {
     BARRAGE,
     FAST_MELEE,
     CHARGER,
+    SPLITTER,
+    SNIPER,
+    MINE_SEEDER,
+    ELITE_RIFT_CHARGER,
+    ELITE_CLOCKWORK_SEER,
 }
 
 signal died(enemy: Enemy)
@@ -47,6 +56,13 @@ var _visual_has_sprite: bool = false
 var _death_frames: Array[int] = []
 var _death_anim_fps: float = 10.0
 var _death_hold_seconds: float = 0.1
+var _hit_sfx_path: String = ""
+var _hit_sfx_volume_db: float = 0.0
+var _hit_sfx_cooldown: float = DEFAULT_HIT_SFX_COOLDOWN
+var _hit_sfx_cooldown_timer: float = 0.0
+var _knockback_velocity: Vector2 = Vector2.ZERO
+var _knockback_timer: float = 0.0
+var _knockback_duration: float = 0.0
 
 func _ready() -> void :
     _apply_profile_from_balance()
@@ -63,6 +79,9 @@ func _apply_profile_from_balance() -> void:
     max_hp = int(profile.get("max_hp", max_hp))
     body_radius = float(profile.get("body_radius", body_radius))
     xp_drop_amount = int(profile.get("xp_drop", xp_drop_amount))
+    _hit_sfx_path = str(profile.get("hit_sfx_path", _hit_sfx_path))
+    _hit_sfx_volume_db = float(profile.get("hit_sfx_volume_db", _hit_sfx_volume_db))
+    _hit_sfx_cooldown = max(0.0, float(profile.get("hit_sfx_cooldown", _hit_sfx_cooldown)))
 
 func _get_type_key() -> String:
     match enemy_type:
@@ -72,6 +91,11 @@ func _get_type_key() -> String:
         EnemyType.BARRAGE: return "barrage"
         EnemyType.FAST_MELEE: return "fast_melee"
         EnemyType.CHARGER: return "charger"
+        EnemyType.SPLITTER: return "splitter"
+        EnemyType.SNIPER: return "sniper"
+        EnemyType.MINE_SEEDER: return "mine_seeder"
+        EnemyType.ELITE_RIFT_CHARGER: return "elite_rift_charger"
+        EnemyType.ELITE_CLOCKWORK_SEER: return "elite_clockwork_seer"
     return "melee"
 
 func _configure_visual_from_balance() -> void:
@@ -89,10 +113,15 @@ func _physics_process(delta: float) -> void :
         return
     if _is_dead:
         return
+    _hit_sfx_cooldown_timer = max(0.0, _hit_sfx_cooldown_timer - delta)
     if _target == null:
+        velocity = _apply_knockback_to_velocity(Vector2.ZERO, delta)
         _tick_visual_animation(delta)
+        if velocity.length_squared() > 0.0001:
+            move_and_slide()
         return
     tick_ai(delta)
+    velocity = _apply_knockback_to_velocity(velocity, delta)
     _tick_visual_animation(delta)
     move_and_slide()
 
@@ -151,9 +180,54 @@ func take_damage(amount: int) -> int:
     queue_redraw()
     if current_hp <= 0:
         _is_dead = true
+        _knockback_velocity = Vector2.ZERO
+        _knockback_timer = 0.0
         died.emit(self)
         _enter_death_state_or_free()
     return final_damage
+
+func apply_knockback(direction: Vector2, strength: float, duration: float) -> void:
+    if _is_dead:
+        return
+    if strength <= 0.0 or duration <= 0.0:
+        return
+    if direction.length_squared() <= 0.0001:
+        return
+    var final_strength: float = strength
+    if is_elite or enemy_type == EnemyType.ELITE_WARDEN:
+        final_strength *= ELITE_KNOCKBACK_MULTIPLIER
+    var impulse: Vector2 = direction.normalized() * final_strength
+    if impulse.length_squared() >= _knockback_velocity.length_squared():
+        _knockback_velocity = impulse
+    _knockback_timer = max(_knockback_timer, duration)
+    _knockback_duration = max(_knockback_duration, duration)
+
+func _apply_knockback_to_velocity(base_velocity: Vector2, delta: float) -> Vector2:
+    if _knockback_timer <= 0.0 or _knockback_velocity.length_squared() <= 0.0001:
+        _knockback_timer = 0.0
+        _knockback_duration = 0.0
+        _knockback_velocity = Vector2.ZERO
+        return base_velocity
+    var remaining_ratio: float = clampf(_knockback_timer / max(0.01, _knockback_duration), 0.0, 1.0)
+    var knockback: Vector2 = _knockback_velocity * remaining_ratio
+    var min_base_factor: float = KNOCKBACK_ELITE_BASE_VELOCITY_FACTOR if is_elite or enemy_type == EnemyType.ELITE_WARDEN else KNOCKBACK_BASE_VELOCITY_FACTOR
+    var base_factor: float = lerpf(1.0, min_base_factor, remaining_ratio)
+    var mixed_velocity: Vector2 = base_velocity * base_factor + knockback
+    _knockback_timer = max(0.0, _knockback_timer - delta)
+    if _knockback_timer <= 0.0:
+        _knockback_duration = 0.0
+        _knockback_velocity = Vector2.ZERO
+    return mixed_velocity
+
+func _play_hit_sfx() -> void:
+    if _hit_sfx_path.is_empty():
+        return
+    if _hit_sfx_cooldown_timer > 0.0:
+        return
+    if AudioManager == null:
+        return
+    AudioManager.play_sfx_by_path(_hit_sfx_path, _hit_sfx_volume_db)
+    _hit_sfx_cooldown_timer = _hit_sfx_cooldown
 
 func is_combat_active() -> bool:
     return not _is_dead
@@ -193,25 +267,16 @@ func _setup_visual_from_config(config: Dictionary) -> void:
     var base_scale: float = max(0.01, float(config.get("scale", 1.0)))
     var elite_scale_multiplier: float = max(0.01, float(config.get("elite_scale_multiplier", 1.5)))
     var apply_elite_tint: bool = bool(config.get("apply_elite_tint", true))
+    var tint_raw: Variant = config.get("tint", "")
     if is_elite:
         sprite.scale = Vector2.ONE * base_scale * elite_scale_multiplier
-        if apply_elite_tint:
+        if _apply_configured_tint(sprite, tint_raw):
+            pass
+        elif apply_elite_tint:
             sprite.modulate = Color(1.2, 1.1, 0.8, 1.0)
     else:
         sprite.scale = Vector2.ONE * base_scale
-        var tint_raw: Variant = config.get("tint", "")
-        if tint_raw is String and not str(tint_raw).is_empty():
-            sprite.modulate = Color(str(tint_raw))
-        elif tint_raw is Array:
-            var tint_values: Array = tint_raw
-            if tint_values.size() >= 3:
-                var alpha: float = float(tint_values[3]) if tint_values.size() >= 4 else 1.0
-                sprite.modulate = Color(
-                    float(tint_values[0]),
-                    float(tint_values[1]),
-                    float(tint_values[2]),
-                    alpha
-                )
+        _apply_configured_tint(sprite, tint_raw)
         
     sprite.z_index = 1
     add_child(sprite)
@@ -230,6 +295,23 @@ func _setup_visual_from_config(config: Dictionary) -> void:
     _visual_sprite = sprite
     _visual_has_sprite = true
     _apply_visual_frame()
+
+func _apply_configured_tint(sprite: Sprite2D, tint_raw: Variant) -> bool:
+    if tint_raw is String and not str(tint_raw).is_empty():
+        sprite.modulate = Color(str(tint_raw))
+        return true
+    if tint_raw is Array:
+        var tint_values: Array = tint_raw
+        if tint_values.size() >= 3:
+            var alpha: float = float(tint_values[3]) if tint_values.size() >= 4 else 1.0
+            sprite.modulate = Color(
+                float(tint_values[0]),
+                float(tint_values[1]),
+                float(tint_values[2]),
+                alpha
+            )
+            return true
+    return false
 
 func _sanitize_visual_frames(raw_frames: Variant, total_frames: int) -> Array[int]:
     var result: Array[int] = []

@@ -5,10 +5,25 @@
     "refresh_base_cost": 20,
     "refresh_cost_step": 12,
     "item_rarity_weights": {
-      "common": 0.48,
-      "rare": 0.34,
-      "epic": 0.14,
-      "legendary": 0.04
+      "common": 0.72,
+      "rare": 0.24,
+      "epic": 0.035,
+      "legendary": 0.005
+    },
+    "item_rarity_stage_gates": {
+      "common": 1,
+      "rare": 1,
+      "epic": 6,
+      "legendary": 11
+    },
+    "weapon_rarity_stage_gates": {
+      "common": 1,
+      "rare": 1,
+      "epic": 5,
+      "legendary": 10
+    },
+    "weapon_rarity_unlocked_min_weights": {
+      "legendary": 0.25
     }
   },
   "merge_rules": {
@@ -710,15 +725,20 @@
         "mode": "melee_arc",
         "base_damage": 10,
         "interval": 0.36,
-        "range": 95
+        "range": 95,
+        "attack_duration": 0.24,
+        "active_start_ratio": 0.12,
+        "active_end_ratio": 0.78,
+        "crit_multiplier": 1.4
       },
       "effects": {
         "bonus_attack_damage": 0
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "eagle_eye",
@@ -743,15 +763,17 @@
         "mode": "melee_arc",
         "base_damage": 16,
         "interval": 0.68,
-        "range": 105
+        "range": 105,
+        "crit_multiplier": 1.8
       },
       "effects": {
         "bonus_attack_damage": 1
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "bulwark",
@@ -778,16 +800,18 @@
         "interval": 0.36,
         "range": 360,
         "projectile_speed": 600,
-        "projectile_radius": 4
+        "projectile_radius": 4,
+        "crit_multiplier": 1.45
       },
       "effects": {
         "bonus_attack_damage": 0,
         "bonus_target_range": 8
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "rapid",
@@ -812,15 +836,17 @@
         "mode": "melee_arc",
         "base_damage": 12,
         "interval": 0.44,
-        "range": 115
+        "range": 115,
+        "crit_multiplier": 1.5
       },
       "effects": {
         "bonus_attack_damage": 0
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "raider",
@@ -842,20 +868,28 @@
       "stack_key": "circular_saw",
       "level": 1,
       "attack_profile": {
-        "mode": "ranged_heavy",
+        "mode": "ranged_bounce_weapon",
         "base_damage": 18,
         "interval": 0.7,
-        "range": 420,
+        "range": 260,
         "projectile_speed": 720,
-        "projectile_radius": 6
+        "projectile_radius": 8,
+        "bounce_count": 2,
+        "bounce_range": 96,
+        "bounce_damage_mult": 0.8,
+        "spin_speed": 18,
+        "knockback_strength": 260,
+        "knockback_duration": 0.17,
+        "crit_multiplier": 1.85
       },
       "effects": {
         "bonus_attack_damage": 1
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "berserker",
@@ -882,15 +916,17 @@
         "interval": 0.42,
         "range": 350,
         "projectile_speed": 580,
-        "projectile_radius": 5
+        "projectile_radius": 5,
+        "crit_multiplier": 1.6
       },
       "effects": {
         "bonus_attack_damage": 0
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "eagle_eye",
@@ -900,10 +936,10 @@
     {
       "weapon_id": "traffic_cone",
       "name": "Traffic Cone",
-      "description": "Heavy ranged projectile weapon with slow, steady pressure.",
+      "description": "Heavy close-range melee weapon with sturdy sweeping impact.",
       "starter": true,
       "tags": [
-        "ranged",
+        "melee",
         "heavy"
       ],
       "base_price": 56,
@@ -912,20 +948,21 @@
       "stack_key": "traffic_cone",
       "level": 1,
       "attack_profile": {
-        "mode": "ranged_heavy",
+        "mode": "melee_arc",
         "base_damage": 16,
         "interval": 0.62,
-        "range": 390,
-        "projectile_speed": 700,
-        "projectile_radius": 6
+        "range": 102,
+        "melee_family": "heavy",
+        "crit_multiplier": 1.7
       },
       "effects": {
         "bonus_attack_damage": 1
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "bulwark",
@@ -950,15 +987,17 @@
         "mode": "melee_arc",
         "base_damage": 15,
         "interval": 0.64,
-        "range": 102
+        "range": 102,
+        "crit_multiplier": 1.75
       },
       "effects": {
         "bonus_attack_damage": 1
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "berserker",
@@ -988,15 +1027,17 @@
         "projectile_radius": 6,
         "aoe_radius": 72,
         "flight_time": 0.55,
-        "arc_height": 80
+        "arc_height": 80,
+        "crit_multiplier": 1.9
       },
       "effects": {
         "bonus_attack_damage": 0
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "raider",
@@ -1018,20 +1059,26 @@
       "stack_key": "shuriken_ring",
       "level": 1,
       "attack_profile": {
-        "mode": "ranged_homing",
+        "mode": "ranged_bounce_weapon",
         "base_damage": 9,
         "interval": 0.34,
-        "range": 330,
-        "projectile_speed": 590,
-        "projectile_radius": 4
+        "range": 240,
+        "projectile_speed": 650,
+        "projectile_radius": 7,
+        "bounce_count": 4,
+        "bounce_range": 112,
+        "bounce_damage_mult": 0.72,
+        "spin_speed": 24,
+        "crit_multiplier": 1.35
       },
       "effects": {
         "bonus_attack_damage": 0
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "rapid",
@@ -1056,15 +1103,17 @@
         "mode": "melee_arc",
         "base_damage": 12,
         "interval": 0.54,
-        "range": 100
+        "range": 100,
+        "crit_multiplier": 1.55
       },
       "effects": {
         "bonus_attack_damage": 0
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "sustain",
@@ -1089,15 +1138,17 @@
         "mode": "melee_arc",
         "base_damage": 13,
         "interval": 0.48,
-        "range": 118
+        "range": 118,
+        "crit_multiplier": 1.65
       },
       "effects": {
         "bonus_attack_damage": 1
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "eagle_eye",
@@ -1124,16 +1175,18 @@
         "interval": 0.42,
         "range": 380,
         "projectile_speed": 650,
-        "projectile_radius": 4
+        "projectile_radius": 4,
+        "crit_multiplier": 1.6
       },
       "effects": {
         "bonus_attack_damage": 0,
         "bonus_target_range": 10
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "eagle_eye",
@@ -1158,15 +1211,17 @@
         "mode": "melee_arc",
         "base_damage": 18,
         "interval": 0.72,
-        "range": 112
+        "range": 112,
+        "crit_multiplier": 1.95
       },
       "effects": {
         "bonus_attack_damage": 1
       },
       "rarity_weights": {
-        "common": 82,
-        "rare": 15,
-        "epic": 3
+        "common": 88,
+        "rare": 11,
+        "epic": 1,
+        "legendary": 0
       },
       "build_tags": [
         "berserker",

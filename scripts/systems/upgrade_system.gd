@@ -73,6 +73,7 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
     var require_two_axes: bool = bool(rules.get("require_two_axes", true))
 
     var stage_id: String = str(context.get("stage_id", "stage_001"))
+    var stage_index: int = _parse_stage_index(stage_id)
     var level: int = int(context.get("level", 1))
     var recent_categories: Array = context.get("recent_categories", [])
     var pity_state: Dictionary = context.get("pity_state", {"no_output_streak": 0})
@@ -81,8 +82,13 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
     var luck_value: float = float(context.get("luck", 0.0))
     var luck_rarity_step: float = _get_luck_rarity_step()
 
-    var rarity_weights_by_stage: Dictionary = catalog.get("rarity_weights_by_stage", {})
-    var stage_rarity_weights: Dictionary = rarity_weights_by_stage.get(stage_id, rarity_weights_by_stage.get("stage_001", {"common": 1.0}))
+    var rarity_weights_raw: Variant = catalog.get("rarity_weights", {"common": 1.0})
+    var rarity_stage_gates_raw: Variant = catalog.get("rarity_stage_gates", {})
+    var reward_rarity_weights: Dictionary = _filter_rarity_weights_by_stage(
+        rarity_weights_raw,
+        stage_index,
+        rarity_stage_gates_raw
+    )
     var pool_weights: Dictionary = {}
     var raw_pools: Dictionary = catalog.get("pools", {})
     for pool_name: String in raw_pools.keys():
@@ -122,12 +128,12 @@ static func get_reward_choices(context: Dictionary) -> Array[Dictionary]:
             if all_same:
                 continue
 
-        var rarity_tiers: Array[String] = _resolve_reward_rarity_tiers(reward)
+        var rarity_tiers: Array[String] = _resolve_reward_rarity_tiers(reward, stage_index, rarity_stage_gates_raw)
         var category_weight: float = max(0.01, float(pool_weights.get(category, 1.0)))
         for rarity_tier: String in rarity_tiers:
             var rarity_weight: float = _adjust_rarity_weight_by_luck(
                 rarity_tier,
-                max(0.0, float(stage_rarity_weights.get(rarity_tier, 0.0))),
+                max(0.0, float(reward_rarity_weights.get(rarity_tier, 0.0))),
                 luck_value,
                 luck_rarity_step
             )
@@ -284,7 +290,7 @@ static func apply_reward(reward_id: String, player: Player, run_state: Dictionar
 
     return run_state
 
-static func _resolve_reward_rarity_tiers(reward: Dictionary) -> Array[String]:
+static func _resolve_reward_rarity_tiers(reward: Dictionary, stage_index: int = 1, rarity_stage_gates_raw: Variant = {}) -> Array[String]:
     var result: Array[String] = []
     var tiers_raw: Variant = reward.get("rarity_tiers", [])
     if tiers_raw is Array:
@@ -299,7 +305,55 @@ static func _resolve_reward_rarity_tiers(reward: Dictionary) -> Array[String]:
         if fallback_rarity.is_empty():
             fallback_rarity = "common"
         result.append(fallback_rarity)
-    return result
+    if result.has("epic") and _is_rarity_unlocked("legendary", stage_index, rarity_stage_gates_raw) and not result.has("legendary"):
+        result.append("legendary")
+    return _filter_rarity_tiers_by_stage(result, stage_index, rarity_stage_gates_raw)
+
+static func _filter_rarity_weights_by_stage(weights_raw: Variant, stage_index: int, rarity_stage_gates_raw: Variant) -> Dictionary:
+    var weights: Dictionary = {}
+    if weights_raw is Dictionary:
+        weights = weights_raw
+    if weights.is_empty():
+        return {"common": 1.0}
+    var filtered: Dictionary = {}
+    var safe_stage_index: int = max(1, stage_index)
+    for key: Variant in weights.keys():
+        var rarity_key: String = str(key).strip_edges().to_lower()
+        if rarity_key.is_empty():
+            continue
+        if not _is_rarity_unlocked(rarity_key, safe_stage_index, rarity_stage_gates_raw):
+            continue
+        filtered[rarity_key] = max(0.0, float(weights[key]))
+    if filtered.is_empty():
+        filtered["common"] = 1.0
+    return filtered
+
+static func _filter_rarity_tiers_by_stage(rarity_tiers: Array[String], stage_index: int, rarity_stage_gates_raw: Variant) -> Array[String]:
+    var filtered: Array[String] = []
+    for rarity_tier: String in rarity_tiers:
+        var rarity_key: String = rarity_tier.strip_edges().to_lower()
+        if rarity_key.is_empty():
+            continue
+        if not _is_rarity_unlocked(rarity_key, stage_index, rarity_stage_gates_raw):
+            continue
+        if not filtered.has(rarity_key):
+            filtered.append(rarity_key)
+    return filtered
+
+static func _is_rarity_unlocked(rarity_tier: String, stage_index: int, rarity_stage_gates_raw: Variant) -> bool:
+    if not (rarity_stage_gates_raw is Dictionary):
+        return true
+    var gates: Dictionary = rarity_stage_gates_raw
+    var rarity_key: String = rarity_tier.strip_edges().to_lower()
+    var min_stage: int = max(1, int(gates.get(rarity_key, 1)))
+    return max(1, stage_index) >= min_stage
+
+static func _parse_stage_index(stage_id: String) -> int:
+    var parts: PackedStringArray = stage_id.strip_edges().split("_")
+    for i: int in range(parts.size() - 1, -1, -1):
+        if parts[i].is_valid_int():
+            return max(1, int(parts[i]))
+    return 1
 
 static func _adjust_rarity_weight_by_luck(rarity_tier: String, base_weight: float, luck_value: float, luck_step: float) -> float:
     if base_weight <= 0.0:

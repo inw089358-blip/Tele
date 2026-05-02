@@ -34,6 +34,8 @@ var current_stage_id: String = "stage_001"
 var current_wave: int = 0
 var selected_starter_weapon_id: String = ""
 var recycling_bag_amount: int = 0
+var next_stage_drop_double_pending: bool = false
+var current_stage_drop_double_active: bool = false
 var _pending_slot_data: Dictionary = {}
 var _pending_shop_snapshot: Dictionary = {}
 var _scene_transition_busy: bool = false
@@ -218,11 +220,14 @@ func start_game(stage_id: String = "stage_001") -> void :
     _pending_slot_data = {}
     _pending_shop_snapshot = {}
     recycling_bag_amount = 0
+    next_stage_drop_double_pending = false
+    current_stage_drop_double_active = false
     _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 
 func start_game_with_runtime(stage_id: String, runtime_data: Dictionary) -> void:
     current_stage_id = stage_id
     current_wave = 1
+    _prepare_stage_drop_double_state(runtime_data)
     _pending_slot_data = runtime_data.duplicate(true)
     _pending_slot_data["wave"] = 1
     _pending_slot_data["stage_id"] = stage_id
@@ -244,6 +249,9 @@ func start_game_from_slot(slot_data: Dictionary) -> void :
     if selected_starter_weapon_id.is_empty():
         selected_starter_weapon_id = _resolve_default_starter_weapon_id()
     current_wave = 1
+    next_stage_drop_double_pending = bool(slot_data.get("next_stage_drop_double_pending", false))
+    current_stage_drop_double_active = bool(slot_data.get("stage_drop_double_active", false))
+    _prepare_stage_drop_double_state(slot_data)
     _pending_slot_data = slot_data.duplicate(true)
     _pending_slot_data["wave"] = 1
     _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
@@ -274,6 +282,7 @@ func continue_from_shop(snapshot: Dictionary) -> void:
     if selected_starter_weapon_id.is_empty():
         selected_starter_weapon_id = _resolve_default_starter_weapon_id()
     current_wave = 1
+    _prepare_stage_drop_double_state(snapshot)
     _pending_slot_data = snapshot.duplicate(true)
     _pending_slot_data["wave"] = 1
     _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
@@ -290,6 +299,22 @@ func continue_from_shop(snapshot: Dictionary) -> void:
 # Legacy compatibility path for the older supply-hub workflow.
 func continue_from_hub(snapshot: Dictionary) -> void:
     continue_from_shop(snapshot)
+
+func queue_next_stage_drop_double() -> void:
+    next_stage_drop_double_pending = true
+
+func is_stage_drop_double_active() -> bool:
+    return current_stage_drop_double_active
+
+func clear_stage_drop_double_active() -> void:
+    current_stage_drop_double_active = false
+
+func _prepare_stage_drop_double_state(runtime_data: Dictionary) -> void:
+    if next_stage_drop_double_pending:
+        current_stage_drop_double_active = true
+        next_stage_drop_double_pending = false
+        return
+    current_stage_drop_double_active = bool(runtime_data.get("stage_drop_double_active", false))
 
 func open_reward() -> void :
     _change_scene_with_crt(GameState.REWARD, SCENE_REWARD, true)

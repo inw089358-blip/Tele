@@ -16,101 +16,101 @@ data.item.item_crit_lens.desc,暴击率 +3%,Crit chance +3%
 data.item.item_vampire_fang.name,吸血獠牙,Vampire Fang
 data.item.item_vampire_fang.desc,吸血 +2%,Lifesteal +2%
 data.weapon.kunai.name,苦无,Kunai
-data.weapon.kunai.desc,快速近战突刺武器，节奏快，适合贴近连续打击。,Fast melee thrust weapon with quick close-range pressure.
-data.weapon.road_sign.name,路牌,Road Sign
-data.weapon.road_sign.desc,慢速近战重击武器，单次打击范围稳定。,Slow heavy melee weapon with steady strike coverage.
-data.weapon.nail_gun.name,钉枪,Nail Gun
-data.weapon.nail_gun.desc,中距离追踪射击武器，输出节奏快。,Mid-range homing ranged weapon with a quick tempo.
-data.weapon.chain_whip.name,锁链鞭,Chain Whip
-data.weapon.chain_whip.desc,大范围近战横扫武器，擅长清杂与控场。,Wide melee sweep weapon for crowd control.
+data.weapon.kunai.desc,快速近战突刺武器，适合贴身压制。,Fast melee thrust weapon with quick close-range pressure.
+data.weapon.road_sign.name,路障,Road Sign
+data.weapon.road_sign.desc,缓慢重型近战武器，打击范围稳定。,Slow heavy melee weapon with steady strike coverage.
+data.weapon.nail_gun.name,射钉枪,Nail Gun
+data.weapon.nail_gun.desc,节奏较快的中距离追踪远程武器。,Mid-range homing ranged weapon with a quick tempo.
+data.weapon.chain_whip.name,链鞭,Chain Whip
+data.weapon.chain_whip.desc,宽范围近战横扫武器，适合清理群怪。,Wide melee sweep weapon for crowd control.
 data.weapon.circular_saw.name,圆锯,Circular Saw
-data.weapon.circular_saw.desc,重型远程投射武器，单发伤害高。,Heavy ranged projectile weapon with high single-hit damage.
+data.weapon.circular_saw.desc,重型弹射武器，单次命中伤害较高。,Heavy ranged projectile weapon with high single-hit damage.
 data.weapon.flare_launcher.name,信号弹发射器,Flare Launcher
-data.weapon.flare_launcher.desc,远程追踪发射器，擅长爆发压制。,Homing ranged launcher for burst pressure.
-data.weapon.traffic_cone.name,路障锥,Traffic Cone
-data.weapon.traffic_cone.desc,重型远程投射武器，节奏较慢但压制稳定。,Heavy ranged projectile weapon with slow, steady pressure.
+data.weapon.flare_launcher.desc,追踪型远程发射器，提供爆发压力。,Homing ranged launcher for burst pressure.
+data.weapon.traffic_cone.name,路锥,Traffic Cone
+data.weapon.traffic_cone.desc,重型近战扫击武器，拥有扎实的击退反馈。,Heavy close-range melee weapon with sturdy sweeping impact.
 data.weapon.heavy_wrench.name,重型扳手,Heavy Wrench
-data.weapon.heavy_wrench.desc,可靠的近战重击武器。,Reliable close-range heavy strikes.
+data.weapon.heavy_wrench.desc,可靠的近距离重击武器。,Reliable close-range heavy strikes.
 data.weapon.molotov.name,燃烧瓶,Molotov
-data.weapon.molotov.desc,远程追踪投掷物，造成范围持续伤害。,Homing ranged projectile that deals sustained area damage.
+data.weapon.molotov.desc,抛物飞行后在落点爆炸，造成范围伤害。,"Thrown in an arc, then explodes at the landing point for area damage."
 data.weapon.shuriken_ring.name,手里剑环,Shuriken Ring
-data.weapon.shuriken_ring.desc,中距离追踪远程武器，命中节奏快。,Mid-range homing weapon with quick repeated hits.
+data.weapon.shuriken_ring.desc,中距离弹射武器，攻击频率较高。,Mid-range homing weapon with quick repeated hits.
 data.weapon.steel_pipe.name,钢管,Steel Pipe
-data.weapon.steel_pipe.desc,稳定的前期近战横扫武器。,Stable early melee sweep weapon.
+data.weapon.steel_pipe.desc,稳定的早期近战横扫武器。,Stable early melee sweep weapon.
 data.weapon.rebar_spear.name,钢筋矛,Rebar Spear
-data.weapon.rebar_spear.desc,长距离线性突刺近战武器，攻击距离较长。,Long-reach linear melee thrust weapon.
+data.weapon.rebar_spear.desc,长距离线性近战突刺武器。,Long-reach linear melee thrust weapon.
 data.weapon.mechanical_crossbow.name,机械弩,Mechanical Crossbow
-data.weapon.mechanical_crossbow.desc,稳定节奏的追踪远程输出武器。,Stable homing ranged weapon with good tempo.
+data.weapon.mechanical_crossbow.desc,节奏稳定的追踪远程武器。,Stable homing ranged weapon with good tempo.
 data.weapon.meteor_hammer.name,流星锤,Meteor Hammer
-data.weapon.meteor_hammer.desc,慢速高伤的重型近战武器，清怪窗口大。,Slow high-damage heavy melee weapon with wide clear windows.
+data.weapon.meteor_hammer.desc,缓慢高伤的重型近战武器，清场窗口较大。,Slow high-damage heavy melee weapon with wide clear windows.
 data.reward.atk_flat_1.name,攻击 +1,Attack +1
 data.reward.atk_flat_1.desc,基础攻击伤害 +1,Base attack damage +1
-data.reward.range_up_40.name,射程 +40,Range +40
-data.reward.range_up_40.desc,索敌范围 +40,Targeting range +40
-data.reward.move_up_6.name,移速 +6,Move Speed +6
-data.reward.move_up_6.desc,移动速度 +6,Move speed +6
+data.reward.range_up_40.name,范围 +35,Range +35
+data.reward.range_up_40.desc,索敌范围 +35,Targeting range +35
+data.reward.move_up_6.name,移速 +5,Move Speed +5
+data.reward.move_up_6.desc,移动速度 +5,Move speed +5
 data.reward.hp_up_2.name,生命 +2,HP +2
-data.reward.hp_up_2.desc,最大生命 +2 并治疗 2,Max HP +2 and heal 2
-data.reward.armor_up_2.name,护甲 +2,Armor +2
-data.reward.armor_up_2.desc,减少受到的伤害,Reduce incoming damage
-data.reward.dodge_up_5.name,闪避 +5%,Dodge +5%
-data.reward.dodge_up_5.desc,5% 概率完全免伤,5% chance to fully evade damage
-data.reward.atk_rate_10.name,攻速 +10%,Attack Speed +10%
-data.reward.atk_rate_10.desc,自动攻击间隔 -7%,Auto-attack interval -7%
-data.reward.atk_rate_8.name,攻速 +8%,Attack Speed +8%
-data.reward.atk_rate_8.desc,自动攻击间隔 -6%,Auto-attack interval -6%
-data.reward.crit_chance_8.name,暴击率 +8%,Crit Chance +8%
-data.reward.crit_chance_8.desc,更容易触发暴击,Higher chance to trigger crit
-data.reward.crit_damage_25.name,暴击率 +2.2%,Crit Chance +2.2%
-data.reward.crit_damage_25.desc,提升暴击触发概率,Increase crit trigger chance
+data.reward.hp_up_2.desc,最大生命 +2，治疗 2,Max HP +2 and heal 2
+data.reward.armor_up_2.name,护甲 +1,Armor +1
+data.reward.armor_up_2.desc,护甲 +1,Armor +1
+data.reward.dodge_up_5.name,闪避 +4%,Dodge +4%
+data.reward.dodge_up_5.desc,闪避 chance +4%,Dodge chance +4%
+data.reward.atk_rate_10.name,攻速 +9%,Attack Speed +9%
+data.reward.atk_rate_10.desc,攻击间隔 -9%,Attack interval -9%
+data.reward.atk_rate_8.name,攻速 +6%,Attack Speed +6%
+data.reward.atk_rate_8.desc,攻击间隔 -6%,Attack interval -6%
+data.reward.crit_chance_8.name,暴击率 +5%,Crit Chance +5%
+data.reward.crit_chance_8.desc,暴击率 +5%,Crit chance +5%
+data.reward.crit_damage_25.name,暴伤 +18%,Crit Damage +18%
+data.reward.crit_damage_25.desc,暴击倍率 +18%,Crit multiplier +18%
 data.reward.lifesteal_3.name,吸血 +3%,Lifesteal +3%
-data.reward.lifesteal_3.desc,伤害转化为生命回复,Convert damage into healing
+data.reward.lifesteal_3.desc,吸血 +3%,Lifesteal +3%
 data.reward.stamina_regen_10.name,体力回复 +10%,Stamina Regen +10%
-data.reward.stamina_regen_10.desc,体力恢复速度 +10%,Stamina recovery speed +10%
-data.reward.xp_gain_10.name,经验收益 +10%,XP Gain +10%
-data.reward.xp_gain_10.desc,经验获取倍率 +10%,XP multiplier +10%
-data.reward.gold_gain_10.name,金币收益 +10%,Gold Gain +10%
-data.reward.gold_gain_10.desc,金币获取倍率 +10%,Gold multiplier +10%
+data.reward.stamina_regen_10.desc,体力回复速度 +10%,Stamina recovery speed +10%
+data.reward.xp_gain_10.name,经验获取 +10%,XP Gain +10%
+data.reward.xp_gain_10.desc,经验倍率 +10%,XP multiplier +10%
+data.reward.gold_gain_10.name,金币获取 +10%,Gold Gain +10%
+data.reward.gold_gain_10.desc,金币倍率 +10%,Gold multiplier +10%
 data.reward.luck_up_8.name,幸运 +8,Luck +8
-data.reward.luck_up_8.desc,提升高价值奖励出现倾向,Increase high-value reward chance
-data.reward.glass_minor.name,玻璃炮,Glass Cannon
-data.reward.glass_minor.desc,攻击 +2，生命 -1，暴击率 +6%,ATK +2, HP -1, Crit +6%
+data.reward.luck_up_8.desc,幸运 +8,Luck +8
+data.reward.glass_minor.name,玻璃大炮,Glass Cannon
+data.reward.glass_minor.desc,"攻击 +2, HP -1, Crit +6%","ATK +2, HP -1, Crit +6%"
 data.reward.fortress_minor.name,堡垒姿态,Fortress Stance
-data.reward.fortress_minor.desc,生命 +4，护甲 +3，攻速 -6%,HP +4, Armor +3, ATK speed -6%
-data.reward.precision_calibration.name,精度校准,Precision Calibration
-data.reward.precision_calibration.desc,暴击率基础值提升（随稀有度提升数值）,Base crit chance increases with rarity
+data.reward.fortress_minor.desc,"生命 +4, 护甲 +3, 攻击速度 -6%","HP +4, Armor +3, Attack speed -6%"
+data.reward.precision_calibration.name,精准校准,Precision Calibration
+data.reward.precision_calibration.desc,暴击率 随稀有度提升,Crit chance scales with rarity
 data.reward.burst_gears.name,爆发齿轮,Burst Gears
-data.reward.burst_gears.desc,攻击间隔缩短（随稀有度提升数值）,Attack interval reduced with rarity
+data.reward.burst_gears.desc,Attack interval improves 随稀有度提升,Attack interval improves with rarity
 data.reward.impact_matrix.name,冲击矩阵,Impact Matrix
-data.reward.impact_matrix.desc,攻击与暴击率同步提升（随稀有度提升数值）,ATK and crit chance scale with rarity
+data.reward.impact_matrix.desc,攻击，crit damage scale 随稀有度提升,ATK and crit damage scale with rarity
 data.reward.fortified_lining.name,强化衬层,Fortified Lining
-data.reward.fortified_lining.desc,护甲提升（随稀有度提升数值）,Armor scales with rarity
+data.reward.fortified_lining.desc,护甲 随稀有度提升,Armor scales with rarity
 data.reward.phase_shift.name,相位偏移,Phase Shift
-data.reward.phase_shift.desc,闪避率提升（随稀有度提升数值）,Dodge scales with rarity
-data.reward.drain_route.name,汲取回路,Drain Route
-data.reward.drain_route.desc,吸血提升（随稀有度提升数值）,Lifesteal scales with rarity
-data.reward.mobility_rig.name,机动组件,Mobility Rig
-data.reward.mobility_rig.desc,移速与射程同步提升（随稀有度提升数值）,Move speed and range scale with rarity
+data.reward.phase_shift.desc,闪避 随稀有度提升,Dodge scales with rarity
+data.reward.drain_route.name,汲取线路,Drain Route
+data.reward.drain_route.desc,吸血 随稀有度提升,Lifesteal scales with rarity
+data.reward.mobility_rig.name,机动装具,Mobility Rig
+data.reward.mobility_rig.desc,Move speed，range scale 随稀有度提升,Move speed and range scale with rarity
 data.reward.field_medicine.name,战地医疗,Field Medicine
-data.reward.field_medicine.desc,回血并提升少量最大生命（随稀有度提升数值）,Heal and gain max HP with rarity
-data.reward.stamina_loop.name,体力回环,Stamina Loop
-data.reward.stamina_loop.desc,体力回复速度提升（随稀有度提升数值）,Stamina regen scales with rarity
-data.reward.study_protocol.name,学习协议,Study Protocol
-data.reward.study_protocol.desc,经验收益提升（随稀有度提升数值）,XP gain scales with rarity
+data.reward.field_medicine.desc,治疗，获得 max HP,Heal and gain max HP
+data.reward.stamina_loop.name,体力回路,Stamina Loop
+data.reward.stamina_loop.desc,Stamina regen 随稀有度提升,Stamina regen scales with rarity
+data.reward.study_protocol.name,研习协议,Study Protocol
+data.reward.study_protocol.desc,XP 获得 随稀有度提升,XP gain scales with rarity
 data.reward.fortune_protocol.name,幸运协议,Fortune Protocol
-data.reward.fortune_protocol.desc,幸运提升（随稀有度提升数值）,Luck scales with rarity
+data.reward.fortune_protocol.desc,幸运 随稀有度提升,Luck scales with rarity
 data.reward.trade_contract.name,贸易契约,Trade Contract
-data.reward.trade_contract.desc,金币收益提升（随稀有度提升数值）,Gold gain scales with rarity
-data.reward.glass_pressure.name,过载增压,Glass Pressure
-data.reward.glass_pressure.desc,攻击提升，生命下降（随稀有度提升数值）,ATK up, HP down with rarity
-data.reward.iron_oath.name,铁壁誓约,Iron Oath
-data.reward.iron_oath.desc,护甲提升，攻速小幅下降（随稀有度提升数值）,Armor up with slight ATK speed loss
+data.reward.trade_contract.desc,Gold 获得 随稀有度提升,Gold gain scales with rarity
+data.reward.glass_pressure.name,玻璃压迫,Glass Pressure
+data.reward.glass_pressure.desc,"攻击提升, HP降低","ATK up, HP down"
+data.reward.iron_oath.name,铁之誓约,Iron Oath
+data.reward.iron_oath.desc,护甲提升 with 少量 attack speed 降低,Armor up with slight attack speed loss
 data.reward.hp_flat_3.name,生命 +3,HP +3
 data.reward.hp_flat_3.desc,最大生命 +3,Max HP +3
 data.reward.melee_damage_flat_2.name,近战伤害 +2,Melee Damage +2
-data.reward.melee_damage_flat_2.desc,只提升近战武器伤害 +2,Only melee weapon damage +2
+data.reward.melee_damage_flat_2.desc,近战武器伤害 +2,Melee weapon damage +2
 data.reward.ranged_damage_flat_2.name,远程伤害 +2,Ranged Damage +2
-data.reward.ranged_damage_flat_2.desc,只提升远程武器伤害 +2,Only ranged weapon damage +2
+data.reward.ranged_damage_flat_2.desc,远程武器伤害 +2,Ranged weapon damage +2
 data.hub_offer.recover_small.name,小恢复,Small Recover
 data.hub_offer.recover_mid.name,中恢复,Medium Recover
 data.hub_offer.recover_full.name,完全恢复,Full Recover
@@ -129,3 +129,141 @@ data.hub_offer.seer_bias_survival.name,先知：生存偏置,Seer: Bias Survival
 data.hub_offer.seer_bias_economy.name,先知：经济偏置,Seer: Bias Economy
 data.hub_offer.broker_contract_greedy.name,经纪人契约：贪婪,Broker Contract: Greedy
 data.hub_offer.broker_contract_pressure.name,经纪人契约：压制,Broker Contract: Pressure
+data.character.the_fool.passive.name,命运偏斜,Fate Bend
+data.character.the_fool.passive.desc,受到伤害时有概率完全闪避本次伤害；幸运越高，触发概率越高。,When taking damage
+data.character.the_chariot.passive.name,铁轮推进,Iron Wheel
+data.character.the_chariot.passive.desc,持续移动后进入推进状态，获得移动速度和护甲加成；停下后失效。,After moving continuously
+data.character.the_sun.passive.name,日冕余辉,Corona Afterglow
+data.character.the_sun.passive.desc,每击杀一定数量敌人触发治疗；满生命时转为短暂攻击速度加成。,After several kills
+data.item.item_bible_old.name,旧圣经,Bible Old
+data.item.item_bible_old.desc,"护甲 +2, 移动速度 -9","Armor +2, Move Speed -9"
+data.item.item_dagger_rusty.name,生锈匕首,Dagger Rusty
+data.item.item_dagger_rusty.desc,"攻击速度 +5%, 最大生命 -3","Attack Speed +5%, Max HP -3"
+data.item.item_lantern_apprentice.name,学徒提灯,Lantern Apprentice
+data.item.item_lantern_apprentice.desc,"拾取范围 +24, 幸运 -2","Pickup Range +24, Luck -2"
+data.item.item_herb_dry.name,干草药,Herb Dry
+data.item.item_herb_dry.desc,"生命回复 +1, 全局伤害 -3","HP Regen +1, Global Damage -3"
+data.item.item_mirror_crude.name,粗糙镜片,Mirror Crude
+data.item.item_mirror_crude.desc,"护甲 +2, 闪避 -1%","Armor +2, Dodge -1%"
+data.item.item_bullet_lead.name,铅弹,Bullet Lead
+data.item.item_bullet_lead.desc,"远程伤害 +2, 攻击速度 -2%","Ranged Damage +2, Attack Speed -2%"
+data.item.item_whetstone_heavy.name,重磨刀石,Whetstone Heavy
+data.item.item_whetstone_heavy.desc,"近战伤害 +2, 攻击速度 -2%","Melee Damage +2, Attack Speed -2%"
+data.item.item_coin_broken.name,破损硬币,Coin Broken
+data.item.item_coin_broken.desc,"收获 +7, 闪避 -2%","harvest +7, Dodge -2%"
+data.item.item_rabbit_foot.name,兔脚,Rabbit Foot
+data.item.item_rabbit_foot.desc,"幸运 +8, 最大生命 -3","Luck +8, Max HP -3"
+data.item.item_feather_light.name,轻羽,Feather Light
+data.item.item_feather_light.desc,"移动速度 +11, 护甲 -1","Move Speed +11, Armor -1"
+data.item.item_tarot_fragment.name,塔罗碎片,Tarot Fragment
+data.item.item_tarot_fragment.desc,"经验获取 +5%, 幸运 -2","XP Gain +5%, Luck -2"
+data.item.item_lens_shard.name,透镜碎片,Lens Shard
+data.item.item_lens_shard.desc,"索敌范围 +28, 攻击速度 -3%","Target Range +28, Attack Speed -3%"
+data.item.item_bandage_bloody.name,染血绷带,Bandage Bloody
+data.item.item_bandage_bloody.desc,"吸血 +1%, 护甲 -1","Lifesteal +1%, Armor -1"
+data.item.item_alchemist_coin.name,炼金硬币,Alchemist Coin
+data.item.item_alchemist_coin.desc,"收获 +10, 移动速度 -7","harvest +10, Move Speed -7"
+data.item.item_shield_wood.name,木盾,Shield Wood
+data.item.item_shield_wood.desc,"闪避 +4%, 全局伤害 -3","Dodge +4%, Global Damage -3"
+data.item.item_beads_meditation.name,冥想念珠,Beads Meditation
+data.item.item_beads_meditation.desc,"生命回复 +1, 攻击速度 -4%","HP Regen +1, Attack Speed -4%"
+data.item.item_potion_strange.name,奇异药剂,Potion Strange
+data.item.item_potion_strange.desc,"全局伤害 +8, 最大生命 -5","Global Damage +8, Max HP -5"
+data.item.item_bottle_empty.name,空瓶,Bottle Empty
+data.item.item_bottle_empty.desc,"攻击速度 +5%, 移动速度 +9, 护甲 -3","Attack Speed +5%, Move Speed +9, Armor -3"
+data.item.item_candle_ritual.name,仪式蜡烛,Candle Ritual
+data.item.item_candle_ritual.desc,"暴击率 +4%, 护甲 -2","Crit Chance +4%, Armor -2"
+data.item.item_boots_iron.name,铁靴,Boots Iron
+data.item.item_boots_iron.desc,"护甲 +4, 移动速度 -15","Armor +4, Move Speed -15"
+data.item.item_pope_robe.name,教皇长袍,Pope Robe
+data.item.item_pope_robe.desc,"护甲 +4, 最大生命 +8, 移动速度 -11","Armor +4, Max HP +8, Move Speed -11"
+data.item.item_magician_poker.name,魔术师扑克,Magician Poker
+data.item.item_magician_poker.desc,"暴击率 +8%, crit_multiplier_flat +0.1, 最大生命 -5","Crit Chance +8%, crit_multiplier_flat +0.1, Max HP -5"
+data.item.item_chariot_wheel.name,战车之轮,Chariot Wheel
+data.item.item_chariot_wheel.desc,"移动速度 +26, 拾取范围 +18, 护甲 -2","Move Speed +26, Pickup Range +18, Armor -2"
+data.item.item_priestess_mercy.name,女祭司慈悲,Priestess Mercy
+data.item.item_priestess_mercy.desc,"吸血 +2%, 生命回复 +2, 全局伤害 -5","Lifesteal +2%, HP Regen +2, Global Damage -5"
+data.item.item_hermit_candle.name,隐者蜡烛,Hermit Candle
+data.item.item_hermit_candle.desc,"全局伤害 +16, 攻击速度 -8%","Global Damage +16, Attack Speed -8%"
+data.item.item_piggy_bank.name,存钱罐,Piggy Bank
+data.item.item_piggy_bank.desc,"收获 +16, 全局伤害 -5","harvest +16, Global Damage -5"
+data.item.item_merchant_scale.name,商人天平,Merchant Scale
+data.item.item_merchant_scale.desc,"收获 +20, 全局伤害 -8","harvest +20, Global Damage -8"
+data.item.item_revenge_arrow.name,复仇箭,Revenge Arrow
+data.item.item_revenge_arrow.desc,"远程伤害 +5, 闪避 -4%","Ranged Damage +5, Dodge -4%"
+data.item.item_cursed_eye.name,诅咒之眼,Cursed Eye
+data.item.item_cursed_eye.desc,"全局伤害 +14, 攻击速度 +8%, 幸运 -18","Global Damage +14, Attack Speed +8%, Luck -18"
+data.item.item_star_dust.name,星尘,Star Dust
+data.item.item_star_dust.desc,"经验获取 +15%, 幸运 +8, 全局伤害 -6","XP Gain +15%, Luck +8, Global Damage -6"
+data.item.item_stake_tough.name,坚韧木桩,Stake Tough
+data.item.item_stake_tough.desc,"最大生命 +16, 移动速度 -11","Max HP +16, Move Speed -11"
+data.item.item_razor_sharp.name,锋利剃刀,Razor Sharp
+data.item.item_razor_sharp.desc,"近战伤害 +6, 攻击速度 +6%, 护甲 -4","Melee Damage +6, Attack Speed +6%, Armor -4"
+data.item.item_telescope.name,望远镜,Telescope
+data.item.item_telescope.desc,"索敌范围 +65, 远程伤害 +4, 闪避 -4%","Target Range +65, Ranged Damage +4, Dodge -4%"
+data.item.item_watch_magnetic.name,磁力怀表,Watch Magnetic
+data.item.item_watch_magnetic.desc,"拾取范围 +80, 全局伤害 -7","Pickup Range +80, Global Damage -7"
+data.item.item_crown_thorn.name,荆棘王冠,Crown Thorn
+data.item.item_crown_thorn.desc,"全局伤害 +14, 最大生命 -12","Global Damage +14, Max HP -12"
+data.item.item_death_scythe.name,死神镰刀,Death Scythe
+data.item.item_death_scythe.desc,"暴击率 +12%, 生命回复 -5","Crit Chance +12%, HP Regen -5"
+data.item.item_wheel_fortune.name,命运之轮,Wheel Fortune
+data.item.item_wheel_fortune.desc,"幸运 +24, 护甲 -6","Luck +24, Armor -6"
+data.item.item_inquisitor_chain.name,审判锁链,Inquisitor Chain
+data.item.item_inquisitor_chain.desc,"全局伤害 +22, 攻击速度 -8%","Global Damage +22, Attack Speed -8%"
+data.item.item_temperance_sacrament.name,节制圣礼,Temperance Sacrament
+data.item.item_temperance_sacrament.desc,"生命回复 +5, 移动速度 -31","HP Regen +5, Move Speed -31"
+data.item.item_demon_contract.name,恶魔契约,Demon Contract
+data.item.item_demon_contract.desc,"全局伤害 +32, 收获 +16, 最大生命 -18","Global Damage +32, harvest +16, Max HP -18"
+data.item.item_alchemist_crucible.name,炼金坩埚,Alchemist Crucible
+data.item.item_alchemist_crucible.desc,"金币获取 +15%, attack_damage_flat +4, 护甲 -6","Gold Gain +15%, attack_damage_flat +4, Armor -6"
+data.item.item_moon_veil.name,月之面纱,Moon Veil
+data.item.item_moon_veil.desc,"闪避 +14%, 最大生命 -10","Dodge +14%, Max HP -10"
+data.item.item_justice_guillotine.name,正义断头台,Justice Guillotine
+data.item.item_justice_guillotine.desc,"全局伤害 +24, 护甲 -5","Global Damage +24, Armor -5"
+data.item.item_world_tree_sapling.name,世界树幼苗,World Tree Sapling
+data.item.item_world_tree_sapling.desc,"最大生命 +38, 全局伤害 -18","Max HP +38, Global Damage -18"
+data.item.item_glutton_greed.name,贪食之欲,Glutton Greed
+data.item.item_glutton_greed.desc,"收获 +18, 闪避 -8%","harvest +18, Dodge -8%"
+data.item.item_emperor_throne.name,皇帝王座,Emperor Throne
+data.item.item_emperor_throne.desc,"全局伤害 +26, 攻击速度 +18%, 移动速度 -40","Global Damage +26, Attack Speed +18%, Move Speed -40"
+data.item.item_astronomy_orb.name,天文宝珠,Astronomy Orb
+data.item.item_astronomy_orb.desc,"幸运 +20, 收获 +18, 经验获取 +12%","Luck +20, harvest +18, XP Gain +12%"
+data.item.item_fool_pocket.name,愚者口袋,Fool Pocket
+data.item.item_fool_pocket.desc,"攻击速度 +14%, 金币获取 +15%, 护甲 -4","Attack Speed +14%, Gold Gain +15%, Armor -4"
+data.item.item_star_source.name,星辰源核,Star Source
+data.item.item_star_source.desc,"经验获取 +12%, 幸运 +14, 生命回复 +2","XP Gain +12%, Luck +14, HP Regen +2"
+data.item.item_world_omni.name,世界全相,World Omni
+data.item.item_world_omni.desc,"最大生命 +12, 护甲 +5, 闪避 +5%, 暴击率 +5%, 幸运 +8, 收获 +8","Max HP +12, Armor +5, Dodge +5%, Crit Chance +5%, Luck +8, harvest +8"
+data.tarot.pageofcups.name,圣杯侍从,Page of Cups
+data.tarot.pageofcups.desc,最大生命 +4,Max HP +4
+data.tarot.knightofcups.name,圣杯骑士,Knight of Cups
+data.tarot.knightofcups.desc,吸血 +2%,Lifesteal +2%
+data.tarot.queenofcups.name,圣杯王后,Queen of Cups
+data.tarot.queenofcups.desc,生命回复 +1.5,HP Regen +1.5
+data.tarot.kingofcups.name,圣杯国王,King of Cups
+data.tarot.kingofcups.desc,最大生命 +3，立即治疗 +8,"Max HP +3, heal +8 now"
+data.tarot.pageofpentacles.name,星币侍从,Page of Pentacles
+data.tarot.pageofpentacles.desc,幸运 +8,Luck +8
+data.tarot.knightofpentacles.name,星币骑士,Knight of Pentacles
+data.tarot.knightofpentacles.desc,收获 +10,Harvest +10
+data.tarot.queenofpentacles.name,星币王后,Queen of Pentacles
+data.tarot.queenofpentacles.desc,护甲 +2,Armor +2
+data.tarot.kingofpentacles.name,星币国王,King of Pentacles
+data.tarot.kingofpentacles.desc,下一关怪物掉落 x2,Next stage monster drops x2
+data.tarot.pageofsword.name,宝剑侍从,Page of Swords
+data.tarot.pageofsword.desc,攻击 +1,Attack +1
+data.tarot.knightofsword.name,宝剑骑士,Knight of Swords
+data.tarot.knightofsword.desc,攻击速度 +8%,Attack Speed +8%
+data.tarot.queenofsword.name,宝剑王后,Queen of Swords
+data.tarot.queenofsword.desc,暴击率 +6%,Crit Chance +6%
+data.tarot.kingofsword.name,宝剑国王,King of Swords
+data.tarot.kingofsword.desc,伤害 +10%,Damage +10%
+data.tarot.pageofwands.name,权杖侍从,Page of Wands
+data.tarot.pageofwands.desc,移动速度 +8%,Move Speed +8%
+data.tarot.knightofwands.name,权杖骑士,Knight of Wands
+data.tarot.knightofwands.desc,索敌范围 +35,Target Range +35
+data.tarot.queenofwands.name,权杖王后,Queen of Wands
+data.tarot.queenofwands.desc,攻击速度 +12%,Attack Speed +12%
+data.tarot.kingofwands.name,权杖国王,King of Wands
+data.tarot.kingofwands.desc,攻击 +2，移动速度 +4%,"Attack +2, Move Speed +4%"

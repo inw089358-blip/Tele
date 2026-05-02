@@ -355,7 +355,7 @@ func _roll_item_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
         }
         fallback_offer["icon_path"] = _resolve_offer_icon_path(fallback_offer)
         return fallback_offer
-    var template: Dictionary = _pick_shop_item_template(item_pool, luck_value)
+    var template: Dictionary = _pick_shop_item_template(item_pool, luck_value, wave_index)
     var wave_inflation: float = 1.0 + (max(0, wave_index - 1) * 0.06)
     var base_price: int = max(1, int(template.get("base_price", 20)))
     var final_price: int = max(1, int(round(base_price * wave_inflation)))
@@ -373,11 +373,15 @@ func _roll_item_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
         offer["icon_path"] = _resolve_offer_icon_path(offer)
     return offer
 
-func _pick_shop_item_template(item_pool: Array, luck_value: float) -> Dictionary:
+func _pick_shop_item_template(item_pool: Array, luck_value: float, wave_index: int = 1) -> Dictionary:
     var shop_rules: Dictionary = _catalog.get("shop_rules", {})
     var rarity_weights_raw: Variant = shop_rules.get("item_rarity_weights", {})
     if not (rarity_weights_raw is Dictionary) or (rarity_weights_raw as Dictionary).is_empty():
         return _pick_weighted(item_pool)
+    var rarity_stage_gates: Dictionary = {}
+    var gates_raw: Variant = shop_rules.get("item_rarity_stage_gates", {})
+    if gates_raw is Dictionary:
+        rarity_stage_gates = gates_raw
 
     var pools_by_rarity: Dictionary = {}
     for row_value: Variant in item_pool:
@@ -391,7 +395,7 @@ func _pick_shop_item_template(item_pool: Array, luck_value: float) -> Dictionary
         rarity_pool.append(row)
         pools_by_rarity[rarity] = rarity_pool
 
-    var rolled_rarity: String = _roll_rarity(rarity_weights_raw, luck_value)
+    var rolled_rarity: String = _roll_rarity(rarity_weights_raw, luck_value, wave_index, rarity_stage_gates)
     var selected_pool: Array = pools_by_rarity.get(rolled_rarity, [])
     if selected_pool.is_empty():
         return _pick_weighted(item_pool)
@@ -447,7 +451,22 @@ func _roll_weapon_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
         fallback_weapon_offer["icon_path"] = _resolve_offer_icon_path(fallback_weapon_offer)
         return fallback_weapon_offer
     var template: Dictionary = _pick_weighted(weapon_pool)
-    var rarity: String = _roll_rarity(template.get("rarity_weights", {}), luck_value)
+    var shop_rules: Dictionary = _catalog.get("shop_rules", {})
+    var weapon_rarity_stage_gates: Dictionary = {}
+    var weapon_gates_raw: Variant = shop_rules.get("weapon_rarity_stage_gates", {})
+    if weapon_gates_raw is Dictionary:
+        weapon_rarity_stage_gates = weapon_gates_raw
+    var weapon_unlocked_min_weights: Dictionary = {}
+    var weapon_min_weights_raw: Variant = shop_rules.get("weapon_rarity_unlocked_min_weights", {})
+    if weapon_min_weights_raw is Dictionary:
+        weapon_unlocked_min_weights = weapon_min_weights_raw
+    var rarity: String = _roll_rarity(
+        template.get("rarity_weights", {}),
+        luck_value,
+        wave_index,
+        weapon_rarity_stage_gates,
+        weapon_unlocked_min_weights
+    )
     var base_price: int = max(1, int(template.get("base_price", 35)))
     var rarity_multiplier: float = _rarity_price_multiplier(rarity)
     var wave_inflation: float = 1.0 + (max(0, wave_index - 1) * 0.06)
@@ -808,12 +827,22 @@ func _apply_item_effect(runtime: Dictionary, effects_raw: Variant) -> void:
         runtime["xp_gain_mult"] = max(0.1, float(runtime.get("xp_gain_mult", 1.0)) * float(effects.get("xp_gain_mult", 1.0)))
     runtime["player_stats"] = stats
 
-func _roll_rarity(weights_raw: Variant, luck_value: float = 0.0) -> String:
+func _roll_rarity(
+    weights_raw: Variant,
+    luck_value: float = 0.0,
+    wave_index: int = 1,
+    rarity_stage_gates: Dictionary = {},
+    unlocked_min_weights: Dictionary = {}
+) -> String:
     var weights: Dictionary = {}
     if weights_raw is Dictionary:
         weights = weights_raw
     if weights.is_empty():
         return "common"
+    weights = _filter_rarity_weights_by_stage(weights, wave_index, rarity_stage_gates)
+    if weights.is_empty():
+        return "common"
+    weights = _apply_unlocked_min_rarity_weights(weights, wave_index, rarity_stage_gates, unlocked_min_weights)
     weights = _adjust_rarity_weights_by_luck(weights, luck_value)
     var total: float = 0.0
     for key in weights.keys():
@@ -827,6 +856,39 @@ func _roll_rarity(weights_raw: Variant, luck_value: float = 0.0) -> String:
         if ticket <= passed:
             return str(key)
     return "common"
+
+func _filter_rarity_weights_by_stage(weights: Dictionary, wave_index: int, rarity_stage_gates: Dictionary) -> Dictionary:
+    if rarity_stage_gates.is_empty():
+        return weights.duplicate(true)
+    var filtered: Dictionary = {}
+    var safe_wave_index: int = max(1, wave_index)
+    for key: Variant in weights.keys():
+        var rarity_key: String = str(key).to_lower()
+        var min_stage: int = max(1, int(rarity_stage_gates.get(rarity_key, 1)))
+        if safe_wave_index < min_stage:
+            continue
+        filtered[key] = weights[key]
+    return filtered
+
+func _apply_unlocked_min_rarity_weights(
+    weights: Dictionary,
+    wave_index: int,
+    rarity_stage_gates: Dictionary,
+    unlocked_min_weights: Dictionary
+) -> Dictionary:
+    if unlocked_min_weights.is_empty():
+        return weights
+    var adjusted: Dictionary = weights.duplicate(true)
+    var safe_wave_index: int = max(1, wave_index)
+    for key: Variant in unlocked_min_weights.keys():
+        var rarity_key: String = str(key).to_lower()
+        var min_stage: int = max(1, int(rarity_stage_gates.get(rarity_key, 1)))
+        if safe_wave_index < min_stage:
+            continue
+        if not adjusted.has(rarity_key):
+            continue
+        adjusted[rarity_key] = max(float(adjusted.get(rarity_key, 0.0)), float(unlocked_min_weights[key]))
+    return adjusted
 
 func _adjust_rarity_weights_by_luck(weights: Dictionary, luck_value: float) -> Dictionary:
     var adjusted: Dictionary = {}
