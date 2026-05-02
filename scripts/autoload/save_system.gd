@@ -217,8 +217,8 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
         normalized_player_stats["harvest"] = 0.0
     if not normalized_player_stats.has("hp_regen"):
         normalized_player_stats["hp_regen"] = 0.0
+    var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
     if normalized_player_stats.has("crit_multiplier"):
-        var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
         var character_profile: Dictionary = BalanceService.get_character_profile(selected_character_id)
         var base_crit_multiplier: float = max(1.0, float(character_profile.get("crit_multiplier", 1.5)))
         var legacy_crit_multiplier: float = max(1.0, float(normalized_player_stats.get("crit_multiplier", base_crit_multiplier)))
@@ -256,7 +256,6 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
     normalized["endless_level"] = max(0, int(input_data.get("endless_level", 0)))
     normalized["endless_shop_timer"] = max(0.0, float(input_data.get("endless_shop_timer", 0.0)))
     normalized["endless_base_max_enemy_count"] = max(0, int(input_data.get("endless_base_max_enemy_count", 0)))
-    var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
     var xp_required_mult: float = _resolve_character_xp_required_multiplier(selected_character_id)
     var xp_to_next_default: int = _xp_required_for_level(current_level, xp_required_mult)
     if input_data.has("xp_to_next_level"):
