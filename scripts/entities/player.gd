@@ -1,7 +1,10 @@
 class_name Player
 extends CharacterBody2D
 
-@export var move_speed: float = 220.0
+signal damage_taken(amount: int)
+signal attack_dodged
+
+@export var move_speed: float = 150.0
 @export var max_hp: int = 100
 @export var body_radius: float = 12.0
 @export var pickup_radius: float = 92.0
@@ -108,9 +111,11 @@ func take_damage(amount: int) -> int:
     if _invincibility_timer > 0.0:
         return 0
     if _roll_dodge():
+        attack_dodged.emit()
         return 0
     var final_damage: int = _calculate_damage_after_armor(amount)
     current_hp = max(0, current_hp - final_damage)
+    damage_taken.emit(final_damage)
     if current_hp <= 0:
         _is_dead = true
         velocity = Vector2.ZERO
@@ -508,8 +513,13 @@ func apply_effect(effect_type: String, value: Variant) -> bool:
             move_speed = max(1.0, move_speed * max(0.01, float(value)))
         "max_hp_flat":
             var hp_delta: int = int(value)
-            max_hp = max(1, max_hp + hp_delta)
-            current_hp = clampi(current_hp + hp_delta, 0, max_hp)
+            var previous_max_hp: int = max(1, max_hp)
+            var previous_current_hp: int = clampi(current_hp, 0, previous_max_hp)
+            max_hp = max(1, previous_max_hp + hp_delta)
+            if hp_delta > 0:
+                current_hp = clampi(previous_current_hp + hp_delta, 0, max_hp)
+            else:
+                current_hp = clampi(previous_current_hp, 0, max_hp)
         "heal_flat":
             current_hp = clampi(current_hp + int(value), 0, max_hp)
         "stamina_recover_mult":

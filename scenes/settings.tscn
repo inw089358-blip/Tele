@@ -142,20 +142,6 @@ layout_mode = 2
 script = ExtResource("3")
 text = "AUDIO"
 
-[node name="InputTabButton" type="Button" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/NavPanel/NavMargin/NavVBox" unique_id=1047782874]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 44)
-layout_mode = 2
-script = ExtResource("3")
-text = "CONTROLS"
-
-[node name="AccessibilityTabButton" type="Button" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/NavPanel/NavMargin/NavVBox" unique_id=1750503701]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(180, 44)
-layout_mode = 2
-text = "ACCESSIBILITY"
-
 [node name="SystemTabButton" type="Button" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/NavPanel/NavMargin/NavVBox" unique_id=1168801059]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 44)
@@ -246,17 +232,6 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="FpsCapHint" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/DisplayPanel/DisplayGrid" unique_id=1673371877]
-layout_mode = 2
-
-[node name="CrtLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/DisplayPanel/DisplayGrid" unique_id=1944307707]
-layout_mode = 2
-text = "CRT Intensity"
-
-[node name="CrtIntensityOption" type="OptionButton" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/DisplayPanel/DisplayGrid" unique_id=976301164]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="CrtHint" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/DisplayPanel/DisplayGrid" unique_id=1727439161]
 layout_mode = 2
 
 [node name="UiScaleLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/DisplayPanel/DisplayGrid" unique_id=781470375]
@@ -363,98 +338,6 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "80%"
 
-[node name="InputPanel" type="VBoxContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack" unique_id=1909408677]
-unique_name_in_owner = true
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 10
-
-[node name="InputTitle" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/InputPanel" unique_id=535363984]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.52, 1, 0.88, 1)
-text = "Controls"
-
-[node name="RightClickSkillCheckBox" type="CheckBox" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/InputPanel" unique_id=1826847413]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Enable Right Click Skill"
-
-[node name="InputHint" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/InputPanel" unique_id=1610132008]
-layout_mode = 2
-text = "Enable right-click skill casting. Control bindings can be adjusted in the gameplay input map."
-autowrap_mode = 3
-
-[node name="AccessibilityPanel" type="VBoxContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack" unique_id=1206671489]
-unique_name_in_owner = true
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 10
-
-[node name="AccessibilityTitle" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel" unique_id=1306061924]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.52, 1, 0.88, 1)
-text = "Accessibility"
-
-[node name="AccessibilityGrid" type="GridContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel" unique_id=335620577]
-layout_mode = 2
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 8
-columns = 2
-
-[node name="ColorblindLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=909718649]
-layout_mode = 2
-text = "Colorblind Mode"
-
-[node name="ColorblindModeOption" type="OptionButton" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=347445746]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="HighContrastLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=55302469]
-layout_mode = 2
-text = "High Contrast UI"
-
-[node name="HighContrastCheckBox" type="CheckBox" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=902886820]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Enable"
-
-[node name="FontSizeLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=2044517471]
-layout_mode = 2
-text = "Font Size"
-
-[node name="FontSizeOption" type="OptionButton" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=2116808658]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="GlitchLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=1338567555]
-layout_mode = 2
-text = "Glitch Intensity"
-
-[node name="GlitchIntensityOption" type="OptionButton" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=1946714142]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="SimpleUILabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=1940522723]
-layout_mode = 2
-text = "Simple UI"
-
-[node name="SimpleUICheckBox" type="CheckBox" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/AccessibilityPanel/AccessibilityGrid" unique_id=1950289087]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Enable"
-
 [node name="SystemPanel" type="VBoxContainer" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack" unique_id=1572339777]
 unique_name_in_owner = true
 visible = false
@@ -487,12 +370,16 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="ShowBossTestLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/SystemPanel/SystemGrid" unique_id=967883441]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "Boss Test Entry"
 
 [node name="ShowBossTestCheckBox" type="CheckBox" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox/BodyHBox/ContentPanel/ContentMargin/ContentStack/SystemPanel/SystemGrid" unique_id=1140698424]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
+disabled = true
 text = "Show on Main Menu"
 
 [node name="StatusLabel" type="Label" parent="ScreenCenter/CRTFrame/MainMargin/RootVBox" unique_id=1876554348]

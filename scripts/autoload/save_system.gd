@@ -35,14 +35,19 @@ const DEFAULT_SETTINGS: Dictionary = {
     }, 
     "system": {
         "language": "zh_CN", 
-        "show_boss_test_entry": true, 
+        "show_boss_test_entry": false,
     }, 
 }
 
 func load_save() -> Dictionary:
     var slot_data: Dictionary = load_from_slot(SLOT_IDS[0])
     if slot_data.is_empty():
-        return _default_save()
+        var fallback_save: Dictionary = _default_save()
+        var root: Dictionary = _load_slot_root()
+        var root_settings: Variant = root.get("settings", {})
+        if root_settings is Dictionary:
+            fallback_save["settings"] = _normalize_settings(root_settings)
+        return fallback_save
     return slot_data
 
 func write_save(data: Dictionary) -> void :
@@ -103,6 +108,7 @@ func save_to_slot(slot_id: String, data: Dictionary) -> void :
     var normalized: Dictionary = _normalize_save_data(data)
     slots[slot_id] = normalized
     root["slots"] = slots
+    root["settings"] = _normalize_settings(normalized.get("settings", {}))
     _write_slot_root(root)
 
     if slot_id == SLOT_IDS[0]:
@@ -152,7 +158,11 @@ func _read_json_dict(path: String) -> Dictionary:
 
 func _normalize_slot_root(raw_root: Dictionary) -> Dictionary:
     var slots: Dictionary = _extract_slots_dict(raw_root)
-    return {"slots": slots}
+    var normalized: Dictionary = {"slots": slots}
+    var settings_value: Variant = raw_root.get("settings", {})
+    if settings_value is Dictionary:
+        normalized["settings"] = _normalize_settings(settings_value)
+    return normalized
 
 func _extract_slots_dict(root: Dictionary) -> Dictionary:
     var slots_value: Variant = root.get("slots", {})
@@ -207,8 +217,8 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
         normalized_player_stats["harvest"] = 0.0
     if not normalized_player_stats.has("hp_regen"):
         normalized_player_stats["hp_regen"] = 0.0
+    var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
     if normalized_player_stats.has("crit_multiplier"):
-        var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
         var character_profile: Dictionary = BalanceService.get_character_profile(selected_character_id)
         var base_crit_multiplier: float = max(1.0, float(character_profile.get("crit_multiplier", 1.5)))
         var legacy_crit_multiplier: float = max(1.0, float(normalized_player_stats.get("crit_multiplier", base_crit_multiplier)))
@@ -246,7 +256,6 @@ func _normalize_save_data(input_data: Dictionary) -> Dictionary:
     normalized["endless_level"] = max(0, int(input_data.get("endless_level", 0)))
     normalized["endless_shop_timer"] = max(0.0, float(input_data.get("endless_shop_timer", 0.0)))
     normalized["endless_base_max_enemy_count"] = max(0, int(input_data.get("endless_base_max_enemy_count", 0)))
-    var selected_character_id: String = str(normalized.get("selected_character", "the_fool"))
     var xp_required_mult: float = _resolve_character_xp_required_multiplier(selected_character_id)
     var xp_to_next_default: int = _xp_required_for_level(current_level, xp_required_mult)
     if input_data.has("xp_to_next_level"):

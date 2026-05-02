@@ -41,12 +41,12 @@
       "name": "破旧圣典",
       "description": "护甲 +2，移动速度 -9",
       "rarity": "common",
-      "base_price": 26,
+      "base_price": 22,
       "price_wave_scale": 1.04,
       "weight": 1.05,
       "effects": {
         "armor": 2,
-        "player_move_speed": -9
+        "player_move_speed": -7
       }
     },
     {
@@ -54,12 +54,12 @@
       "name": "生锈匕首",
       "description": "攻击速度 +5%，最大生命 -3",
       "rarity": "common",
-      "base_price": 25,
+      "base_price": 22,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
         "attack_speed_mult": 1.05,
-        "max_hp_flat": -3
+        "max_hp_flat": -2
       }
     },
     {
@@ -67,11 +67,11 @@
       "name": "学徒提灯",
       "description": "拾取范围 +24，幸运 -2",
       "rarity": "common",
-      "base_price": 23,
+      "base_price": 21,
       "price_wave_scale": 1.04,
       "weight": 1.05,
       "effects": {
-        "pickup_radius": 24,
+        "pickup_radius": 32,
         "luck": -2
       }
     },
@@ -80,12 +80,12 @@
       "name": "干燥草药",
       "description": "生命回复 +1，伤害 -3%",
       "rarity": "common",
-      "base_price": 25,
+      "base_price": 21,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
         "hp_regen": 1,
-        "global_attack_percent": -3
+        "global_attack_percent": -2
       }
     },
     {
@@ -93,12 +93,12 @@
       "name": "粗制护心镜",
       "description": "护甲 +2，闪避 -1%",
       "rarity": "common",
-      "base_price": 24,
+      "base_price": 20,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
         "armor": 2,
-        "dodge_chance": -0.01
+        "dodge_chance": -0.005
       }
     },
     {
@@ -106,12 +106,12 @@
       "name": "铅制弹丸",
       "description": "远程伤害 +2，攻击速度 -2%",
       "rarity": "common",
-      "base_price": 26,
+      "base_price": 23,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
         "ranged_damage_flat": 2,
-        "attack_speed_mult": 0.98
+        "attack_speed_mult": 0.99
       }
     },
     {
@@ -119,12 +119,12 @@
       "name": "沉重磨刀石",
       "description": "近战伤害 +2，攻击速度 -2%",
       "rarity": "common",
-      "base_price": 26,
+      "base_price": 23,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
         "melee_damage_flat": 2,
-        "attack_speed_mult": 0.98
+        "attack_speed_mult": 0.99
       }
     },
     {
@@ -132,12 +132,12 @@
       "name": "破损古币",
       "description": "收获 +7，闪避 -2%",
       "rarity": "common",
-      "base_price": 22,
+      "base_price": 20,
       "price_wave_scale": 1.04,
       "weight": 1.05,
       "effects": {
-        "harvest": 7,
-        "dodge_chance": -0.02
+        "harvest": 9,
+        "dodge_chance": -0.01
       }
     },
     {
@@ -145,12 +145,12 @@
       "name": "幸运兔脚",
       "description": "幸运 +8，最大生命 -3",
       "rarity": "common",
-      "base_price": 23,
+      "base_price": 21,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
-        "luck": 8,
-        "max_hp_flat": -3
+        "luck": 10,
+        "max_hp_flat": -2
       }
     },
     {
@@ -158,11 +158,11 @@
       "name": "轻快羽毛",
       "description": "移动速度 +11，护甲 -1",
       "rarity": "common",
-      "base_price": 24,
+      "base_price": 22,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
-        "player_move_speed": 11,
+        "player_move_speed": 14,
         "armor": -1
       }
     },
@@ -171,11 +171,11 @@
       "name": "塔罗残页",
       "description": "经验获取 +5%，幸运 -2",
       "rarity": "common",
-      "base_price": 25,
+      "base_price": 22,
       "price_wave_scale": 1.04,
       "weight": 0.95,
       "effects": {
-        "xp_gain_mult": 1.05,
+        "xp_gain_mult": 1.08,
         "luck": -2
       }
     },
@@ -184,12 +184,12 @@
       "name": "透镜碎片",
       "description": "索敌范围 +28，攻击速度 -3%",
       "rarity": "common",
-      "base_price": 24,
+      "base_price": 22,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
-        "bonus_target_range": 28,
-        "attack_speed_mult": 0.97
+        "bonus_target_range": 36,
+        "attack_speed_mult": 0.98
       }
     },
     {
@@ -197,11 +197,11 @@
       "name": "带血绷带",
       "description": "吸血 +1%，护甲 -1",
       "rarity": "common",
-      "base_price": 28,
+      "base_price": 25,
       "price_wave_scale": 1.04,
       "weight": 0.9,
       "effects": {
-        "lifesteal": 0.01,
+        "lifesteal": 0.02,
         "armor": -1
       }
     },
@@ -210,12 +210,12 @@
       "name": "炼金金币",
       "description": "收获 +10，移动速度 -7",
       "rarity": "common",
-      "base_price": 28,
+      "base_price": 24,
       "price_wave_scale": 1.04,
       "weight": 0.95,
       "effects": {
-        "harvest": 10,
-        "player_move_speed": -7
+        "harvest": 12,
+        "player_move_speed": -5
       }
     },
     {
@@ -223,12 +223,12 @@
       "name": "木制圆盾",
       "description": "闪避 +4%，伤害 -3%",
       "rarity": "common",
-      "base_price": 24,
+      "base_price": 22,
       "price_wave_scale": 1.04,
       "weight": 1,
       "effects": {
         "dodge_chance": 0.04,
-        "global_attack_percent": -3
+        "global_attack_percent": -2
       }
     },
     {
@@ -236,12 +236,12 @@
       "name": "冥想念珠",
       "description": "生命回复 +1，攻击速度 -4%",
       "rarity": "common",
-      "base_price": 26,
+      "base_price": 22,
       "price_wave_scale": 1.04,
       "weight": 0.95,
       "effects": {
         "hp_regen": 1,
-        "attack_speed_mult": 0.96
+        "attack_speed_mult": 0.98
       }
     },
     {
@@ -249,12 +249,12 @@
       "name": "怪味药水",
       "description": "伤害 +8%，最大生命 -5",
       "rarity": "common",
-      "base_price": 30,
+      "base_price": 26,
       "price_wave_scale": 1.04,
       "weight": 0.9,
       "effects": {
         "global_attack_percent": 8,
-        "max_hp_flat": -5
+        "max_hp_flat": -4
       }
     },
     {
@@ -262,13 +262,13 @@
       "name": "空酒瓶",
       "description": "攻击速度 +5%，移动速度 +9，护甲 -3",
       "rarity": "common",
-      "base_price": 30,
+      "base_price": 26,
       "price_wave_scale": 1.04,
       "weight": 0.85,
       "effects": {
         "attack_speed_mult": 1.05,
         "player_move_speed": 9,
-        "armor": -3
+        "armor": -2
       }
     },
     {
@@ -276,12 +276,12 @@
       "name": "仪式蜡烛",
       "description": "暴击率 +4%，护甲 -2",
       "rarity": "common",
-      "base_price": 27,
+      "base_price": 24,
       "price_wave_scale": 1.04,
       "weight": 0.95,
       "effects": {
         "crit_chance": 0.04,
-        "armor": -2
+        "armor": -1
       }
     },
     {
@@ -289,12 +289,12 @@
       "name": "沉重铁靴",
       "description": "护甲 +4，移动速度 -15",
       "rarity": "common",
-      "base_price": 28,
+      "base_price": 25,
       "price_wave_scale": 1.04,
       "weight": 0.85,
       "effects": {
         "armor": 4,
-        "player_move_speed": -15
+        "player_move_speed": -12
       }
     },
     {
@@ -302,13 +302,13 @@
       "name": "教皇法袍",
       "description": "护甲 +4，最大生命 +8，移动速度 -11",
       "rarity": "rare",
-      "base_price": 58,
+      "base_price": 46,
       "price_wave_scale": 1.06,
       "weight": 0.78,
       "effects": {
         "armor": 4,
         "max_hp_flat": 8,
-        "player_move_speed": -11
+        "player_move_speed": -9
       }
     },
     {
@@ -316,13 +316,13 @@
       "name": "魔术师扑克牌",
       "description": "暴击率 +8%，暴击转化 +0.10，最大生命 -5",
       "rarity": "rare",
-      "base_price": 62,
+      "base_price": 50,
       "price_wave_scale": 1.06,
       "weight": 0.75,
       "effects": {
         "crit_chance": 0.08,
         "crit_multiplier_flat": 0.1,
-        "max_hp_flat": -5
+        "max_hp_flat": -4
       }
     },
     {
@@ -330,13 +330,13 @@
       "name": "战车轮毂",
       "description": "移动速度 +26，拾取范围 +18，护甲 -2",
       "rarity": "rare",
-      "base_price": 52,
+      "base_price": 42,
       "price_wave_scale": 1.06,
       "weight": 0.8,
       "effects": {
         "player_move_speed": 26,
-        "pickup_radius": 18,
-        "armor": -2
+        "pickup_radius": 24,
+        "armor": -1
       }
     },
     {
@@ -344,13 +344,13 @@
       "name": "女祭司慈悲",
       "description": "吸血 +2%，生命回复 +2，伤害 -5%",
       "rarity": "rare",
-      "base_price": 60,
+      "base_price": 48,
       "price_wave_scale": 1.06,
       "weight": 0.75,
       "effects": {
-        "lifesteal": 0.02,
+        "lifesteal": 0.025,
         "hp_regen": 2,
-        "global_attack_percent": -5
+        "global_attack_percent": -4
       }
     },
     {
@@ -358,12 +358,12 @@
       "name": "隐者蜡灯",
       "description": "伤害 +16%，攻击速度 -8%",
       "rarity": "rare",
-      "base_price": 66,
+      "base_price": 52,
       "price_wave_scale": 1.06,
       "weight": 0.75,
       "effects": {
         "global_attack_percent": 16,
-        "attack_speed_mult": 0.92
+        "attack_speed_mult": 0.94
       }
     },
     {
@@ -371,12 +371,12 @@
       "name": "储蓄罐",
       "description": "收获 +16，伤害 -5%",
       "rarity": "rare",
-      "base_price": 50,
+      "base_price": 40,
       "price_wave_scale": 1.06,
       "weight": 0.82,
       "effects": {
-        "harvest": 16,
-        "global_attack_percent": -5
+        "harvest": 19,
+        "global_attack_percent": -4
       }
     },
     {
@@ -384,12 +384,12 @@
       "name": "商人的天平",
       "description": "收获 +20，伤害 -8%",
       "rarity": "rare",
-      "base_price": 54,
+      "base_price": 44,
       "price_wave_scale": 1.06,
       "weight": 0.78,
       "effects": {
-        "harvest": 20,
-        "global_attack_percent": -8
+        "harvest": 23,
+        "global_attack_percent": -6
       }
     },
     {
@@ -397,12 +397,12 @@
       "name": "复仇之箭",
       "description": "远程伤害 +5，闪避 -4%",
       "rarity": "rare",
-      "base_price": 54,
+      "base_price": 44,
       "price_wave_scale": 1.06,
       "weight": 0.78,
       "effects": {
         "ranged_damage_flat": 5,
-        "dodge_chance": -0.04
+        "dodge_chance": -0.03
       }
     },
     {
@@ -410,13 +410,13 @@
       "name": "诅咒之眼",
       "description": "伤害 +14%，攻击速度 +8%，幸运 -18",
       "rarity": "rare",
-      "base_price": 72,
+      "base_price": 52,
       "price_wave_scale": 1.06,
       "weight": 0.62,
       "effects": {
         "global_attack_percent": 14,
         "attack_speed_mult": 1.08,
-        "luck": -18
+        "luck": -14
       }
     },
     {
@@ -424,13 +424,13 @@
       "name": "星尘",
       "description": "经验获取 +15%，幸运 +8，伤害 -6%",
       "rarity": "rare",
-      "base_price": 62,
+      "base_price": 48,
       "price_wave_scale": 1.06,
       "weight": 0.72,
       "effects": {
-        "xp_gain_mult": 1.15,
+        "xp_gain_mult": 1.18,
         "luck": 8,
-        "global_attack_percent": -6
+        "global_attack_percent": -5
       }
     },
     {
@@ -438,12 +438,12 @@
       "name": "坚韧木桩",
       "description": "最大生命 +16，移动速度 -11",
       "rarity": "rare",
-      "base_price": 56,
+      "base_price": 44,
       "price_wave_scale": 1.06,
       "weight": 0.8,
       "effects": {
         "max_hp_flat": 16,
-        "player_move_speed": -11
+        "player_move_speed": -9
       }
     },
     {
@@ -451,13 +451,13 @@
       "name": "锋利剃刀",
       "description": "近战伤害 +6，攻击速度 +6%，护甲 -4",
       "rarity": "rare",
-      "base_price": 64,
+      "base_price": 52,
       "price_wave_scale": 1.06,
       "weight": 0.74,
       "effects": {
         "melee_damage_flat": 6,
         "attack_speed_mult": 1.06,
-        "armor": -4
+        "armor": -3
       }
     },
     {
@@ -465,13 +465,13 @@
       "name": "望远镜",
       "description": "索敌范围 +65，远程伤害 +4，闪避 -4%",
       "rarity": "rare",
-      "base_price": 60,
+      "base_price": 50,
       "price_wave_scale": 1.06,
       "weight": 0.75,
       "effects": {
-        "bonus_target_range": 65,
+        "bonus_target_range": 72,
         "ranged_damage_flat": 4,
-        "dodge_chance": -0.04
+        "dodge_chance": -0.03
       }
     },
     {
@@ -479,12 +479,12 @@
       "name": "磁力怀表",
       "description": "拾取范围 +80，伤害 -7%",
       "rarity": "rare",
-      "base_price": 54,
+      "base_price": 44,
       "price_wave_scale": 1.06,
       "weight": 0.76,
       "effects": {
-        "pickup_radius": 80,
-        "global_attack_percent": -7
+        "pickup_radius": 92,
+        "global_attack_percent": -5
       }
     },
     {
@@ -492,12 +492,12 @@
       "name": "荆棘王冠",
       "description": "伤害 +14%，最大生命 -12",
       "rarity": "rare",
-      "base_price": 62,
+      "base_price": 50,
       "price_wave_scale": 1.06,
       "weight": 0.72,
       "effects": {
         "global_attack_percent": 14,
-        "max_hp_flat": -12
+        "max_hp_flat": -10
       }
     },
     {
@@ -505,12 +505,12 @@
       "name": "死神权能",
       "description": "暴击率 +12%，生命回复 -5",
       "rarity": "epic",
-      "base_price": 108,
+      "base_price": 76,
       "price_wave_scale": 1.08,
       "weight": 0.48,
       "effects": {
         "crit_chance": 0.12,
-        "hp_regen": -5
+        "hp_regen": -4
       }
     },
     {
@@ -518,12 +518,12 @@
       "name": "命运之轮",
       "description": "幸运 +24，护甲 -6",
       "rarity": "epic",
-      "base_price": 104,
+      "base_price": 74,
       "price_wave_scale": 1.08,
       "weight": 0.48,
       "effects": {
-        "luck": 24,
-        "armor": -6
+        "luck": 28,
+        "armor": -5
       }
     },
     {
@@ -531,12 +531,12 @@
       "name": "审判官锁链",
       "description": "伤害 +22%，攻击速度 -8%",
       "rarity": "epic",
-      "base_price": 116,
+      "base_price": 82,
       "price_wave_scale": 1.08,
       "weight": 0.46,
       "effects": {
         "global_attack_percent": 22,
-        "attack_speed_mult": 0.92
+        "attack_speed_mult": 0.94
       }
     },
     {
@@ -544,12 +544,12 @@
       "name": "节制圣餐",
       "description": "生命回复 +5，移动速度 -31",
       "rarity": "epic",
-      "base_price": 108,
+      "base_price": 78,
       "price_wave_scale": 1.08,
       "weight": 0.48,
       "effects": {
         "hp_regen": 5,
-        "player_move_speed": -31
+        "player_move_speed": -26
       }
     },
     {
@@ -557,13 +557,13 @@
       "name": "恶魔契约",
       "description": "伤害 +32%，收获 +16，最大生命 -18",
       "rarity": "epic",
-      "base_price": 132,
+      "base_price": 88,
       "price_wave_scale": 1.08,
       "weight": 0.38,
       "effects": {
         "global_attack_percent": 32,
         "harvest": 16,
-        "max_hp_flat": -18
+        "max_hp_flat": -16
       }
     },
     {
@@ -571,13 +571,13 @@
       "name": "炼金坩埚",
       "description": "金币收益 +15%，攻击 +4，护甲 -6",
       "rarity": "epic",
-      "base_price": 122,
+      "base_price": 84,
       "price_wave_scale": 1.08,
       "weight": 0.45,
       "effects": {
         "gold_gain_multiplier": 1.15,
         "attack_damage_flat": 4,
-        "armor": -6
+        "armor": -5
       }
     },
     {
@@ -585,12 +585,12 @@
       "name": "月之纱帘",
       "description": "闪避 +14%，最大生命 -10",
       "rarity": "epic",
-      "base_price": 112,
+      "base_price": 80,
       "price_wave_scale": 1.08,
       "weight": 0.46,
       "effects": {
         "dodge_chance": 0.14,
-        "max_hp_flat": -10
+        "max_hp_flat": -8
       }
     },
     {
@@ -598,12 +598,12 @@
       "name": "正义断头台",
       "description": "伤害 +24%，护甲 -5",
       "rarity": "epic",
-      "base_price": 120,
+      "base_price": 84,
       "price_wave_scale": 1.08,
       "weight": 0.45,
       "effects": {
         "global_attack_percent": 24,
-        "armor": -5
+        "armor": -4
       }
     },
     {
@@ -611,12 +611,12 @@
       "name": "世界树幼苗",
       "description": "最大生命 +38，伤害 -18%",
       "rarity": "epic",
-      "base_price": 136,
+      "base_price": 88,
       "price_wave_scale": 1.08,
       "weight": 0.38,
       "effects": {
-        "max_hp_flat": 38,
-        "global_attack_percent": -18
+        "max_hp_flat": 42,
+        "global_attack_percent": -16
       }
     },
     {
@@ -624,12 +624,12 @@
       "name": "暴食贪念",
       "description": "收获 +18，闪避 -8%",
       "rarity": "epic",
-      "base_price": 102,
+      "base_price": 70,
       "price_wave_scale": 1.08,
       "weight": 0.45,
       "effects": {
-        "harvest": 18,
-        "dodge_chance": -0.08
+        "harvest": 22,
+        "dodge_chance": -0.06
       }
     },
     {
@@ -637,13 +637,13 @@
       "name": "皇帝御座",
       "description": "伤害 +26%，攻击速度 +18%，移动速度 -40",
       "rarity": "legendary",
-      "base_price": 230,
+      "base_price": 150,
       "price_wave_scale": 1.1,
       "weight": 0.18,
       "effects": {
         "global_attack_percent": 26,
         "attack_speed_mult": 1.18,
-        "player_move_speed": -40
+        "player_move_speed": -34
       }
     },
     {
@@ -651,13 +651,13 @@
       "name": "星象宝珠",
       "description": "幸运 +20，收获 +18，经验获取 +12%",
       "rarity": "legendary",
-      "base_price": 205,
+      "base_price": 134,
       "price_wave_scale": 1.1,
       "weight": 0.2,
       "effects": {
-        "luck": 20,
-        "harvest": 18,
-        "xp_gain_mult": 1.12
+        "luck": 24,
+        "harvest": 22,
+        "xp_gain_mult": 1.15
       }
     },
     {
@@ -665,13 +665,13 @@
       "name": "愚者口袋",
       "description": "攻击速度 +14%，金币收益 +15%，护甲 -4",
       "rarity": "legendary",
-      "base_price": 215,
+      "base_price": 138,
       "price_wave_scale": 1.1,
       "weight": 0.18,
       "effects": {
         "attack_speed_mult": 1.14,
         "gold_gain_multiplier": 1.15,
-        "armor": -4
+        "armor": -3
       }
     },
     {
@@ -679,13 +679,13 @@
       "name": "星辰源泉",
       "description": "经验获取 +12%，幸运 +14，生命回复 +2",
       "rarity": "legendary",
-      "base_price": 185,
+      "base_price": 122,
       "price_wave_scale": 1.1,
       "weight": 0.22,
       "effects": {
-        "xp_gain_mult": 1.12,
-        "luck": 14,
-        "hp_regen": 2
+        "xp_gain_mult": 1.16,
+        "luck": 18,
+        "hp_regen": 3
       }
     },
     {
@@ -693,16 +693,16 @@
       "name": "世界全仪",
       "description": "最大生命 +12，护甲 +5，闪避 +5%，暴击率 +5%，幸运 +8，收获 +8",
       "rarity": "legendary",
-      "base_price": 240,
+      "base_price": 155,
       "price_wave_scale": 1.1,
       "weight": 0.16,
       "effects": {
-        "max_hp_flat": 12,
+        "max_hp_flat": 16,
         "armor": 5,
         "dodge_chance": 0.05,
         "crit_chance": 0.05,
-        "luck": 8,
-        "harvest": 8
+        "luck": 10,
+        "harvest": 10
       }
     }
   ],
@@ -716,7 +716,7 @@
         "melee",
         "fast"
       ],
-      "base_price": 44,
+      "base_price": 21,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "kunai",
@@ -754,7 +754,7 @@
         "melee",
         "heavy"
       ],
-      "base_price": 58,
+      "base_price": 29,
       "price_wave_scale": 1.07,
       "weight": 0.9,
       "stack_key": "road_sign",
@@ -789,7 +789,7 @@
         "ranged",
         "rapid"
       ],
-      "base_price": 50,
+      "base_price": 24,
       "price_wave_scale": 1.06,
       "weight": 0.95,
       "stack_key": "nail_gun",
@@ -827,7 +827,7 @@
         "melee",
         "control"
       ],
-      "base_price": 46,
+      "base_price": 22,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "chain_whip",
@@ -862,7 +862,7 @@
         "ranged",
         "heavy"
       ],
-      "base_price": 60,
+      "base_price": 30,
       "price_wave_scale": 1.07,
       "weight": 1,
       "stack_key": "circular_saw",
@@ -905,7 +905,7 @@
         "ranged",
         "burst"
       ],
-      "base_price": 52,
+      "base_price": 25,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "flare_launcher",
@@ -942,7 +942,7 @@
         "melee",
         "heavy"
       ],
-      "base_price": 56,
+      "base_price": 28,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "traffic_cone",
@@ -978,7 +978,7 @@
         "melee",
         "heavy"
       ],
-      "base_price": 55,
+      "base_price": 27,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "heavy_wrench",
@@ -1013,7 +1013,7 @@
         "ranged",
         "burst"
       ],
-      "base_price": 51,
+      "base_price": 24,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "molotov",
@@ -1053,7 +1053,7 @@
         "ranged",
         "multi_hit"
       ],
-      "base_price": 49,
+      "base_price": 23,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "shuriken_ring",
@@ -1094,7 +1094,7 @@
         "melee",
         "basic"
       ],
-      "base_price": 42,
+      "base_price": 20,
       "price_wave_scale": 1.05,
       "weight": 1,
       "stack_key": "steel_pipe",
@@ -1129,7 +1129,7 @@
         "melee",
         "pierce"
       ],
-      "base_price": 54,
+      "base_price": 26,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "rebar_spear",
@@ -1164,7 +1164,7 @@
         "ranged",
         "balanced"
       ],
-      "base_price": 53,
+      "base_price": 25,
       "price_wave_scale": 1.06,
       "weight": 1,
       "stack_key": "mechanical_crossbow",
@@ -1202,7 +1202,7 @@
         "melee",
         "heavy"
       ],
-      "base_price": 59,
+      "base_price": 30,
       "price_wave_scale": 1.07,
       "weight": 1,
       "stack_key": "meteor_hammer",

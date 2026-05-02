@@ -32,9 +32,9 @@ const WEAPON_RARITY_EFFECT_MULTIPLIERS: Dictionary = {
 }
 const WEAPON_RARITY_PRICE_MULTIPLIERS: Dictionary = {
     "common": 1.0,
-    "rare": 1.45,
-    "epic": 2.1,
-    "legendary": 3.0,
+    "rare": 1.25,
+    "epic": 1.55,
+    "legendary": 2.0,
 }
 const WEAPON_RARITY_EFFECT_SCALING_KEYS: Dictionary = {
     "bonus_attack_damage": true,
@@ -160,6 +160,8 @@ func purchase_offer(offer_id: String, state: Dictionary) -> Dictionary:
     var price: int = max(0, int(selected_offer.get("price", 0)))
     if current_gold < price:
         return {"ok": false, "message": "msg.shop.not_enough_gold", "state": runtime}
+    if not _can_afford_max_hp_cost(selected_offer.get("effects", {}), runtime):
+        return {"ok": false, "message": "msg.shop.not_enough_max_hp", "state": runtime}
 
     runtime["current_gold"] = current_gold - price
     var shop_state: Dictionary = _normalize_shop_state(runtime.get("shop_runtime_state", {}))
@@ -469,7 +471,7 @@ func _roll_weapon_offer(wave_index: int, luck_value: float = 0.0) -> Dictionary:
     )
     var base_price: int = max(1, int(template.get("base_price", 35)))
     var rarity_multiplier: float = _rarity_price_multiplier(rarity)
-    var wave_inflation: float = 1.0 + (max(0, wave_index - 1) * 0.06)
+    var wave_inflation: float = _weapon_wave_price_inflation(wave_index)
     var final_price: int = max(1, int(round(base_price * rarity_multiplier * wave_inflation)))
     var weapon: Dictionary = {
         "weapon_id": str(template.get("weapon_id", "weapon_unknown")),
@@ -688,6 +690,9 @@ func _estimate_weapon_base_price(weapon: Dictionary) -> int:
     var base_price: int = max(1, int(template.get("base_price", weapon.get("base_price", 35))))
     return max(1, int(round(float(base_price) * _rarity_price_multiplier(str(weapon.get("rarity", "common"))))))
 
+func _weapon_wave_price_inflation(wave_index: int) -> float:
+    return 1.0 + (max(0, wave_index - 1) * 0.035)
+
 func _find_catalog_weapon_template(weapon_id: String) -> Dictionary:
     var weapon_pool: Variant = _catalog.get("weapon_pool", [])
     if not (weapon_pool is Array):
@@ -788,14 +793,20 @@ func _apply_item_effect(runtime: Dictionary, effects_raw: Variant) -> void:
         var next_max_hp_alias: int = max(1, current_max_hp_alias + hp_delta_alias)
         var current_hp_alias: int = clampi(int(runtime.get("player_hp", current_max_hp_alias)), 0, current_max_hp_alias)
         runtime["player_max_hp"] = next_max_hp_alias
-        runtime["player_hp"] = clampi(current_hp_alias + hp_delta_alias, 0, next_max_hp_alias)
+        if hp_delta_alias > 0:
+            runtime["player_hp"] = clampi(current_hp_alias + hp_delta_alias, 0, next_max_hp_alias)
+        else:
+            runtime["player_hp"] = clampi(current_hp_alias, 0, next_max_hp_alias)
     if effects.has("max_hp_flat"):
         var hp_delta: int = int(effects.get("max_hp_flat", 0))
         var current_max_hp: int = max(1, int(runtime.get("player_max_hp", 100)))
         var next_max_hp: int = max(1, current_max_hp + hp_delta)
         var current_hp: int = clampi(int(runtime.get("player_hp", current_max_hp)), 0, current_max_hp)
         runtime["player_max_hp"] = next_max_hp
-        runtime["player_hp"] = clampi(current_hp + hp_delta, 0, next_max_hp)
+        if hp_delta > 0:
+            runtime["player_hp"] = clampi(current_hp + hp_delta, 0, next_max_hp)
+        else:
+            runtime["player_hp"] = clampi(current_hp, 0, next_max_hp)
     if effects.has("heal_flat"):
         var heal_value: int = int(effects.get("heal_flat", 0))
         var heal_max_hp: int = max(1, int(runtime.get("player_max_hp", 100)))
@@ -826,6 +837,20 @@ func _apply_item_effect(runtime: Dictionary, effects_raw: Variant) -> void:
     if effects.has("xp_gain_mult"):
         runtime["xp_gain_mult"] = max(0.1, float(runtime.get("xp_gain_mult", 1.0)) * float(effects.get("xp_gain_mult", 1.0)))
     runtime["player_stats"] = stats
+
+func _can_afford_max_hp_cost(effects_value: Variant, runtime: Dictionary) -> bool:
+    if not (effects_value is Dictionary):
+        return true
+    var effects: Dictionary = effects_value
+    var max_hp_cost: int = 0
+    if effects.has("max_hp"):
+        max_hp_cost += max(0, -int(effects.get("max_hp", 0)))
+    if effects.has("max_hp_flat"):
+        max_hp_cost += max(0, -int(effects.get("max_hp_flat", 0)))
+    if max_hp_cost <= 0:
+        return true
+    var current_max_hp: int = max(1, int(runtime.get("player_max_hp", 100)))
+    return current_max_hp > max_hp_cost
 
 func _roll_rarity(
     weights_raw: Variant,

@@ -179,6 +179,8 @@ var _next_elite_spawn_time: float = 60.0
 var _elite_spawn_relief_timer: float = 0.0
 var _elite_schedule_enabled: bool = false
 var _elite_respawn_check_interval_runtime: float = 120.0
+var _elite_respawn_interval_min_runtime: float = 120.0
+var _elite_respawn_interval_max_runtime: float = 120.0
 var _elite_max_alive_runtime: int = 1
 var _elite_hp_override_runtime: int = 0
 var _elite_pool_runtime: Array[Dictionary] = []
@@ -272,6 +274,8 @@ var _contact_damage_runtime: int = CONTACT_DAMAGE
 var _contact_damage_interval_runtime: float = CONTACT_DAMAGE_INTERVAL
 var _spawn_interval_start_runtime: float = ENEMY_SPAWN_INTERVAL
 var _spawn_interval_end_runtime: float = ENEMY_SPAWN_INTERVAL
+var _spawn_batch_start_runtime: int = 1
+var _spawn_batch_end_runtime: int = 1
 var _melee_pressure_interval_start_runtime: float = MELEE_PRESSURE_INTERVAL_START
 var _melee_pressure_interval_end_runtime: float = MELEE_PRESSURE_INTERVAL_END
 var _melee_pressure_fast_weight_runtime: float = MELEE_PRESSURE_FAST_WEIGHT
@@ -437,6 +441,18 @@ const ENDLESS_SPAWN_INTERVAL_REDUCTION_PER_LEVEL: float = 0.04
 const ENDLESS_MIN_SPAWN_INTERVAL: float = 0.18
 const ENDLESS_MAX_ENEMY_COUNT_PER_LEVEL: int = 6
 const ENDLESS_MAX_ENEMY_COUNT_CAP: int = 180
+const ENDLESS_ELITE_FIRST_SPAWN_MIN: float = 25.0
+const ENDLESS_ELITE_FIRST_SPAWN_MAX: float = 45.0
+const ENDLESS_ELITE_RESPAWN_MIN: float = 45.0
+const ENDLESS_ELITE_RESPAWN_MAX: float = 90.0
+const ENDLESS_ELITE_MAX_ALIVE: int = 2
+const ENDLESS_ELITE_BASE_HP: int = 60000
+const ENDLESS_ELITE_HP_ENRAGE_MIN: float = 1.15
+const ENDLESS_ELITE_HP_ENRAGE_MAX: float = 1.45
+const ENDLESS_ELITE_DAMAGE_ENRAGE_MIN: float = 1.08
+const ENDLESS_ELITE_DAMAGE_ENRAGE_MAX: float = 1.25
+const ENDLESS_ELITE_SPEED_ENRAGE_MIN: float = 1.0
+const ENDLESS_ELITE_SPEED_ENRAGE_MAX: float = 1.12
 
 func _resolve_state_label() -> Label:
     var direct_label: Label = get_node_or_null(^"HUD#StateLabel") as Label
@@ -550,6 +566,8 @@ func _reset_progress_state() -> void :
     _melee_pressure_spawn_timer = 0.0
     _wave_duration_runtime = 30.0
     _wave_progress_index = 0
+    _spawn_batch_start_runtime = 1
+    _spawn_batch_end_runtime = 1
     _stage_clear_triggered = false
     _is_endless_mode = false
     _endless_elapsed = 0.0
@@ -561,6 +579,8 @@ func _reset_progress_state() -> void :
     _elite_spawn_relief_timer = 0.0
     _elite_schedule_enabled = false
     _elite_respawn_check_interval_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+    _elite_respawn_interval_min_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+    _elite_respawn_interval_max_runtime = ELITE_RESPAWN_CHECK_INTERVAL
     _elite_max_alive_runtime = 1
     _elite_hp_override_runtime = 0
     _elite_pool_runtime = []
@@ -633,7 +653,12 @@ func _process(delta: float) -> void :
 
     if _enemy_spawn_timer >= spawn_interval:
         _enemy_spawn_timer = 0.0
-        _try_spawn_enemy()
+        var spawn_batch_count: int = max(1, int(round(lerpf(
+            float(_spawn_batch_start_runtime),
+            float(_spawn_batch_end_runtime),
+            progress_ratio
+        ))))
+        _try_spawn_enemy_batch(spawn_batch_count)
 
     var melee_pressure_interval: float = lerpf(_melee_pressure_interval_start_runtime, _melee_pressure_interval_end_runtime, progress_ratio)
     melee_pressure_interval *= _spawn_interval_multiplier
@@ -1277,8 +1302,7 @@ func _start_endless_mode() -> void:
     _endless_shop_transitioning = false
     _endless_level = 0
     _endless_base_max_enemy_count = _max_enemy_count_runtime
-    _elite_schedule_enabled = false
-    _next_elite_spawn_time = INF
+    _apply_endless_elite_schedule()
     _active_elite = null
     _wave_elapsed = 0.0
     _enemy_spawn_timer = 0.0
@@ -1351,6 +1375,10 @@ func _spawn_player(force_character_id: String = "") -> void :
     _player = script_resource.new()
     _player.global_position = Vector2.ZERO
     add_child(_player)
+    if not _player.damage_taken.is_connected(_on_player_damage_taken):
+        _player.damage_taken.connect(_on_player_damage_taken)
+    if not _player.attack_dodged.is_connected(_on_player_attack_dodged):
+        _player.attack_dodged.connect(_on_player_attack_dodged)
     _ensure_weapon_orbit_root()
 
     var camera: Camera2D = Camera2D.new()
@@ -1401,6 +1429,13 @@ func _try_spawn_enemy() -> void :
         return
     var spawn_type: Enemy.EnemyType = _roll_enemy_spawn_type()
     _spawn_enemy(spawn_type, _random_spawn_position())
+
+func _try_spawn_enemy_batch(batch_count: int) -> void:
+    var safe_batch_count: int = max(1, batch_count)
+    for i: int in range(safe_batch_count):
+        if _count_active_enemies() >= _get_active_max_enemy_count():
+            return
+        _try_spawn_enemy()
 
 func _try_spawn_melee_pressure_enemy() -> void:
     if _enemies.size() >= _get_active_max_enemy_count():
@@ -1496,14 +1531,34 @@ func _get_active_max_enemy_count() -> int:
     var base_count: int = _endless_base_max_enemy_count if _endless_base_max_enemy_count > 0 else _max_enemy_count_runtime
     return clampi(base_count + _endless_level * ENDLESS_MAX_ENEMY_COUNT_PER_LEVEL, 1, ENDLESS_MAX_ENEMY_COUNT_CAP)
 
+func _apply_endless_elite_schedule() -> void:
+    _elite_schedule_enabled = true
+    _elite_respawn_check_interval_runtime = ENDLESS_ELITE_RESPAWN_MAX
+    _elite_respawn_interval_min_runtime = ENDLESS_ELITE_RESPAWN_MIN
+    _elite_respawn_interval_max_runtime = ENDLESS_ELITE_RESPAWN_MAX
+    _elite_max_alive_runtime = ENDLESS_ELITE_MAX_ALIVE
+    _elite_hp_override_runtime = 0
+    _elite_pool_runtime = [
+        {"type": "elite_warden", "weight": 1.0},
+        {"type": "elite_rift_charger", "weight": 1.0},
+        {"type": "elite_clockwork_seer", "weight": 1.0},
+    ]
+    _next_elite_spawn_time = _battle_elapsed + randf_range(ENDLESS_ELITE_FIRST_SPAWN_MIN, ENDLESS_ELITE_FIRST_SPAWN_MAX)
+
+func _schedule_next_elite_spawn() -> void:
+    var min_interval: float = max(1.0, _elite_respawn_interval_min_runtime)
+    var max_interval: float = max(min_interval, _elite_respawn_interval_max_runtime)
+    _next_elite_spawn_time = _battle_elapsed + randf_range(min_interval, max_interval)
+
 func _try_spawn_elite_by_schedule() -> void :
-    if _is_endless_mode:
-        return
     if not _elite_schedule_enabled:
         return
     if _battle_elapsed < _next_elite_spawn_time:
         return
-    _next_elite_spawn_time += _elite_respawn_check_interval_runtime
+    if _is_endless_mode:
+        _schedule_next_elite_spawn()
+    else:
+        _next_elite_spawn_time += _elite_respawn_check_interval_runtime
     if _count_alive_elites() >= _elite_max_alive_runtime:
         return
     _spawn_elite()
@@ -1546,15 +1601,40 @@ func _spawn_elite() -> void :
             return
     var elite_spawn: Vector2 = _random_spawn_position()
     var enemy: Enemy = _spawn_enemy(_roll_elite_spawn_type(), elite_spawn)
+    if enemy == null:
+        return
     if _elite_hp_override_runtime > 0:
         enemy.max_hp = max(1, int(round(float(_elite_hp_override_runtime) * max(0.1, _enemy_hp_multiplier))))
         enemy.current_hp = enemy.max_hp
         enemy.queue_redraw()
+    if _is_endless_mode:
+        _apply_endless_elite_spawn_enrage(enemy)
     _active_elite = enemy
     _elite_spawn_relief_timer = ELITE_SPAWN_RELIEF_DURATION
     print("[Elite] Spawned %s at %.2fs" % [enemy.get_display_name(), _battle_elapsed])
     if hud.has_method("show_boss_bar"):
         hud.call("show_boss_bar", enemy.get_display_name(), float(enemy.max_hp), float(enemy.current_hp))
+
+func _apply_endless_elite_spawn_enrage(enemy: Enemy) -> void:
+    if enemy == null or not is_instance_valid(enemy):
+        return
+    var hp_multiplier: float = randf_range(ENDLESS_ELITE_HP_ENRAGE_MIN, ENDLESS_ELITE_HP_ENRAGE_MAX)
+    var damage_multiplier: float = randf_range(ENDLESS_ELITE_DAMAGE_ENRAGE_MIN, ENDLESS_ELITE_DAMAGE_ENRAGE_MAX)
+    var speed_multiplier: float = randf_range(ENDLESS_ELITE_SPEED_ENRAGE_MIN, ENDLESS_ELITE_SPEED_ENRAGE_MAX)
+    var final_hp: int = max(1, int(round(float(ENDLESS_ELITE_BASE_HP) * _get_endless_hp_multiplier() * hp_multiplier)))
+    enemy.max_hp = final_hp
+    enemy.current_hp = final_hp
+    enemy.damage_multiplier *= damage_multiplier
+    enemy.move_speed = max(10.0, enemy.move_speed * speed_multiplier)
+    enemy.queue_redraw()
+    print(
+        "[Elite] Endless enrage %s hp=%d dmg=%.2f speed=%.2f" % [
+            enemy.get_display_name(),
+            enemy.max_hp,
+            enemy.damage_multiplier,
+            enemy.move_speed,
+        ]
+    )
 
 func _roll_elite_spawn_type() -> Enemy.EnemyType:
     if _elite_pool_runtime.is_empty():
@@ -1606,7 +1686,8 @@ func _spawn_stage_boss(boss_config: Dictionary) -> Enemy:
     boss.died.connect(_on_enemy_died)
     boss.enemy_projectile_fired.connect(_on_enemy_projectile_fired)
     boss.summon_requested.connect(_on_boss_summon_requested)
-    boss.damage_multiplier = _get_enemy_damage_scale()
+    boss.damage_multiplier = max(0.1, float(boss_config.get("damage_multiplier", 1.0)))
+    boss.contact_damage_override = max(0, int(boss_config.get("contact_damage", 0)))
     add_child(boss)
     boss.configure_from_stage(boss_config)
     var boss_hp_scale: float = max(0.1, _enemy_hp_multiplier)
@@ -3151,18 +3232,20 @@ func _handle_enemy_contact_damage() -> void :
         return
     if _contact_damage_timer > 0.0:
         return
-    var touched: bool = false
+    var contact_damage: int = 0
     for enemy: Enemy in _enemies:
         if not _is_enemy_combat_active(enemy):
             continue
         var contact_distance: float = enemy.body_radius + _player.body_radius + 2.0
         if enemy.global_position.distance_squared_to(_player.global_position) <= contact_distance * contact_distance:
-            touched = true
-            break
-    if not touched:
+            var enemy_contact_damage: int = _scale_enemy_damage(_contact_damage_runtime)
+            if enemy.contact_damage_override > 0:
+                enemy_contact_damage = enemy.scale_outgoing_damage(enemy.contact_damage_override)
+            contact_damage = max(contact_damage, enemy_contact_damage)
+    if contact_damage <= 0:
         return
     _contact_damage_timer = _contact_damage_interval_runtime
-    _player.take_damage(_scale_enemy_damage(_contact_damage_runtime))
+    _player.take_damage(contact_damage)
     _refresh_player_hud()
 
 func _get_enemy_damage_scale() -> float:
@@ -3291,6 +3374,8 @@ func _refresh_player_hud() -> void :
         )
 
 func _update_elite_boss_bar() -> void :
+    if not _stage_is_boss_stage:
+        return
     if _active_elite == null or not is_instance_valid(_active_elite):
         return
     if hud.has_method("update_boss_hp"):
@@ -3605,20 +3690,20 @@ func _refresh_pause_stat_summary() -> void:
         return
 
     var stat_defs: Array[Dictionary] = [
-        {"label": "HP", "value": "%d/%d" % [_player.current_hp, _player.max_hp]},
-        {"label": "STAMINA", "value": "%d/%d" % [int(round(_player.current_stamina)), int(round(_player.stamina_max))]},
-        {"label": "LEVEL", "value": str(_current_level)},
-        {"label": "XP", "value": "%d/%d" % [_current_xp, _xp_to_next_level]},
-        {"label": "GOLD", "value": str(_current_gold_runtime)},
-        {"label": "MOVE", "value": _format_number(_player.move_speed)},
-        {"label": "ARMOR", "value": _format_number(_player.armor)},
-        {"label": "DODGE", "value": _format_percent_plain(_player.dodge_chance)},
-        {"label": "CRIT", "value": _format_percent_plain(_player.crit_chance)},
-        {"label": "ATK SPD", "value": _format_percent_plain(_player.get_attack_speed_multiplier() - 1.0)},
-        {"label": "LIFESTEAL", "value": _format_percent_plain(_player.lifesteal)},
-        {"label": "LUCK", "value": _format_number(_player.luck)},
-        {"label": "HARVEST", "value": _format_number(_player.get_harvest())},
-        {"label": "ATTACK", "value": "+%d / +%s" % [_player.get_attack_damage_bonus(), _format_percent_plain(_player.get_global_attack_percent() / 100.0)]},
+        {"label": _stat_label("hp"), "value": "%d/%d" % [_player.current_hp, _player.max_hp]},
+        {"label": _stat_label("stamina"), "value": "%d/%d" % [int(round(_player.current_stamina)), int(round(_player.stamina_max))]},
+        {"label": _stat_label("level"), "value": str(_current_level)},
+        {"label": _stat_label("xp"), "value": "%d/%d" % [_current_xp, _xp_to_next_level]},
+        {"label": _stat_label("gold"), "value": str(_current_gold_runtime)},
+        {"label": _stat_label("move"), "value": _format_number(_player.move_speed)},
+        {"label": _stat_label("armor"), "value": _format_number(_player.armor)},
+        {"label": _stat_label("dodge"), "value": _format_percent_plain(_player.dodge_chance)},
+        {"label": _stat_label("crit"), "value": _format_percent_plain(_player.crit_chance)},
+        {"label": _stat_label("attack_speed"), "value": _format_percent_plain(_player.get_attack_speed_multiplier() - 1.0)},
+        {"label": _stat_label("lifesteal"), "value": _format_percent_plain(_player.lifesteal)},
+        {"label": _stat_label("luck"), "value": _format_number(_player.luck)},
+        {"label": _stat_label("harvest"), "value": _format_number(_player.get_harvest())},
+        {"label": _stat_label("attack"), "value": "+%d / +%s" % [_player.get_attack_damage_bonus(), _format_percent_plain(_player.get_global_attack_percent() / 100.0)]},
     ]
     for stat: Dictionary in stat_defs:
         _add_pause_stat_row(str(stat.get("label", "")), str(stat.get("value", "")))
@@ -3778,7 +3863,7 @@ func _create_level_reward_panel() -> void :
     reward_actions.add_child(_level_reward_hint_label)
 
     var stat_panel: PanelContainer = PanelContainer.new()
-    stat_panel.custom_minimum_size = Vector2(250.0, 0.0)
+    stat_panel.custom_minimum_size = Vector2(280.0, 0.0)
     stat_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
     stat_panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
         Color(0.008, 0.035, 0.055, 0.9),
@@ -3809,26 +3894,26 @@ func _create_level_reward_panel() -> void :
     _level_reward_stat_labels.clear()
     var stat_grid: GridContainer = GridContainer.new()
     stat_grid.columns = 2
-    stat_grid.add_theme_constant_override("h_separation", 10)
+    stat_grid.add_theme_constant_override("h_separation", 14)
     stat_grid.add_theme_constant_override("v_separation", 4)
     stat_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
     stat_box.add_child(stat_grid)
     var stat_defs: Array[Dictionary] = [
-        {"key": "hp", "label": "HP"},
-        {"key": "damage", "label": "DMG"},
-        {"key": "melee", "label": "MELEE"},
-        {"key": "ranged", "label": "RANGED"},
-        {"key": "attack_speed", "label": "ATK SPD"},
-        {"key": "crit", "label": "CRIT"},
-        {"key": "armor", "label": "ARMOR"},
-        {"key": "dodge", "label": "DODGE"},
-        {"key": "move", "label": "MOVE"},
-        {"key": "range", "label": "RANGE"},
-        {"key": "lifesteal", "label": "LIFESTEAL"},
-        {"key": "luck", "label": "LUCK"},
-        {"key": "harvest", "label": "HARVEST"},
-        {"key": "xp", "label": "XP"},
-        {"key": "gold", "label": "GOLD"},
+        {"key": "hp", "label": _stat_label("hp")},
+        {"key": "damage", "label": _stat_label("damage")},
+        {"key": "melee", "label": _stat_label("melee")},
+        {"key": "ranged", "label": _stat_label("ranged")},
+        {"key": "attack_speed", "label": _stat_label("attack_speed")},
+        {"key": "crit", "label": _stat_label("crit")},
+        {"key": "armor", "label": _stat_label("armor")},
+        {"key": "dodge", "label": _stat_label("dodge")},
+        {"key": "move", "label": _stat_label("move")},
+        {"key": "range", "label": _stat_label("range")},
+        {"key": "lifesteal", "label": _stat_label("lifesteal")},
+        {"key": "luck", "label": _stat_label("luck")},
+        {"key": "harvest", "label": _stat_label("harvest")},
+        {"key": "xp", "label": _stat_label("xp")},
+        {"key": "gold", "label": _stat_label("gold")},
     ]
     for stat_def: Dictionary in stat_defs:
         _create_level_reward_stat_row(stat_grid, str(stat_def.get("key", "")), str(stat_def.get("label", "")))
@@ -4171,6 +4256,7 @@ func _create_level_reward_stat_row(parent: GridContainer, key: String, label_tex
     label.text = label_text
     label.add_theme_font_size_override("font_size", 15)
     label.add_theme_color_override("font_color", Color(0.48, 0.88, 0.92, 0.95))
+    label.custom_minimum_size = Vector2(82.0, 0.0)
     parent.add_child(label)
 
     var value: Label = Label.new()
@@ -4476,7 +4562,7 @@ func _on_enemy_died(enemy: Enemy) -> void :
     _run_kill_count += 1
     if enemy == _active_elite:
         _active_elite = null
-        if hud.has_method("hide_boss_bar"):
+        if _stage_is_boss_stage and hud.has_method("hide_boss_bar"):
             hud.call("hide_boss_bar")
 
     if enemy.enemy_type == Enemy.EnemyType.SPLITTER:
@@ -4492,8 +4578,9 @@ func _on_enemy_died(enemy: Enemy) -> void :
     var final_drop_chance: float = CONSUMABLE_DROP_CHANCE_BASE * (1.0 + luck / 100.0)
     if enemy.is_elite:
         final_drop_chance = 0.20 * (1.0 + luck / 100.0) 
-        _pending_elite_chests += 1
-        _spawn_elite_chest_reward_visual(enemy.global_position)
+        if not _is_endless_mode:
+            _pending_elite_chests += 1
+            _spawn_elite_chest_reward_visual(enemy.global_position)
         
     if randf() < final_drop_chance:
         _spawn_consumable(enemy.global_position)
@@ -4815,6 +4902,40 @@ func _spawn_damage_popup(pos: Vector2, amount: int, is_crit: bool) -> void:
         tween.tween_property(label, "rotation", randf_range(-0.12, 0.12), duration * 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
     tween.set_parallel(false)
     tween.tween_callback(label.queue_free)
+
+func _on_player_damage_taken(amount: int) -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    _spawn_player_damage_hint(_player.global_position, amount)
+
+func _on_player_attack_dodged() -> void:
+    if _player == null or not is_instance_valid(_player):
+        return
+    _spawn_player_dodge_hint(_player.global_position)
+
+func _spawn_player_damage_hint(pos: Vector2, amount: int) -> void:
+    if amount <= 0:
+        return
+    _spawn_pickup_hint(
+        pos,
+        "-%d" % amount,
+        Color(1.0, 0.18, 0.16, 0.98),
+        24,
+        Vector2(randf_range(-18.0, 8.0), -34.0),
+        0.58,
+        46.0
+    )
+
+func _spawn_player_dodge_hint(pos: Vector2) -> void:
+    _spawn_pickup_hint(
+        pos,
+        "闪避",
+        Color(0.36, 0.96, 1.0, 0.98),
+        23,
+        Vector2(randf_range(-18.0, 8.0), -36.0),
+        0.56,
+        42.0
+    )
 
 func _spawn_pickup_hint(
     pos: Vector2,
@@ -5256,49 +5377,52 @@ func _reward_effect_line_count(raw_effects: Variant) -> int:
 func _format_reward_effect_line(effect_type: String, value: float) -> String:
     match effect_type:
         "attack_damage_flat":
-            return "DMG %s" % _format_signed_number(value)
+            return _reward_effect_text("damage", _format_signed_number(value), "Damage %s")
         "melee_damage_flat":
-            return "MELEE %s" % _format_signed_number(value)
+            return _reward_effect_text("melee", _format_signed_number(value), "Melee Damage %s")
         "ranged_damage_flat":
-            return "RANGED %s" % _format_signed_number(value)
+            return _reward_effect_text("ranged", _format_signed_number(value), "Ranged Damage %s")
         "global_attack_percent_flat":
-            return "DMG %s" % _format_signed_percent(value / 100.0)
+            return _reward_effect_text("damage", _format_signed_percent(value / 100.0), "Damage %s")
         "target_range_flat":
-            return "RANGE %s" % _format_signed_number(value)
+            return _reward_effect_text("range", _format_signed_number(value), "Range %s")
         "move_speed_flat":
-            return "MOVE %s" % _format_signed_number(value)
+            return _reward_effect_text("move", _format_signed_number(value), "Move Speed %s")
         "max_hp_flat":
-            return "MAX HP %s" % _format_signed_number(value)
+            return _reward_effect_text("max_hp", _format_signed_number(value), "Max HP %s")
         "heal_flat":
-            return "HEAL %s" % _format_signed_number(value)
+            return _reward_effect_text("heal", _format_signed_number(value), "Heal %s")
         "armor_flat":
-            return "ARMOR %s" % _format_signed_number(value)
+            return _reward_effect_text("armor", _format_signed_number(value), "Armor %s")
         "dodge_chance_flat":
-            return "DODGE %s" % _format_signed_percent(value)
+            return _reward_effect_text("dodge", _format_signed_percent(value), "Dodge %s")
         "crit_chance_flat":
-            return "CRIT %s" % _format_signed_percent(value)
+            return _reward_effect_text("crit", _format_signed_percent(value), "Crit Chance %s")
         "crit_multiplier_flat":
-            return "CRIT DMG %s" % _format_signed_percent(value)
+            return _reward_effect_text("crit_damage", _format_signed_percent(value), "Crit Damage %s")
         "lifesteal_flat":
-            return "LIFESTEAL %s" % _format_signed_percent(value)
+            return _reward_effect_text("lifesteal", _format_signed_percent(value), "Lifesteal %s")
         "luck_flat":
-            return "LUCK %s" % _format_signed_number(value)
+            return _reward_effect_text("luck", _format_signed_number(value), "Luck %s")
         "harvest_flat":
-            return "HARVEST %s" % _format_signed_number(value)
+            return _reward_effect_text("harvest", _format_signed_number(value), "Harvest %s")
         "hp_regen_flat":
-            return "HP REGEN %s" % _format_signed_number(value)
+            return _reward_effect_text("hp_regen", _format_signed_number(value), "HP Regen %s")
         "xp_gain_mult":
-            return "XP GAIN %s" % _format_multiplier_bonus(value)
+            return _reward_effect_text("xp_gain", _format_multiplier_bonus(value), "XP Gain %s")
         "gold_gain_mult":
-            return "GOLD GAIN %s" % _format_multiplier_bonus(value)
+            return _reward_effect_text("gold_gain", _format_multiplier_bonus(value), "Gold Gain %s")
         "stamina_recover_mult":
-            return "STAMINA REGEN %s" % _format_multiplier_bonus(value)
+            return _reward_effect_text("stamina_regen", _format_multiplier_bonus(value), "Stamina Regen %s")
         "auto_attack_interval_mult":
-            return "ATK SPD %s" % _format_interval_multiplier_as_attack_speed(value)
+            return _reward_effect_text("attack_speed", _format_interval_multiplier_as_attack_speed(value), "Attack Speed %s")
         "attack_speed_mult":
-            return "ATK SPD %s" % _format_multiplier_bonus(value)
+            return _reward_effect_text("attack_speed", _format_multiplier_bonus(value), "Attack Speed %s")
         _:
             return ""
+
+func _reward_effect_text(effect_key: String, value_text: String, fallback: String) -> String:
+    return _tf("ui.game_scene.reward_effect.%s_fmt" % effect_key, [value_text], fallback)
 
 func _refresh_level_reward_stat_panel() -> void:
     if _player == null or not is_instance_valid(_player):
@@ -5324,6 +5448,50 @@ func _set_level_reward_stat(key: String, value: String) -> void:
     if label_value is Label:
         var label: Label = label_value
         label.text = value
+
+func _stat_label(stat_key: String) -> String:
+    return _tx("ui.stat.%s" % stat_key, _stat_label_fallback(stat_key))
+
+func _stat_label_fallback(stat_key: String) -> String:
+    match stat_key:
+        "hp":
+            return "HP"
+        "stamina":
+            return "Stamina"
+        "level":
+            return "Level"
+        "xp":
+            return "XP"
+        "gold":
+            return "Gold"
+        "damage":
+            return "Damage"
+        "attack":
+            return "Attack"
+        "melee":
+            return "Melee Damage"
+        "ranged":
+            return "Ranged Damage"
+        "attack_speed":
+            return "Attack Speed"
+        "crit":
+            return "Crit Chance"
+        "armor":
+            return "Armor"
+        "dodge":
+            return "Dodge"
+        "move":
+            return "Move Speed"
+        "range":
+            return "Range"
+        "lifesteal":
+            return "Lifesteal"
+        "luck":
+            return "Luck"
+        "harvest":
+            return "Harvest"
+        _:
+            return stat_key
 
 func _build_reward_card_style(rarity: String, highlighted: bool) -> StyleBoxFlat:
     var border: Color = _level_reward_rarity_color(rarity)
@@ -5524,7 +5692,7 @@ func _build_runtime_save_payload() -> Dictionary:
     var player_max_hp: int = 100
     var player_stamina: float = 100.0
     var player_stamina_max: float = 100.0
-    var player_move_speed: float = 220.0
+    var player_move_speed: float = 150.0
     var bonus_target_range: float = 0.0
     var bonus_attack_damage: int = 0
     var player_stats: Dictionary = {}
@@ -5689,8 +5857,8 @@ func _apply_loaded_slot_data(slot_data: Dictionary, sync_wave_manager: bool = tr
     _endless_shop_transitioning = false
     if _is_endless_mode:
         GameManager.current_stage_id = ENDLESS_ENTRY_STAGE_ID
-        _elite_schedule_enabled = false
-        _next_elite_spawn_time = INF
+        _apply_endless_elite_schedule()
+        _next_elite_spawn_time = _battle_elapsed + randf_range(8.0, ENDLESS_ELITE_FIRST_SPAWN_MAX)
         _active_elite = null
         _refresh_endless_level()
     var has_explicit_shop_runtime_state: bool = slot_data.has("shop_runtime_state") and slot_data.get("shop_runtime_state", {}) is Dictionary
@@ -5897,7 +6065,7 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     _stage_is_boss_stage = bool(stage_profile.get("is_boss_stage", false))
     _stage_background_key = str(stage_profile.get("background_key", "")).to_lower()
     _apply_elite_schedule_from_stage_profile(stage_profile)
-    _enemy_hp_stage_multiplier = clampf(float(stage_profile.get("enemy_hp_multiplier", 1.0)), 0.1, 4.0)
+    _enemy_hp_stage_multiplier = clampf(float(stage_profile.get("enemy_hp_multiplier", 1.0)), 0.1, 10.0)
     _enemy_move_speed_stage_multiplier = clampf(
         float(stage_profile.get("enemy_move_speed_multiplier", 1.0)),
         0.1,
@@ -5932,6 +6100,8 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
     _max_enemy_count_runtime = max(1, int(round(float(base_max_enemy_count) * _enemy_count_multiplier)))
     _spawn_interval_start_runtime = float(spawn_profile.get("spawn_interval_start", ENEMY_SPAWN_INTERVAL))
     _spawn_interval_end_runtime = float(spawn_profile.get("spawn_interval_end", ENEMY_SPAWN_INTERVAL))
+    _spawn_batch_start_runtime = max(1, int(spawn_profile.get("spawn_batch_start", 1)))
+    _spawn_batch_end_runtime = max(1, int(spawn_profile.get("spawn_batch_end", _spawn_batch_start_runtime)))
     var stage_number: int = max(1, _extract_stage_number(stage_id))
     var default_melee_pressure_start: float = _default_melee_pressure_interval_start(stage_number, _stage_is_boss_stage)
     var default_melee_pressure_end: float = _default_melee_pressure_interval_end(stage_number, _stage_is_boss_stage)
@@ -6003,6 +6173,8 @@ func _apply_elite_schedule_from_stage_profile(stage_profile: Dictionary) -> void
         _elite_schedule_enabled = false
         _next_elite_spawn_time = INF
         _elite_respawn_check_interval_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+        _elite_respawn_interval_min_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+        _elite_respawn_interval_max_runtime = ELITE_RESPAWN_CHECK_INTERVAL
         _elite_max_alive_runtime = 1
         _elite_hp_override_runtime = 0
         _elite_pool_runtime = []
@@ -6015,6 +6187,8 @@ func _apply_elite_schedule_from_stage_profile(stage_profile: Dictionary) -> void
             _elite_schedule_enabled = true
             _next_elite_spawn_time = 0.5
             _elite_respawn_check_interval_runtime = 999.0 # Don't respawn
+            _elite_respawn_interval_min_runtime = 999.0
+            _elite_respawn_interval_max_runtime = 999.0
             _elite_max_alive_runtime = 1
             _elite_hp_override_runtime = 0
             _elite_pool_runtime = []
@@ -6026,6 +6200,8 @@ func _apply_elite_schedule_from_stage_profile(stage_profile: Dictionary) -> void
     if not _elite_schedule_enabled:
         _next_elite_spawn_time = INF
         _elite_respawn_check_interval_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+        _elite_respawn_interval_min_runtime = ELITE_RESPAWN_CHECK_INTERVAL
+        _elite_respawn_interval_max_runtime = ELITE_RESPAWN_CHECK_INTERVAL
         _elite_max_alive_runtime = 1
         _elite_hp_override_runtime = 0
         _elite_pool_runtime = []
@@ -6034,6 +6210,14 @@ func _apply_elite_schedule_from_stage_profile(stage_profile: Dictionary) -> void
     _elite_respawn_check_interval_runtime = max(
         1.0,
         float(elite_schedule.get("respawn_check_interval", ELITE_RESPAWN_CHECK_INTERVAL))
+    )
+    _elite_respawn_interval_min_runtime = max(
+        1.0,
+        float(elite_schedule.get("respawn_interval_min", _elite_respawn_check_interval_runtime))
+    )
+    _elite_respawn_interval_max_runtime = max(
+        _elite_respawn_interval_min_runtime,
+        float(elite_schedule.get("respawn_interval_max", _elite_respawn_check_interval_runtime))
     )
     _elite_max_alive_runtime = max(1, int(elite_schedule.get("max_alive", 1)))
     _elite_hp_override_runtime = max(0, int(elite_schedule.get("elite_hp_override", 0)))

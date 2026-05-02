@@ -50,12 +50,12 @@ const CHARACTER_STAGE_SIZE: Vector2 = Vector2(560, 420)
 const PORTRAIT_SIZE: Vector2 = Vector2(250, 290)
 
 const STAT_LABELS: Dictionary[String, String] = {
-    "max_hp": "HP",
-    "move_speed": "Move",
-    "armor": "Armor",
-    "attack_speed_mult": "Attack",
-    "crit_chance": "Crit",
-    "luck": "Luck",
+    "max_hp": "ui.stat.hp",
+    "move_speed": "ui.stat.move",
+    "armor": "ui.stat.armor",
+    "attack_speed_mult": "ui.stat.attack_speed",
+    "crit_chance": "ui.stat.crit",
+    "luck": "ui.stat.luck",
 }
 
 const STAT_NORMALIZERS: Dictionary[String, float] = {
@@ -386,10 +386,10 @@ func _add_stat_row(parent: GridContainer, stat_key: String) -> void:
     row.add_child(label_row)
 
     var name_label: Label = Label.new()
-    name_label.text = str(STAT_LABELS.get(stat_key, stat_key))
+    name_label.text = _stat_label(stat_key)
     name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     name_label.add_theme_color_override("font_color", MUTED_TEXT_COLOR)
-    name_label.add_theme_font_size_override("font_size", 16)
+    name_label.add_theme_font_size_override("font_size", 15)
     label_row.add_child(name_label)
 
     var value_label: Label = Label.new()
@@ -478,6 +478,24 @@ func _format_stat_value(stat_key: String, value: float) -> String:
             return "%d" % int(round(value))
         _:
             return "%.1f" % value if absf(value - round(value)) > 0.01 else "%d" % int(round(value))
+
+func _stat_label(stat_key: String) -> String:
+    var label_key: String = str(STAT_LABELS.get(stat_key, stat_key))
+    var fallback: String = stat_key
+    match stat_key:
+        "max_hp":
+            fallback = "HP"
+        "move_speed":
+            fallback = "Move"
+        "armor":
+            fallback = "Armor"
+        "attack_speed_mult":
+            fallback = "Attack Speed"
+        "crit_chance":
+            fallback = "Crit"
+        "luck":
+            fallback = "Luck"
+    return _tx(label_key, fallback)
 
 func _play_character_swap_feedback() -> void:
     if _portrait_tween != null:

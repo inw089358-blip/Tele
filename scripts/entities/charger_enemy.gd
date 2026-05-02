@@ -60,6 +60,9 @@ func tick_ai(delta: float) -> void:
 func get_display_name() -> String:
     return "Crash Brute"
 
+func is_knockback_immune() -> bool:
+    return _charge_state == ChargeState.CHARGE or super.is_knockback_immune()
+
 func _tick_chase() -> void:
     var to_player: Vector2 = _target.global_position - global_position
     var distance: float = to_player.length()

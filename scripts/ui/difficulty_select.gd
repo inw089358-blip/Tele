@@ -12,12 +12,12 @@ const SOFT_LINE_COLOR: Color = Color(0.0, 0.94, 1.0, 0.3)
 const DANGER_LEVELS: int = 6
 
 const DIFFICULTY_CONFIGS: Dictionary = {
-    0: {"name": "Danger 0", "desc": "Baseline combat pressure.", "mods": ["Enemy HP x1.00", "Enemy Count x1.00", "Spawn Rate x1.00"]},
-    1: {"name": "Danger 1", "desc": "The standard run pressure.", "mods": ["Enemy HP x1.05", "Enemy Count x1.12", "Spawn Rate +6%"]},
-    2: {"name": "Danger 2", "desc": "The swarm starts to close in.", "mods": ["Enemy HP x1.12", "Enemy Count x1.25", "Spawn Rate +14%"]},
-    3: {"name": "Danger 3", "desc": "More bodies, sharper hits.", "mods": ["Enemy HP x1.22", "Enemy Count x1.38", "Enemy Damage x1.10"]},
-    4: {"name": "Danger 4", "desc": "High-pressure routing.", "mods": ["Enemy HP x1.35", "Enemy Count x1.52", "Enemy Speed x1.06"]},
-    5: {"name": "Danger 5", "desc": "Relentless combat density.", "mods": ["Enemy HP x1.50", "Enemy Count x1.70", "Enemy Speed x1.10"]},
+    0: {"hp": "x1.00", "count": "x1.00", "spawn": "x1.00"},
+    1: {"hp": "x1.05", "count": "x1.12", "spawn": "+6%"},
+    2: {"hp": "x1.12", "count": "x1.25", "spawn": "+14%"},
+    3: {"hp": "x1.22", "count": "x1.38", "damage": "x1.10"},
+    4: {"hp": "x1.35", "count": "x1.52", "speed": "x1.06"},
+    5: {"hp": "x1.50", "count": "x1.70", "speed": "x1.10"},
 }
 
 const CHARACTER_PORTRAITS: Dictionary = {
@@ -64,10 +64,10 @@ func _on_danger_selected(level: int) -> void :
     _refresh_ui()
 
 func _do_start() -> void:
-    # 映射到 GameManager 所需的难度 ID
+    # Map the selected danger level to the GameManager difficulty id.
     var diff_id: String = "danger_%d" % clampi(_selected_danger, 0, DANGER_LEVELS - 1)
     
-    # 将 Danger Level 写入 GameManager
+    # Store the selected danger level for runtime scaling.
     GameManager.set_meta("danger_level", _selected_danger)
     GameManager.start_new_run_with_difficulty(diff_id)
 
@@ -143,9 +143,9 @@ func _build_layout() -> void:
     summary_row.add_theme_constant_override("separation", 20)
     main_vbox.add_child(summary_row)
 
-    char_panel = _add_summary_panel(summary_row, "Character")
-    weapon_panel = _add_summary_panel(summary_row, "Starter Weapon")
-    diff_panel = _add_summary_panel(summary_row, "Danger Level")
+    char_panel = _add_summary_panel(summary_row, _tx("ui.difficulty_select.character_panel", "Character"))
+    weapon_panel = _add_summary_panel(summary_row, _tx("ui.difficulty_select.weapon_panel", "Starter Weapon"))
+    diff_panel = _add_summary_panel(summary_row, _tx("ui.difficulty_select.danger_panel", "Danger Level"))
 
     # 3. Difficulty Selector (0-9)
     var selector_vbox: VBoxContainer = VBoxContainer.new()
@@ -235,7 +235,11 @@ func _refresh_ui() -> void:
     var char_name: String = _tx("data.character.%s.name" % char_id, char_id)
     var char_rt: RichTextLabel = char_panel.find_child("Content", true, false) as RichTextLabel
     if char_rt:
-        char_rt.text = "[font_size=28][color=%s]%s[/color][/font_size]\n\n[color=#adC7c2]Selected Hero ready for deployment.[/color]" % [ACCENT_COLOR.to_html(), char_name]
+        char_rt.text = "[font_size=28][color=%s]%s[/color][/font_size]\n\n[color=#adC7c2]%s[/color]" % [
+            ACCENT_COLOR.to_html(),
+            char_name,
+            _tx("ui.difficulty_select.character_ready", "Selected Hero ready for deployment.")
+        ]
     
     var char_icon: TextureRect = char_panel.find_child("Icon", true, false) as TextureRect
     if char_icon:
@@ -248,15 +252,15 @@ func _refresh_ui() -> void:
 
     # 2. Weapon Summary
     var weapon_id: String = GameManager.selected_starter_weapon_id
-    var weapon_name: String = "Unknown"
+    var weapon_name: String = _tx("ui.difficulty_select.unknown_weapon", "Unknown")
     var weapon_desc: String = ""
     
     var shop_catalog: Dictionary = BalanceService.get_shop_catalog()
     var weapon_pool: Array = shop_catalog.get("weapon_pool", [])
     for w in weapon_pool:
         if str(w.get("weapon_id")) == weapon_id:
-            weapon_name = str(w.get("name"))
-            weapon_desc = str(w.get("description"))
+            weapon_name = _weapon_display_name(w)
+            weapon_desc = _weapon_display_desc(w)
             break
             
     var weapon_rt: RichTextLabel = weapon_panel.find_child("Content", true, false) as RichTextLabel
@@ -276,11 +280,11 @@ func _refresh_ui() -> void:
     var diff_cfg: Dictionary = DIFFICULTY_CONFIGS.get(_selected_danger, {})
     var diff_rt: RichTextLabel = diff_panel.find_child("Content", true, false) as RichTextLabel
     if diff_rt:
-        var mod_lines: Array = diff_cfg.get("mods", [])
-        var mod_text: String = ""
-        for m in mod_lines:
-            mod_text += "• %s\n" % m
-        diff_rt.text = "[font_size=28][color=#f2a12e]%s[/color][/font_size]\n\n%s\n\n[color=#adC7c2]%s[/color]" % [str(diff_cfg.get("name")), mod_text, str(diff_cfg.get("desc"))]
+        diff_rt.text = "[font_size=28][color=#f2a12e]%s[/color][/font_size]\n\n%s\n\n[color=#adC7c2]%s[/color]" % [
+            _danger_name(_selected_danger),
+            _build_danger_mod_text(diff_cfg),
+            _danger_desc(_selected_danger)
+        ]
     
     var diff_icon: TextureRect = diff_panel.find_child("Icon", true, false) as TextureRect
     if diff_icon:
@@ -294,6 +298,41 @@ func _refresh_ui() -> void:
         btn.add_theme_stylebox_override("normal", style)
         btn.add_theme_stylebox_override("hover", _make_button_style(CARD_HOVER_COLOR, ACCENT_COLOR))
         btn.add_theme_color_override("font_color", Color.YELLOW if is_selected else TEXT_COLOR)
+
+func _danger_name(level: int) -> String:
+    return _tf("ui.difficulty_select.danger_name_fmt", [level], "Danger %d")
+
+func _danger_desc(level: int) -> String:
+    return _tx("ui.difficulty_select.danger_%d_desc" % level, "Combat pressure.")
+
+func _danger_mod(label_key: String, value: String, fallback_label: String) -> String:
+    return _tf("ui.difficulty_select.mod_fmt", [_tx(label_key, fallback_label), value], "%s %s")
+
+func _build_danger_mod_text(diff_cfg: Dictionary) -> String:
+    var lines: PackedStringArray = PackedStringArray()
+    if diff_cfg.has("hp"):
+        lines.append("- " + _danger_mod("ui.difficulty_select.mod_enemy_hp", str(diff_cfg.get("hp")), "Enemy HP"))
+    if diff_cfg.has("count"):
+        lines.append("- " + _danger_mod("ui.difficulty_select.mod_enemy_count", str(diff_cfg.get("count")), "Enemy Count"))
+    if diff_cfg.has("spawn"):
+        lines.append("- " + _danger_mod("ui.difficulty_select.mod_spawn_rate", str(diff_cfg.get("spawn")), "Spawn Rate"))
+    if diff_cfg.has("damage"):
+        lines.append("- " + _danger_mod("ui.difficulty_select.mod_enemy_damage", str(diff_cfg.get("damage")), "Enemy Damage"))
+    if diff_cfg.has("speed"):
+        lines.append("- " + _danger_mod("ui.difficulty_select.mod_enemy_speed", str(diff_cfg.get("speed")), "Enemy Speed"))
+    return "\n".join(lines)
+
+func _weapon_display_name(weapon: Dictionary) -> String:
+    var weapon_id: String = str(weapon.get("weapon_id", ""))
+    if LocaleService != null and not weapon_id.is_empty():
+        return LocaleService.t_data("weapon", weapon_id, "name", str(weapon.get("name", weapon_id)))
+    return str(weapon.get("name", weapon_id))
+
+func _weapon_display_desc(weapon: Dictionary) -> String:
+    var weapon_id: String = str(weapon.get("weapon_id", ""))
+    if LocaleService != null and not weapon_id.is_empty():
+        return LocaleService.t_data("weapon", weapon_id, "desc", str(weapon.get("description", "")))
+    return str(weapon.get("description", ""))
 
 
 func _style_button(button: Button, fill: Color, border: Color) -> void:
@@ -337,7 +376,7 @@ func _make_panel_style(fill: Color, border: Color, radius: int, border_width: in
     style.corner_radius_top_right = radius
     style.corner_radius_bottom_left = radius
     style.corner_radius_bottom_right = radius
-    # 阴影光晕
+    # Shadow glow.
     style.shadow_color = border
     style.shadow_color.a = 0.2
     style.shadow_size = 8
@@ -357,3 +396,9 @@ func _tx(key: String, fallback: String = "") -> String:
     if fallback.is_empty():
         return key
     return fallback
+
+func _tf(key: String, args: Array, fallback: String = "") -> String:
+    if LocaleService != null:
+        return LocaleService.tf(key, args, fallback if not fallback.is_empty() else key)
+    var base: String = fallback if not fallback.is_empty() else key
+    return base % args
