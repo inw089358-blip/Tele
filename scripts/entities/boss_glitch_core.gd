@@ -29,8 +29,10 @@ func _setup_visual() -> void:
         "death_frames": [30, 31, 32, 33, 34, 35],
         "anim_fps": 12.0,
         "death_anim_fps": 14.0,
-        "scale": 2.2,
-        "flip_with_velocity": true
+        "scale": 0.62,
+        "flip_with_velocity": true,
+        "elite_scale_multiplier": 1.0,
+        "apply_elite_tint": false
     })
 
 func configure_from_stage(config: Dictionary) -> void :
@@ -44,6 +46,12 @@ func configure_from_stage(config: Dictionary) -> void :
     }
     phase = 1
     queue_redraw()
+
+func _apply_profile_from_balance() -> void:
+    pass
+
+func _configure_visual_from_balance() -> void:
+    pass
 
 func tick_ai(delta: float) -> void :
     if _target == null:

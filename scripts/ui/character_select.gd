@@ -18,6 +18,27 @@ const CHARACTER_PORTRAITS: Dictionary[String, String] = {
     "the_sun": "res://sprite/characters/the_sun/portrait.png",
 }
 
+const CHARACTER_PASSIVES: Dictionary = {
+    "the_fool": {
+        "name_key": "data.character.the_fool.passive.name",
+        "desc_key": "data.character.the_fool.passive.desc",
+        "name_fallback": "Fate Bend",
+        "desc_fallback": "When taking damage, has a chance to fully evade it. Higher Luck increases the chance.",
+    },
+    "the_chariot": {
+        "name_key": "data.character.the_chariot.passive.name",
+        "desc_key": "data.character.the_chariot.passive.desc",
+        "name_fallback": "Iron Wheel",
+        "desc_fallback": "After moving continuously, gains Move Speed and Armor. The bonus fades after stopping.",
+    },
+    "the_sun": {
+        "name_key": "data.character.the_sun.passive.name",
+        "desc_key": "data.character.the_sun.passive.desc",
+        "name_fallback": "Corona Afterglow",
+        "desc_fallback": "After several kills, heals 1 HP. At full HP, gains a brief Attack Speed bonus instead.",
+    },
+}
+
 const BG_COLOR: Color = Color("#050a10")
 const PANEL_COLOR: Color = Color(0.06, 0.09, 0.14, 0.96)
 const PANEL_COLOR_SOFT: Color = Color(0.08, 0.12, 0.18, 0.88)
@@ -69,6 +90,9 @@ var _stat_bars: Dictionary = {}
 var _stat_value_labels: Dictionary = {}
 var _character_chips: Array[Button] = []
 var _portrait_tween: Tween
+var _passive_title_label: Label
+var _passive_name_label: Label
+var _passive_desc_label: Label
 
 func _ready() -> void :
     _build_layout()
@@ -109,6 +133,7 @@ func _refresh_character_view() -> void :
     character_hint_label.text = _tx("data.character.%s.hint" % character_id, character_id)
     character_silhouette.texture = _get_character_portrait(character_id, _current_index)
     _refresh_character_stats(character_id)
+    _refresh_character_passive(character_id)
     _refresh_character_chips()
     _play_character_swap_feedback()
 
@@ -255,6 +280,42 @@ func _build_layout() -> void:
     for stat_key: String in STAT_LABELS.keys():
         _add_stat_row(stat_grid, stat_key)
 
+    var passive_panel: PanelContainer = PanelContainer.new()
+    passive_panel.custom_minimum_size = Vector2(0, 118)
+    passive_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    passive_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.055, 0.10, 0.13, 0.94), Color(0.42, 0.73, 0.72, 0.34), 8, 1))
+    info_vbox.add_child(passive_panel)
+
+    var passive_margin: MarginContainer = MarginContainer.new()
+    passive_margin.add_theme_constant_override("margin_left", 12)
+    passive_margin.add_theme_constant_override("margin_top", 10)
+    passive_margin.add_theme_constant_override("margin_right", 12)
+    passive_margin.add_theme_constant_override("margin_bottom", 10)
+    passive_panel.add_child(passive_margin)
+
+    var passive_vbox: VBoxContainer = VBoxContainer.new()
+    passive_vbox.add_theme_constant_override("separation", 4)
+    passive_margin.add_child(passive_vbox)
+
+    _passive_title_label = Label.new()
+    _passive_title_label.text = _tx("ui.character_select.passive_title", "Passive")
+    _passive_title_label.add_theme_color_override("font_color", ACCENT_COLOR)
+    _passive_title_label.add_theme_font_size_override("font_size", 16)
+    passive_vbox.add_child(_passive_title_label)
+
+    _passive_name_label = Label.new()
+    _passive_name_label.add_theme_color_override("font_color", TEXT_COLOR)
+    _passive_name_label.add_theme_font_size_override("font_size", 20)
+    _passive_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    passive_vbox.add_child(_passive_name_label)
+
+    _passive_desc_label = Label.new()
+    _passive_desc_label.add_theme_color_override("font_color", MUTED_TEXT_COLOR)
+    _passive_desc_label.add_theme_font_size_override("font_size", 15)
+    _passive_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _passive_desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    passive_vbox.add_child(_passive_desc_label)
+
     var chip_row: HBoxContainer = HBoxContainer.new()
     chip_row.add_theme_constant_override("separation", 8)
     info_vbox.add_child(chip_row)
@@ -385,6 +446,25 @@ func _refresh_character_stats(character_id: String) -> void:
         var value_label: Label = _stat_value_labels.get(stat_key, null)
         if value_label != null:
             value_label.text = _format_stat_value(stat_key, raw_value)
+
+func _refresh_character_passive(character_id: String) -> void:
+    if _passive_title_label == null or _passive_name_label == null or _passive_desc_label == null:
+        return
+    _passive_title_label.text = _tx("ui.character_select.passive_title", "Passive")
+    var passive_value: Variant = CHARACTER_PASSIVES.get(character_id, {})
+    if not (passive_value is Dictionary):
+        _passive_name_label.text = _tx("ui.character_select.passive_title", "Passive")
+        _passive_desc_label.text = "No passive configured"
+        return
+    var passive: Dictionary = passive_value
+    _passive_name_label.text = _tx(
+        str(passive.get("name_key", "")),
+        str(passive.get("name_fallback", "Passive"))
+    )
+    _passive_desc_label.text = _tx(
+        str(passive.get("desc_key", "")),
+        str(passive.get("desc_fallback", "No passive configured"))
+    )
 
 func _format_stat_value(stat_key: String, value: float) -> String:
     match stat_key:

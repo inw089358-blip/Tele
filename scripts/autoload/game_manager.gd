@@ -29,11 +29,13 @@ const SCENE_SHOP: String = "res://scenes/shop_scene.tscn"
 
 var current_state: GameState = GameState.MENU
 var selected_character: String = ""
-var current_difficulty: String = "normal"
+var current_difficulty: String = "danger_1"
 var current_stage_id: String = "stage_001"
 var current_wave: int = 0
 var selected_starter_weapon_id: String = ""
 var recycling_bag_amount: int = 0
+var next_stage_drop_double_pending: bool = false
+var current_stage_drop_double_active: bool = false
 var _pending_slot_data: Dictionary = {}
 var _pending_shop_snapshot: Dictionary = {}
 var _scene_transition_busy: bool = false
@@ -149,29 +151,65 @@ func start_new_run_with_difficulty(difficulty_id: String) -> void :
 
 func get_difficulty_modifiers() -> Dictionary:
     match _normalize_difficulty(current_difficulty):
-        "easy":
+        "danger_0":
             return {
-                "enemy_hp": 0.85, 
-                "enemy_damage": 0.85, 
-                "spawn_interval": 1.12, 
-                "xp": 0.9, 
-                "gold": 0.9, 
+                "enemy_hp": 1.0,
+                "enemy_damage": 1.0,
+                "spawn_interval": 1.0,
+                "enemy_count": 1.0,
+                "enemy_speed": 1.0,
+                "xp": 1.0,
+                "gold": 1.0,
             }
-        "hard":
+        "danger_2":
             return {
-                "enemy_hp": 1.25, 
-                "enemy_damage": 1.2, 
-                "spawn_interval": 0.9, 
-                "xp": 1.15, 
-                "gold": 1.15, 
+                "enemy_hp": 1.12,
+                "enemy_damage": 1.05,
+                "spawn_interval": 0.88,
+                "enemy_count": 1.25,
+                "enemy_speed": 1.0,
+                "xp": 1.0,
+                "gold": 1.0,
+            }
+        "danger_3":
+            return {
+                "enemy_hp": 1.22,
+                "enemy_damage": 1.1,
+                "spawn_interval": 0.82,
+                "enemy_count": 1.38,
+                "enemy_speed": 1.03,
+                "xp": 1.0,
+                "gold": 1.0,
+            }
+        "danger_4":
+            return {
+                "enemy_hp": 1.35,
+                "enemy_damage": 1.16,
+                "spawn_interval": 0.76,
+                "enemy_count": 1.52,
+                "enemy_speed": 1.06,
+                "xp": 1.0,
+                "gold": 1.0,
+            }
+        "danger_5":
+            return {
+                "enemy_hp": 1.5,
+                "enemy_damage": 1.22,
+                "spawn_interval": 0.7,
+                "enemy_count": 1.7,
+                "enemy_speed": 1.1,
+                "xp": 1.0,
+                "gold": 1.0,
             }
         _:
             return {
-                "enemy_hp": 1.0, 
-                "enemy_damage": 1.0, 
-                "spawn_interval": 1.0, 
-                "xp": 1.0, 
-                "gold": 1.0, 
+                "enemy_hp": 1.05,
+                "enemy_damage": 1.0,
+                "spawn_interval": 0.94,
+                "enemy_count": 1.12,
+                "enemy_speed": 1.0,
+                "xp": 1.0,
+                "gold": 1.0,
             }
 
 func start_game(stage_id: String = "stage_001") -> void :
@@ -182,11 +220,14 @@ func start_game(stage_id: String = "stage_001") -> void :
     _pending_slot_data = {}
     _pending_shop_snapshot = {}
     recycling_bag_amount = 0
+    next_stage_drop_double_pending = false
+    current_stage_drop_double_active = false
     _change_scene_with_crt(GameState.PLAYING, SCENE_GAME)
 
 func start_game_with_runtime(stage_id: String, runtime_data: Dictionary) -> void:
     current_stage_id = stage_id
     current_wave = 1
+    _prepare_stage_drop_double_state(runtime_data)
     _pending_slot_data = runtime_data.duplicate(true)
     _pending_slot_data["wave"] = 1
     _pending_slot_data["stage_id"] = stage_id
@@ -208,6 +249,9 @@ func start_game_from_slot(slot_data: Dictionary) -> void :
     if selected_starter_weapon_id.is_empty():
         selected_starter_weapon_id = _resolve_default_starter_weapon_id()
     current_wave = 1
+    next_stage_drop_double_pending = bool(slot_data.get("next_stage_drop_double_pending", false))
+    current_stage_drop_double_active = bool(slot_data.get("stage_drop_double_active", false))
+    _prepare_stage_drop_double_state(slot_data)
     _pending_slot_data = slot_data.duplicate(true)
     _pending_slot_data["wave"] = 1
     _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
@@ -238,6 +282,7 @@ func continue_from_shop(snapshot: Dictionary) -> void:
     if selected_starter_weapon_id.is_empty():
         selected_starter_weapon_id = _resolve_default_starter_weapon_id()
     current_wave = 1
+    _prepare_stage_drop_double_state(snapshot)
     _pending_slot_data = snapshot.duplicate(true)
     _pending_slot_data["wave"] = 1
     _pending_slot_data["selected_starter_weapon_id"] = selected_starter_weapon_id
@@ -254,6 +299,22 @@ func continue_from_shop(snapshot: Dictionary) -> void:
 # Legacy compatibility path for the older supply-hub workflow.
 func continue_from_hub(snapshot: Dictionary) -> void:
     continue_from_shop(snapshot)
+
+func queue_next_stage_drop_double() -> void:
+    next_stage_drop_double_pending = true
+
+func is_stage_drop_double_active() -> bool:
+    return current_stage_drop_double_active
+
+func clear_stage_drop_double_active() -> void:
+    current_stage_drop_double_active = false
+
+func _prepare_stage_drop_double_state(runtime_data: Dictionary) -> void:
+    if next_stage_drop_double_pending:
+        current_stage_drop_double_active = true
+        next_stage_drop_double_pending = false
+        return
+    current_stage_drop_double_active = bool(runtime_data.get("stage_drop_double_active", false))
 
 func open_reward() -> void :
     _change_scene_with_crt(GameState.REWARD, SCENE_REWARD, true)
@@ -327,9 +388,30 @@ func _run_scene_transition(
 
 func _normalize_difficulty(value: String) -> String:
     var lowered: String = value.to_lower()
-    if lowered == "easy" or lowered == "hard":
-        return lowered
-    return "normal"
+    if lowered.begins_with("danger_"):
+        var danger_value: String = lowered.substr(7)
+        if not danger_value.is_valid_int():
+            return "danger_1"
+        var danger_level: int = clampi(int(danger_value), 0, 5)
+        return "danger_%d" % danger_level
+    if lowered == "easy":
+        return "danger_0"
+    if lowered == "hard":
+        return "danger_4"
+    if lowered == "normal":
+        return "danger_1"
+    if lowered.is_valid_int():
+        var numeric_level: int = clampi(int(lowered), 0, 5)
+        return "danger_%d" % numeric_level
+    if lowered == "danger":
+        return "danger_1"
+    if lowered == "danger_":
+        return "danger_1"
+    if lowered == "d0" or lowered == "d1" or lowered == "d2" or lowered == "d3" or lowered == "d4" or lowered == "d5":
+        return "danger_%s" % lowered.substr(1)
+    if lowered == "danger0" or lowered == "danger1" or lowered == "danger2" or lowered == "danger3" or lowered == "danger4" or lowered == "danger5":
+        return "danger_%s" % lowered.substr(6)
+    return "danger_1"
 
 func _resolve_default_starter_weapon_id() -> String:
     var shop_catalog: Dictionary = BalanceService.get_shop_catalog()

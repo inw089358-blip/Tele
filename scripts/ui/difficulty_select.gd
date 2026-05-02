@@ -9,19 +9,15 @@ const MUTED_TEXT_COLOR: Color = Color(0.6, 0.75, 0.8, 1.0)
 const ACCENT_COLOR: Color = Color("#00f0ff")
 const SOFT_LINE_COLOR: Color = Color(0.0, 0.94, 1.0, 0.3)
 
-const DANGER_LEVELS: int = 10
+const DANGER_LEVELS: int = 6
 
 const DIFFICULTY_CONFIGS: Dictionary = {
-    0: {"name": "Danger 0", "desc": "Baseline experience.", "mods": ["Standard Enemies"]},
-    1: {"name": "Danger 1", "desc": "The woods grow thicker.", "mods": ["+10% Enemy Count"]},
-    2: {"name": "Danger 2", "desc": "Elite presence detected.", "mods": ["Elites spawn at Wave 10"]},
-    3: {"name": "Danger 3", "desc": "Harsher environment.", "mods": ["Enemy Damage +10%"]},
-    4: {"name": "Danger 4", "desc": "Faster prey.", "mods": ["Enemy Speed +10%"]},
-    5: {"name": "Danger 5", "desc": "Bosses are relentless.", "mods": ["Boss HP +20%"]},
-    6: {"name": "Danger 6", "desc": "Inflation hits.", "mods": ["Shop Prices +5%"]},
-    7: {"name": "Danger 7", "desc": "Harder hits.", "mods": ["Enemy Damage +20%"]},
-    8: {"name": "Danger 8", "desc": "Swarm intelligence.", "mods": ["Enemy Count +20%"]},
-    9: {"name": "Danger 9", "desc": "The ultimate test.", "mods": ["All Stats Up for Enemies"]},
+    0: {"name": "Danger 0", "desc": "Baseline combat pressure.", "mods": ["Enemy HP x1.00", "Enemy Count x1.00", "Spawn Rate x1.00"]},
+    1: {"name": "Danger 1", "desc": "The standard run pressure.", "mods": ["Enemy HP x1.05", "Enemy Count x1.12", "Spawn Rate +6%"]},
+    2: {"name": "Danger 2", "desc": "The swarm starts to close in.", "mods": ["Enemy HP x1.12", "Enemy Count x1.25", "Spawn Rate +14%"]},
+    3: {"name": "Danger 3", "desc": "More bodies, sharper hits.", "mods": ["Enemy HP x1.22", "Enemy Count x1.38", "Enemy Damage x1.10"]},
+    4: {"name": "Danger 4", "desc": "High-pressure routing.", "mods": ["Enemy HP x1.35", "Enemy Count x1.52", "Enemy Speed x1.06"]},
+    5: {"name": "Danger 5", "desc": "Relentless combat density.", "mods": ["Enemy HP x1.50", "Enemy Count x1.70", "Enemy Speed x1.10"]},
 }
 
 const CHARACTER_PORTRAITS: Dictionary = {
@@ -69,9 +65,7 @@ func _on_danger_selected(level: int) -> void :
 
 func _do_start() -> void:
     # 映射到 GameManager 所需的难度 ID
-    var diff_id: String = "normal"
-    if _selected_danger == 0: diff_id = "easy"
-    elif _selected_danger >= 2: diff_id = "hard"
+    var diff_id: String = "danger_%d" % clampi(_selected_danger, 0, DANGER_LEVELS - 1)
     
     # 将 Danger Level 写入 GameManager
     GameManager.set_meta("danger_level", _selected_danger)

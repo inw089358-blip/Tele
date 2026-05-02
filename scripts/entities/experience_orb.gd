@@ -25,7 +25,7 @@ func _process(delta: float) -> void:
     queue_redraw()
 
 func setup(xp_amount: int, gold_amount: int = 0) -> void :
-    xp_value = max(1, xp_amount)
+    xp_value = max(0, xp_amount)
     gold_value = max(0, gold_amount)
 
 func set_spawn_impulse(velocity: Vector2) -> void:

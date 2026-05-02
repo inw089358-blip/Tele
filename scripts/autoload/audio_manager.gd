@@ -1,16 +1,23 @@
 extends Node
 
 const SFX_POOL_SIZE: int = 8
-const BGM_MENU_PATH: String = "res://audio/CRT Transformer.mp3"
-const BGM_PREPARE_PATH: String = "res://audio/Velvet Hexagon.mp3"
-const BGM_COMBAT_PATH: String = "res://audio/Factory Synapse.mp3"
+const BGM_MENU_PATH: String = "res://audio/CRT_Transformer.mp3"
+const BGM_PREPARE_PATH: String = "res://audio/Velvet_Hexagon.mp3"
+const BGM_COMBAT_PATH: String = "res://audio/Factory_Synapse.mp3"
+const UI_SELECT_SFX_PATH: String = "res://audio/ui_select.mp3"
+const UI_SELECT_SFX_VOLUME_DB: float = -4.0
+const UI_SELECT_SFX_MIN_INTERVAL: float = 0.035
+const LEVEL_UP_SFX_PATH: String = "res://audio/level_up.mp3"
+const LEVEL_UP_SFX_VOLUME_DB: float = -2.0
 
 var _bgm_player: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _bgm_cache: Dictionary = {}
 var _sfx_cache: Dictionary = {}
+var _last_ui_select_sfx_msec: int = -1000
 
 func _ready() -> void :
+    process_mode = Node.PROCESS_MODE_ALWAYS
     _bgm_player = AudioStreamPlayer.new()
     _bgm_player.bus = &"Master"
     add_child(_bgm_player)
@@ -20,6 +27,17 @@ func _ready() -> void :
         sfx_player.bus = &"Master"
         add_child(sfx_player)
         _sfx_players.append(sfx_player)
+
+func _input(event: InputEvent) -> void:
+    if _is_pointer_button_select_event(event):
+        var hovered_control: Control = get_viewport().gui_get_hovered_control()
+        if _is_selectable_ui_control(hovered_control):
+            play_ui_select_sfx()
+        return
+    if event.is_action_pressed("ui_accept"):
+        var focused_control: Control = get_viewport().gui_get_focus_owner()
+        if _is_selectable_ui_control(focused_control):
+            play_ui_select_sfx()
 
 func play_bgm(stream: AudioStream) -> void :
     if stream == null:
@@ -54,6 +72,35 @@ func play_sfx_by_path(path: String, volume_db: float = 0.0) -> void:
     var stream: AudioStream = _get_or_load_sfx_stream(path)
     play_sfx(stream, volume_db)
 
+func play_ui_select_sfx() -> void:
+    var now_msec: int = Time.get_ticks_msec()
+    var elapsed_seconds: float = float(now_msec - _last_ui_select_sfx_msec) / 1000.0
+    if elapsed_seconds < UI_SELECT_SFX_MIN_INTERVAL:
+        return
+    _last_ui_select_sfx_msec = now_msec
+    play_sfx_by_path(UI_SELECT_SFX_PATH, UI_SELECT_SFX_VOLUME_DB)
+
+func play_level_up_sfx() -> void:
+    play_sfx_by_path(LEVEL_UP_SFX_PATH, LEVEL_UP_SFX_VOLUME_DB)
+
+func _is_pointer_button_select_event(event: InputEvent) -> bool:
+    if not (event is InputEventMouseButton):
+        return false
+    var mouse_event: InputEventMouseButton = event
+    return mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT
+
+func _is_selectable_ui_control(control: Control) -> bool:
+    var current: Control = control
+    while current != null:
+        if current is BaseButton:
+            var button: BaseButton = current
+            return not button.disabled and button.visible and button.is_inside_tree()
+        if current is OptionButton:
+            var option_button: OptionButton = current
+            return not option_button.disabled and option_button.visible and option_button.is_inside_tree()
+        current = current.get_parent_control()
+    return false
+
 func _get_available_sfx_player() -> AudioStreamPlayer:
     for player in _sfx_players:
         if not player.playing:
@@ -81,15 +128,13 @@ func _get_or_load_mp3_stream(path: String) -> AudioStream:
     return loaded_stream
 
 func _load_mp3_stream(path: String) -> AudioStream:
-    var file: FileAccess = FileAccess.open(path, FileAccess.READ)
-    if file == null:
-        push_warning("BGM file not found: %s" % path)
+    var loaded: Resource = ResourceLoader.load(path)
+    if not (loaded is AudioStream):
+        push_warning("BGM stream not found/load failed: %s" % path)
         return null
 
-    var data: PackedByteArray = file.get_buffer(file.get_length())
-    var stream: AudioStreamMP3 = AudioStreamMP3.new()
-    stream.data = data
-    stream.loop = true
+    var stream: AudioStream = loaded
+    _ensure_stream_loop(stream)
     return stream
 
 func _get_or_load_sfx_stream(path: String) -> AudioStream:

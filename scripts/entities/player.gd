@@ -11,6 +11,8 @@ extends CharacterBody2D
 @export var dash_duration: float = 0.18
 @export var dash_speed_multiplier: float = 3.2
 @export var base_target_range: float = 320.0
+@export var invincibility_duration: float = 0.58
+@export var hurt_feedback_duration: float = 0.34
 
 var current_hp: int = max_hp
 var current_stamina: float = stamina_max
@@ -41,6 +43,8 @@ var _hp_regen_extra_hps_per_point: float = 0.089
 var _hp_regen_elapsed: float = 0.0
 var _lifesteal_internal_cooldown_seconds: float = 0.1
 var _lifesteal_cooldown_remaining: float = 0.0
+var _invincibility_timer: float = 0.0
+var _hurt_feedback_timer: float = 0.0
 var _visual_sprite: Sprite2D
 var _visual_move_frames: Array[int] = []
 var _visual_anim_fps: float = 0.0
@@ -52,6 +56,9 @@ var _visual_has_sprite: bool = false
 var _visual_directional_move_frames: Dictionary = {}
 var _visual_directional_idle_frames: Dictionary = {}
 var _visual_direction_key: String = "down"
+var _visual_frame_offsets: Dictionary = {}
+var _visual_current_frame_offset: Vector2 = Vector2.ZERO
+var _visual_feedback_offset: Vector2 = Vector2.ZERO
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -72,6 +79,8 @@ func _physics_process(delta: float) -> void :
     _lifesteal_cooldown_remaining = max(0.0, _lifesteal_cooldown_remaining - delta)
     if _dash_timer <= 0.0:
         current_stamina = min(stamina_max, current_stamina + stamina_recover_per_sec * delta)
+    _invincibility_timer = max(0.0, _invincibility_timer - delta)
+    _hurt_feedback_timer = max(0.0, _hurt_feedback_timer - delta)
     _tick_hp_regen(delta)
 
     var movement: Vector2 = Vector2(
@@ -89,11 +98,14 @@ func _physics_process(delta: float) -> void :
     velocity = move_vector.normalized() * move_speed * speed_scale
     move_and_slide()
     _tick_visual_animation(delta)
+    _tick_hurt_feedback()
 
 func take_damage(amount: int) -> int:
     if amount <= 0:
         return 0
     if _is_dead:
+        return 0
+    if _invincibility_timer > 0.0:
         return 0
     if _roll_dodge():
         return 0
@@ -102,9 +114,15 @@ func take_damage(amount: int) -> int:
     if current_hp <= 0:
         _is_dead = true
         velocity = Vector2.ZERO
+        _reset_hurt_feedback()
         _set_collision_enabled(false)
         EventBus.player_died.emit()
+    else:
+        _start_hurt_feedback()
     return final_damage
+
+func is_invincible() -> bool:
+    return _invincibility_timer > 0.0
 
 func _set_collision_enabled(enabled: bool) -> void:
     for child: Node in get_children():
@@ -128,6 +146,9 @@ func _draw() -> void :
     if not _visual_has_sprite:
         draw_circle(Vector2.ZERO, body_radius + 2.0, Color(0.15, 0.12, 0.08, 0.85))
         draw_circle(Vector2.ZERO, body_radius, Color(0.93, 0.86, 0.69, 1.0))
+        if _hurt_feedback_timer > 0.0:
+            var hurt_ratio: float = _hurt_feedback_timer / max(0.01, hurt_feedback_duration)
+            draw_circle(Vector2.ZERO, body_radius + 4.0, Color(1.0, 0.12, 0.18, 0.28 * hurt_ratio))
 
 func setup_visual_from_config(config: Dictionary) -> void:
     _clear_visual_sprite()
@@ -163,6 +184,9 @@ func setup_visual_from_config(config: Dictionary) -> void:
         config.get("directional_idle_frames", {}),
         total_frames
     )
+    _visual_frame_offsets = _sanitize_visual_frame_offsets(config.get("frame_offsets", {}), total_frames)
+    _visual_current_frame_offset = Vector2.ZERO
+    _visual_feedback_offset = Vector2.ZERO
     _visual_anim_fps = max(0.0, float(config.get("anim_fps", 0.0)))
     _visual_flip_with_velocity = bool(config.get("flip_with_velocity", true))
     _visual_anim_time = 0.0
@@ -205,6 +229,27 @@ func _sanitize_directional_idle_frames(raw_frames: Variant, total_frames: int) -
     for direction_key: Variant in source_frames.keys():
         var direction_name: String = str(direction_key)
         result[direction_name] = clampi(int(source_frames[direction_key]), 0, total_frames - 1)
+    return result
+
+func _sanitize_visual_frame_offsets(raw_offsets: Variant, total_frames: int) -> Dictionary:
+    var result: Dictionary = {}
+    if not (raw_offsets is Dictionary):
+        return result
+    var source_offsets: Dictionary = raw_offsets
+    for frame_key: Variant in source_offsets.keys():
+        var frame_index: int = int(frame_key)
+        if frame_index < 0 or frame_index >= total_frames:
+            continue
+        var offset_value: Variant = source_offsets[frame_key]
+        if offset_value is Vector2:
+            result[frame_index] = offset_value
+        elif offset_value is Array:
+            var offset_array: Array = offset_value
+            if offset_array.size() >= 2:
+                result[frame_index] = Vector2(float(offset_array[0]), float(offset_array[1]))
+        elif offset_value is Dictionary:
+            var offset_dict: Dictionary = offset_value
+            result[frame_index] = Vector2(float(offset_dict.get("x", 0.0)), float(offset_dict.get("y", 0.0)))
     return result
 
 func _tick_visual_animation(delta: float) -> void:
@@ -278,6 +323,58 @@ func _apply_visual_frame(frame_index: int) -> void:
     if _visual_sprite == null:
         return
     _visual_sprite.frame = frame_index
+    _visual_current_frame_offset = _visual_frame_offsets.get(frame_index, Vector2.ZERO)
+    _apply_visual_sprite_offset()
+
+func _apply_visual_sprite_offset() -> void:
+    if _visual_sprite == null or not is_instance_valid(_visual_sprite):
+        return
+    var frame_offset: Vector2 = _visual_current_frame_offset
+    if _visual_sprite.flip_h:
+        frame_offset.x = -frame_offset.x
+    _visual_sprite.offset = frame_offset + _visual_feedback_offset
+
+func _start_hurt_feedback() -> void:
+    _invincibility_timer = max(_invincibility_timer, invincibility_duration)
+    _hurt_feedback_timer = max(_hurt_feedback_timer, hurt_feedback_duration)
+    _tick_hurt_feedback()
+    queue_redraw()
+
+func _tick_hurt_feedback() -> void:
+    if _visual_sprite == null or not is_instance_valid(_visual_sprite):
+        if _hurt_feedback_timer > 0.0:
+            queue_redraw()
+        elif _invincibility_timer <= 0.0 and modulate != Color.WHITE:
+            modulate = Color.WHITE
+            queue_redraw()
+        return
+
+    if _hurt_feedback_timer > 0.0:
+        var hurt_ratio: float = _hurt_feedback_timer / max(0.01, hurt_feedback_duration)
+        var flicker_on: bool = int(Time.get_ticks_msec() / 48) % 2 == 0
+        _visual_sprite.modulate = Color(1.0, 0.32, 0.38, 1.0) if flicker_on else Color(1.0, 1.0, 1.0, 1.0)
+        _visual_feedback_offset = Vector2(
+            randf_range(-1.8, 1.8) * hurt_ratio,
+            randf_range(-1.2, 1.2) * hurt_ratio
+        )
+    elif _invincibility_timer > 0.0:
+        var blink_on: bool = int(Time.get_ticks_msec() / 72) % 2 == 0
+        _visual_sprite.modulate = Color(1.0, 1.0, 1.0, 0.52) if blink_on else Color.WHITE
+        _visual_feedback_offset = Vector2.ZERO
+    else:
+        _visual_sprite.modulate = Color.WHITE
+        _visual_feedback_offset = Vector2.ZERO
+    _apply_visual_sprite_offset()
+    queue_redraw()
+
+func _reset_hurt_feedback() -> void:
+    _invincibility_timer = 0.0
+    _hurt_feedback_timer = 0.0
+    modulate = Color.WHITE
+    if _visual_sprite != null and is_instance_valid(_visual_sprite):
+        _visual_sprite.modulate = Color.WHITE
+        _visual_feedback_offset = Vector2.ZERO
+        _apply_visual_sprite_offset()
 
 func _clear_visual_sprite() -> void:
     if _visual_sprite != null and is_instance_valid(_visual_sprite):
@@ -292,6 +389,9 @@ func _clear_visual_sprite() -> void:
     _visual_has_sprite = false
     _visual_directional_move_frames.clear()
     _visual_directional_idle_frames.clear()
+    _visual_frame_offsets.clear()
+    _visual_current_frame_offset = Vector2.ZERO
+    _visual_feedback_offset = Vector2.ZERO
     _visual_direction_key = "down"
 
 func _load_texture_with_runtime_fallback(path: String) -> Texture2D:
@@ -381,7 +481,6 @@ func apply_profile(profile: Dictionary) -> void:
     attack_speed_mult = float(profile.get("attack_speed_mult", attack_speed_mult))
     global_attack_percent = float(profile.get("global_attack_percent", global_attack_percent))
     crit_chance = float(profile.get("crit_chance", crit_chance))
-    crit_multiplier = float(profile.get("crit_multiplier", crit_multiplier))
     lifesteal = float(profile.get("lifesteal", lifesteal))
     luck = float(profile.get("luck", luck))
     harvest = float(profile.get("harvest", harvest))
@@ -405,6 +504,8 @@ func apply_effect(effect_type: String, value: Variant) -> bool:
             add_target_range(float(value))
         "move_speed_flat":
             add_move_speed(float(value))
+        "move_speed_mult":
+            move_speed = max(1.0, move_speed * max(0.01, float(value)))
         "max_hp_flat":
             var hp_delta: int = int(value)
             max_hp = max(1, max_hp + hp_delta)
@@ -448,12 +549,21 @@ func get_xp_gain_multiplier() -> float:
     return xp_gain_mult
 
 func roll_outgoing_damage(base_damage: int, base_crit_chance: float = -1.0, base_crit_multiplier: float = -1.0) -> int:
+    var result: Dictionary = roll_outgoing_damage_result(base_damage, base_crit_chance, base_crit_multiplier)
+    return int(result.get("damage", max(1, base_damage)))
+
+func roll_outgoing_damage_result(base_damage: int, base_crit_chance: float = -1.0, base_crit_multiplier: float = -1.0) -> Dictionary:
     var damage_value: int = max(1, base_damage)
     var chance: float = crit_chance if base_crit_chance < 0.0 else base_crit_chance
     var multiplier: float = 1.5 if base_crit_multiplier < 0.0 else base_crit_multiplier
+    var is_crit: bool = false
     if randf() < clampf(chance, 0.0, 1.0):
+        is_crit = true
         damage_value = max(1, int(floor(float(damage_value) * max(1.0, multiplier))))
-    return damage_value
+    return {
+        "damage": damage_value,
+        "is_crit": is_crit,
+    }
 
 func heal(amount: int) -> int:
     if _is_dead or amount <= 0:

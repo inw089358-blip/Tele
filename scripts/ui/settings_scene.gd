@@ -485,7 +485,63 @@ func _refresh_i18n_texts() -> void:
         _graphics_extra_label.text = _tx("ui.settings.advanced_visual_options", "Advanced Visual Options")
     if title_label != null:
         title_label.text = _tx("ui.settings.title", "SYSTEM SETTINGS")
+    _refresh_static_label_texts()
     _apply_status_text()
+
+func _refresh_static_label_texts() -> void:
+    var node_texts: Dictionary = {
+        "DisplayTabButton": "DISPLAY",
+        "AudioTabButton": "AUDIO",
+        "InputTabButton": "INPUT",
+        "SystemTabButton": "SYSTEM",
+        "DisplayTitle": "Graphics",
+        "AudioTitle": "Audio",
+        "InputTitle": "Controls",
+        "AccessibilityTitle": "Accessibility",
+        "SystemTitle": "SYSTEM",
+        "ResolutionLabel": "Resolution",
+        "WindowModeLabel": "Window Mode",
+        "VSyncLabel": "VSync",
+        "FpsCapLabel": "FPS Cap",
+        "CrtIntensityLabel": "CRT Intensity",
+        "UiScaleLabel": "UI Scale",
+        "MasterLabel": "Master Volume",
+        "MusicLabel": "Music Volume",
+        "SfxLabel": "SFX Volume",
+        "UiLabel": "UI Volume",
+        "RightClickSkillLabel": "Enable Right Click Skill",
+        "ColorblindModeLabel": "Colorblind Mode",
+        "HighContrastLabel": "High Contrast UI",
+        "FontSizeLabel": "Font Size",
+        "GlitchIntensityLabel": "Glitch Intensity",
+        "SimpleUILabel": "Simple UI",
+        "LanguageLabel": "Language",
+        "ShowBossTestLabel": "Boss Test Entry",
+        "ApplyButton": "APPLY",
+        "CancelButton": "CANCEL",
+        "RestoreDefaultsButton": "DEFAULTS",
+        "BackButton": "BACK",
+    }
+    for node_name: String in node_texts.keys():
+        var target: Node = find_child(node_name, true, false)
+        if target != null and (target is Label or target is Button):
+            var key: String = str(node_texts[node_name])
+            target.set("text", _tx(key, key))
+    if vsync_checkbox != null:
+        vsync_checkbox.text = _tx("Enable VSync", "Enable VSync")
+    if high_contrast_checkbox != null:
+        high_contrast_checkbox.text = _tx("Enable", "Enable")
+    if simple_ui_checkbox != null:
+        simple_ui_checkbox.text = _tx("Enable", "Enable")
+    if show_boss_test_checkbox != null:
+        show_boss_test_checkbox.text = _tx("Show on Main Menu", "Show on Main Menu")
+    if unsaved_confirm_dialog != null:
+        unsaved_confirm_dialog.ok_button_text = _tx("Leave", "Leave")
+        unsaved_confirm_dialog.cancel_button_text = _tx("Continue Editing", "Continue Editing")
+        unsaved_confirm_dialog.dialog_text = _tx("You have unsaved changes. Leave without applying?", "You have unsaved changes. Leave without applying?")
+    if restore_confirm_dialog != null:
+        restore_confirm_dialog.cancel_button_text = _tx("Cancel", "Cancel")
+        restore_confirm_dialog.dialog_text = _tx("Restore current page settings to defaults?", "Restore current page settings to defaults?")
 
 func _refresh_option_labels() -> void:
     var window_mode_selection: String = _selected_option_metadata_as_string(window_mode_option, "fullscreen")

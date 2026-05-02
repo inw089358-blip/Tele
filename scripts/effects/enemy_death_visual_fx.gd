@@ -17,6 +17,7 @@ func setup_from_enemy(
     vframes: int,
     sprite_scale: Vector2,
     flip_h: bool,
+    sprite_modulate: Color,
     death_frames: Array,
     death_anim_fps: float,
     death_hold_seconds: float,
@@ -29,6 +30,7 @@ func setup_from_enemy(
     _sprite.vframes = max(1, vframes)
     _sprite.scale = sprite_scale
     _sprite.flip_h = flip_h
+    _sprite.modulate = sprite_modulate
     _sprite.z_index = z_index_value
     add_child(_sprite)
 

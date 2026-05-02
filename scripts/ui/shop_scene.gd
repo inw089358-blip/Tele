@@ -8,9 +8,9 @@ const WEAPON_ICON_DIR: String = "res://sprite/weapons/generated_from_doc_v1_alph
 const ITEM_ICON_DIR: String = "res://sprite/items/"
 const WEAPON_SLOT_COUNT: int = 6
 const WEAPON_GRID_COLUMNS: int = 3
-const ITEMS_PANEL_RATIO: float = 2.1
-const WEAPONS_PANEL_RATIO: float = 1.2
-const NEXT_STAGE_PANEL_RATIO: float = 0.95
+const ITEMS_PANEL_RATIO: float = 1.4
+const WEAPONS_PANEL_RATIO: float = 1.25
+const NEXT_STAGE_PANEL_RATIO: float = 0.9
 const OFFER_ICON_SIZE: Vector2 = Vector2(64, 64)
 const GRID_ICON_SIZE: Vector2 = Vector2(54, 54)
 const PAUSE_OPEN_DURATION: float = 0.18
@@ -563,7 +563,14 @@ func _build_runtime_save_payload() -> Dictionary:
         "reward_owned": _snapshot.get("reward_owned", {}),
         "auto_attack_interval_multiplier": float(_snapshot.get("auto_attack_interval_multiplier", 1.0)),
         "gold_gain_multiplier": float(_snapshot.get("gold_gain_multiplier", 1.0)),
+        "stage_drop_double_active": bool(_snapshot.get("stage_drop_double_active", false)),
+        "next_stage_drop_double_pending": bool(GameManager.next_stage_drop_double_pending) if GameManager != null else bool(_snapshot.get("next_stage_drop_double_pending", false)),
         "run_survival_time": max(0.0, float(_snapshot.get("run_survival_time", 0.0))),
+        "is_endless_mode": bool(_snapshot.get("is_endless_mode", false)),
+        "endless_elapsed": max(0.0, float(_snapshot.get("endless_elapsed", 0.0))),
+        "endless_level": max(0, int(_snapshot.get("endless_level", 0))),
+        "endless_shop_timer": clampf(float(_snapshot.get("endless_shop_timer", 0.0)), 0.0, 80.0),
+        "endless_base_max_enemy_count": max(0, int(_snapshot.get("endless_base_max_enemy_count", 0))),
         "xp_to_next_level": max(1, int(_snapshot.get("xp_to_next_level", 20))),
         "player_pos_x": float(_snapshot.get("player_pos_x", 0.0)),
         "player_pos_y": float(_snapshot.get("player_pos_y", 0.0)),
@@ -685,7 +692,7 @@ func _build_dynamic_bottom_sections() -> void:
     for child: Node in weapon_slots_row.get_children():
         child.queue_free()
 
-    weapon_slots_row.add_theme_constant_override("separation", 16)
+    weapon_slots_row.add_theme_constant_override("separation", 12)
     _reparent_status_hint_to_top_bar()
     bottom_actions.visible = false
     bottom_actions.custom_minimum_size = Vector2.ZERO
@@ -700,12 +707,12 @@ func _build_dynamic_bottom_sections() -> void:
     _owned_items_scroll = ScrollContainer.new()
     _owned_items_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _owned_items_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    _owned_items_scroll.custom_minimum_size = Vector2(0, 132)
+    _owned_items_scroll.custom_minimum_size = Vector2(0, 118)
     var owned_items_scroll_content: VBoxContainer = VBoxContainer.new()
     owned_items_scroll_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     owned_items_scroll_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
     _owned_items_grid = GridContainer.new()
-    _owned_items_grid.columns = 8
+    _owned_items_grid.columns = 6
     _owned_items_grid.add_theme_constant_override("h_separation", 6)
     _owned_items_grid.add_theme_constant_override("v_separation", 6)
     owned_items_scroll_content.add_child(_owned_items_grid)
@@ -734,7 +741,7 @@ func _build_dynamic_bottom_sections() -> void:
     _next_stage_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _next_stage_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
     _next_stage_panel.size_flags_stretch_ratio = NEXT_STAGE_PANEL_RATIO
-    _next_stage_panel.custom_minimum_size = Vector2(220, 0)
+    _next_stage_panel.custom_minimum_size = Vector2(200, 0)
     _next_stage_panel.add_theme_constant_override("separation", 8)
     _next_stage_panel.alignment = BoxContainer.ALIGNMENT_END
 
@@ -751,11 +758,11 @@ func _build_dynamic_bottom_sections() -> void:
     _next_stage_panel.add_child(_elite_hint_label)
     _reparent_next_wave_button_to_next_stage_panel()
     next_wave_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    next_wave_button.custom_minimum_size = Vector2(220, 56)
+    next_wave_button.custom_minimum_size = Vector2(200, 56)
 
 func _build_weapon_action_panel() -> void:
     _weapon_action_panel = HBoxContainer.new()
-    _weapon_action_panel.custom_minimum_size = Vector2(560, 300)
+    _weapon_action_panel.custom_minimum_size = Vector2(620, 300)
     _weapon_action_panel.size = _weapon_action_panel.custom_minimum_size
     _weapon_action_panel.z_index = FLOATING_DETAIL_Z_INDEX
     _weapon_action_panel.visible = false
@@ -844,7 +851,7 @@ func _build_weapon_action_panel() -> void:
     actions.add_child(_weapon_cancel_button)
 
     var tags_panel: PanelContainer = PanelContainer.new()
-    tags_panel.custom_minimum_size = Vector2(240, 300)
+    tags_panel.custom_minimum_size = Vector2(300, 300)
     tags_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
     tags_panel.add_theme_stylebox_override(
         "panel",
@@ -863,10 +870,11 @@ func _build_weapon_action_panel() -> void:
     _weapon_action_tags.bbcode_enabled = true
     _weapon_action_tags.fit_content = false
     _weapon_action_tags.scroll_active = true
+    _weapon_action_tags.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     _weapon_action_tags.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    _weapon_action_tags.add_theme_font_size_override("normal_font_size", 11)
-    _weapon_action_tags.add_theme_font_size_override("bold_font_size", 12)
-    _weapon_action_tags.add_theme_constant_override("line_separation", 0)
+    _weapon_action_tags.add_theme_font_size_override("normal_font_size", 13)
+    _weapon_action_tags.add_theme_font_size_override("bold_font_size", 14)
+    _weapon_action_tags.add_theme_constant_override("line_separation", 2)
     tags_margin.add_child(_weapon_action_tags)
 
 func _make_shop_action_button(text_value: String) -> Button:
@@ -932,11 +940,14 @@ func _on_next_wave_pressed() -> void:
     _refresh_weapon_tag_state_snapshot()
     _snapshot["shop_offers"] = []
     
-    # Resolve next stage ID so the game starts the correct next level
-    var current_id: String = str(_snapshot.get("stage_id", "stage_001"))
-    var next_id: String = _resolve_next_stage_id(current_id)
-    if not next_id.is_empty():
-        _snapshot["stage_id"] = next_id
+    if bool(_snapshot.get("is_endless_mode", false)):
+        _snapshot["stage_id"] = "stage_020"
+    else:
+        # Resolve next stage ID so the game starts the correct next level
+        var current_id: String = str(_snapshot.get("stage_id", "stage_001"))
+        var next_id: String = _resolve_next_stage_id(current_id)
+        if not next_id.is_empty():
+            _snapshot["stage_id"] = next_id
         
     GameManager.continue_from_shop(_snapshot)
 
@@ -1319,10 +1330,12 @@ func _apply_responsive_layout(viewport_size: Vector2) -> void:
         attr_label.fit_content = false
         attr_label.scroll_active = true
         attr_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    if _owned_items_grid != null:
+        _owned_items_grid.columns = 5 if viewport_size.x <= 1300.0 else 6
     if _next_stage_panel != null:
-        _next_stage_panel.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.19, 220.0, 320.0), 0)
+        _next_stage_panel.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.16, 200.0, 300.0), 0)
     if next_wave_button != null:
-        next_wave_button.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.16, 210.0, 300.0), 56.0)
+        next_wave_button.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.15, 190.0, 280.0), 56.0)
 
 func _rebuild_offer_cards() -> void:
     for child: Node in offers_grid.get_children():
@@ -1338,8 +1351,8 @@ func _rebuild_offer_cards() -> void:
         var sold: bool = bool(offer.get("sold", false))
 
         var card: PanelContainer = PanelContainer.new()
-        card.custom_minimum_size = Vector2(210, 198)
-        card.pivot_offset = Vector2(105, 99) # 中心点
+        card.custom_minimum_size = Vector2(190, 198)
+        card.pivot_offset = Vector2(95, 99) # 中心点
         card.add_theme_stylebox_override("panel", _build_offer_card_style(rarity_key, is_locked, sold))
 
         # --- 动态入场动画 ---
@@ -1372,7 +1385,7 @@ func _rebuild_offer_cards() -> void:
         var desc: Label = Label.new()
         desc.text = offer_desc
         desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        desc.max_lines_visible = 4
+        desc.max_lines_visible = 5
         desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
         desc.clip_text = true
         desc.add_theme_font_size_override("font_size", 14)
@@ -1429,8 +1442,8 @@ func _rebuild_offer_cards_brotato() -> void:
         var kind: String = str(offer.get("kind", "item"))
 
         var card: PanelContainer = PanelContainer.new()
-        card.custom_minimum_size = Vector2(224, 260)
-        card.pivot_offset = Vector2(112, 130)
+        card.custom_minimum_size = Vector2(196, 252)
+        card.pivot_offset = Vector2(98, 126)
         card.add_theme_stylebox_override("panel", _build_offer_card_style_brotato(rarity_key, is_locked, sold))
 
         var margin: MarginContainer = MarginContainer.new()
@@ -1461,8 +1474,8 @@ func _rebuild_offer_cards_brotato() -> void:
         var desc: Label = Label.new()
         desc.text = offer_desc
         desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        desc.custom_minimum_size = Vector2(0, 84)
-        desc.max_lines_visible = 5
+        desc.custom_minimum_size = Vector2(0, 90)
+        desc.max_lines_visible = 6
         desc.clip_text = true
         desc.add_theme_font_size_override("font_size", 13)
         desc.add_theme_color_override("font_color", Color(0.86, 0.86, 0.78, 1.0))
@@ -1669,28 +1682,27 @@ func _rebuild_attr_panel() -> void:
         tag_state = (tag_state_raw as Dictionary).duplicate(true)
     if tag_state.is_empty() and _shop_system != null:
         tag_state = _shop_system.resolve_weapon_tag_state(shop_state)
-    
+
     var lines: Array[String] = []
-    lines.append("[center][b][color=#00f0ff]属性状态[/color][/b][/center]")
-    lines.append("") # 留空行增加透气感
-    
+    lines.append("[center][b][color=#00f0ff]%s[/color][/b][/center]" % _tx("ui.shop.attr_status_title", "ATTRIBUTE STATUS"))
+    lines.append("")
     lines.append("[table=2]")
-    _add_stat_line(lines, "生命上限", int(_snapshot.get("player_max_hp", 100)), "", 0, true)
-    _add_stat_line(lines, "生命回复", float(stats.get("hp_regen", 0.0)), "", 0, true)
-    _add_stat_line(lines, "攻击加成", float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
-    _add_stat_line(lines, "近战加成", int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "远程加成", int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "幸运值", float(stats.get("luck", 0.0)), "", 0, true)
-    _add_stat_line(lines, "收益收获", float(stats.get("harvest", 0.0)), "", 0, true)
-    _add_stat_line(lines, "攻击范围", float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
-    _add_stat_line(lines, "移动速度", extra_move_speed, "", 0, true)
-    _add_stat_line(lines, "护甲防御", float(stats.get("armor", 0.0)), "", 0, true)
-    _add_stat_line(lines, "闪避概率", (float(stats.get("dodge_chance", 0.0)) * 100.0), "%", 0, true)
-    _add_stat_line(lines, "攻击频率", extra_attack_speed_percent, "%", 0, true)
-    _add_stat_line(lines, "暴击概率", (float(stats.get("crit_chance", 0.05)) * 100.0), "%", 0, true)
-    _add_stat_line(lines, "生命吸取", (float(stats.get("lifesteal", 0.0)) * 100.0), "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_max_hp", "Max HP"), int(_snapshot.get("player_max_hp", 100)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_hp_regen", "HP Regen"), float(stats.get("hp_regen", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_attack_bonus", "Attack Bonus"), float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_melee_damage", "Melee Damage"), int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_ranged_damage", "Ranged Damage"), int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_luck", "Luck"), float(stats.get("luck", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_harvest", "Harvest"), float(stats.get("harvest", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_range", "Range"), float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_move_speed", "Speed"), extra_move_speed, "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_armor", "Armor"), float(stats.get("armor", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_dodge", "Dodge"), float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_attack_speed", "Attack Speed"), extra_attack_speed_percent, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_crit", "Crit Chance"), float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_lifesteal", "Lifesteal"), float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
     lines.append("[/table]")
-    
+    _append_weapon_tag_lines(lines, tag_state)
     attr_label.text = "\n".join(lines)
 
 func _add_stat_line(lines: Array[String], label: String, val: Variant, unit: String, _base: float, color_logic: bool) -> void:
@@ -1719,28 +1731,28 @@ func _rebuild_attr_panel_brotato() -> void:
     var extra_attack_speed_percent: float = (current_attack_speed_mult / base_attack_speed_mult - 1.0) * 100.0
 
     var lines: Array[String] = []
-    lines.append("[center][b][color=#f1f1e8]属性[/color][/b][/center]")
+    lines.append("[center][b][color=#f1f1e8]%s[/color][/b][/center]" % _tx("ui.shop.attr_title", "ATTRIBUTES"))
     lines.append("")
-    lines.append("[b][color=#d8d8cf]主要[/color][/b]")
+    lines.append("[b][color=#d8d8cf]%s[/color][/b]" % _tx("ui.shop.attr_primary", "PRIMARY"))
     lines.append("[table=2]")
-    _add_stat_line(lines, "最大生命值", int(_snapshot.get("player_max_hp", 100)), "", 0, true)
-    _add_stat_line(lines, "伤害", float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
-    _add_stat_line(lines, "近战伤害", int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "远程伤害", int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
-    _add_stat_line(lines, "攻击速度", extra_attack_speed_percent, "%", 0, true)
-    _add_stat_line(lines, "范围", float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_max_hp", "Max HP"), int(_snapshot.get("player_max_hp", 100)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_damage", "Damage"), float(stats.get("global_attack_percent", 0.0)), "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_melee_damage", "Melee Damage"), int(stats.get("bonus_melee_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_ranged_damage", "Ranged Damage"), int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_attack_speed", "Attack Speed"), extra_attack_speed_percent, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_range", "Range"), float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
     lines.append("[/table]")
     lines.append("")
-    lines.append("[b][color=#d8d8cf]次要[/color][/b]")
+    lines.append("[b][color=#d8d8cf]%s[/color][/b]" % _tx("ui.shop.attr_secondary", "SECONDARY"))
     lines.append("[table=2]")
-    _add_stat_line(lines, "生命再生", float(stats.get("hp_regen", 0.0)), "", 0, true)
-    _add_stat_line(lines, "护甲", float(stats.get("armor", 0.0)), "", 0, true)
-    _add_stat_line(lines, "闪避", float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
-    _add_stat_line(lines, "暴击率", float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
-    _add_stat_line(lines, "生命窃取", float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
-    _add_stat_line(lines, "速度", extra_move_speed, "", 0, true)
-    _add_stat_line(lines, "幸运", float(stats.get("luck", 0.0)), "", 0, true)
-    _add_stat_line(lines, "收获", float(stats.get("harvest", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_hp_regen", "HP Regen"), float(stats.get("hp_regen", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_armor", "Armor"), float(stats.get("armor", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_dodge", "Dodge"), float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_crit", "Crit Chance"), float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_lifesteal", "Lifesteal"), float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_move_speed", "Speed"), extra_move_speed, "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_luck", "Luck"), float(stats.get("luck", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_harvest", "Harvest"), float(stats.get("harvest", 0.0)), "", 0, true)
     lines.append("[/table]")
     attr_label.text = "\n".join(lines)
 
@@ -1771,17 +1783,17 @@ func _refresh_weapon_tag_state_snapshot() -> void:
 
 func _append_weapon_tag_lines(lines: Array[String], tag_state: Dictionary) -> void:
     lines.append("")
-    lines.append(_tx("ui.shop.weapon_tag_bonus_title_bb", "[b]Weapon Tag Bonuses[/b]"))
+    lines.append(_tx("ui.shop.weapon_tag_bonus_title_bb", "[b]武器标签加成[/b]"))
 
     if tag_state.is_empty():
-        lines.append(_tx("ui.shop.weapon_tag_empty", "No active weapon tags"))
+        lines.append(_tx("ui.shop.weapon_tag_empty", "暂无武器标签"))
         return
 
     var enabled: bool = bool(tag_state.get("enabled", false))
     var max_stack: int = max(1, int(tag_state.get("max_stack_per_tag", WEAPON_SLOT_COUNT)))
     var counts_raw: Variant = tag_state.get("counts", {})
     if not (counts_raw is Dictionary) or (counts_raw as Dictionary).is_empty():
-        lines.append(_tx("ui.shop.weapon_tag_empty", "No active weapon tags"))
+        lines.append(_tx("ui.shop.weapon_tag_empty", "暂无武器标签"))
         return
 
     var counts: Dictionary = counts_raw
@@ -1815,16 +1827,16 @@ func _append_weapon_tag_lines(lines: Array[String], tag_state: Dictionary) -> vo
         lines.append(_format_weapon_tag_line(tag_name, count, max_stack, active_tier, next_tier))
 
     if not enabled:
-        lines.append(_tx("ui.shop.weapon_tag_preview_hint", "(Rules disabled; showing tier preview only)"))
+        lines.append(_tx("ui.shop.weapon_tag_preview_hint", "规则未启用，仅显示层级预览"))
 
 func _format_weapon_tag_line(tag_name: String, count: int, max_stack: int, active_tier: int, next_tier: int) -> String:
-    var line: String = "- %s %d/%d" % [tag_name, count, max_stack]
+    var line: String = "%s %d/%d" % [tag_name, count, max_stack]
     if active_tier > 0:
-        line += "  " + _tf("ui.shop.weapon_tag_active_tier_fmt", [active_tier], "Active T%d")
+        line += " | " + _tf("ui.shop.weapon_tag_active_tier_fmt", [active_tier], "已激活 %d")
     if next_tier > 0:
-        line += "  " + _tf("ui.shop.weapon_tag_next_tier_fmt", [next_tier], "Next T%d")
+        line += " | " + _tf("ui.shop.weapon_tag_next_tier_fmt", [next_tier], "下档 %d")
     else:
-        line += "  " + _tx("ui.shop.weapon_tag_capped", "Capped")
+        line += " | " + _tx("ui.shop.weapon_tag_capped", "已封顶")
     return line
 
 func _rebuild_owned_items_grid() -> void:
@@ -1998,11 +2010,12 @@ func _build_weapon_action_detail(weapon: Dictionary) -> String:
     var profile: Dictionary = weapon.get("attack_profile", {})
     var parts: Array[String] = []
     if not profile.is_empty():
-        parts.append("[color=#f1f1e8]伤害:[/color] %s" % str(profile.get("base_damage", "-")))
-        parts.append("[color=#f1f1e8]冷却:[/color] %.2fs" % float(profile.get("interval", 0.0)))
-        parts.append("[color=#f1f1e8]范围:[/color] %s" % str(profile.get("range", "-")))
+        parts.append("[color=#f1f1e8]%s:[/color] %s" % [_tx("ui.shop.weapon_detail.damage", "Damage"), str(profile.get("base_damage", "-"))])
+        parts.append("[color=#f1f1e8]%s:[/color] %.2fs" % [_tx("ui.shop.weapon_detail.cooldown", "Cooldown"), float(profile.get("interval", 0.0))])
+        parts.append("[color=#f1f1e8]%s:[/color] %s" % [_tx("ui.shop.weapon_detail.range", "Range"), str(profile.get("range", "-"))])
+        parts.append("[color=#f1f1e8]%s:[/color] %.2f" % [_tx("ui.shop.weapon_detail.crit_mult", "Crit Mult"), float(profile.get("crit_multiplier", 1.5))])
         if profile.has("crit_chance"):
-            parts.append("[color=#f1f1e8]暴击:[/color] %.0f%%" % (float(profile.get("crit_chance", 0.0)) * 100.0))
+            parts.append("[color=#f1f1e8]%s:[/color] %.0f%%" % [_tx("ui.shop.weapon_detail.crit", "Crit"), float(profile.get("crit_chance", 0.0)) * 100.0])
     var effects: Dictionary = weapon.get("effects", {})
     for key: Variant in effects.keys():
         if parts.size() >= 5:
@@ -2017,7 +2030,7 @@ func _build_weapon_action_detail(weapon: Dictionary) -> String:
                 continue
             var sign: String = "+" if numeric_value >= 0.0 else ""
             parts.append("[color=#f1f1e8]%s:[/color] %s%.1f" % [key_text, sign, numeric_value])
-    var stat_text: String = "[color=#aeb6b8]暂无武器属性[/color]"
+    var stat_text: String = "[color=#aeb6b8]%s[/color]" % _tx("ui.shop.weapon_detail.no_stats", "No weapon stats")
     if not parts.is_empty():
         stat_text = "\n".join(parts)
     return "[font_size=18]%s[/font_size]" % stat_text
@@ -2036,8 +2049,12 @@ func _build_weapon_action_tags(weapon: Dictionary) -> String:
 
     var lines: Array[String] = []
     if tags.is_empty():
-        return "[center][b][color=#f1f1e8]标签[/color][/b][/center]\n[color=#7f8c8d]无标签[/color]"
+        return "[center][b][color=#f1f1e8]%s[/color][/b][/center]\n[color=#7f8c8d]%s[/color]" % [
+            _tx("ui.shop.weapon_tag_panel_title", "标签"),
+            _tx("ui.shop.weapon_tag_none", "无标签"),
+        ]
 
+    lines.append("[center][b][color=#f1f1e8]%s[/color][/b][/center]" % _tx("ui.shop.weapon_tag_panel_title", "标签"))
     for tag_value: Variant in tags:
         var tag_id: String = str(tag_value)
         if tag_id.is_empty():
@@ -2052,17 +2069,25 @@ func _build_weapon_action_tags(weapon: Dictionary) -> String:
         var current_count: int = int(counts.get(tag_id, 0))
         if not lines.is_empty():
             lines.append("")
-        lines.append("[font_size=15][b][color=#00f0ff]%s (%d)[/color][/b][/font_size]" % [tag_name, current_count])
-        lines.append("[font_size=9][color=#1f6f78]────────────[/color][/font_size]")
+        lines.append("[font_size=14][b][color=#00f0ff]%s[/color][/b] [color=#aeb6b8]%s[/color][/font_size]" % [
+            tag_name,
+            _tf("ui.shop.weapon_tag_count_fmt", [current_count], "当前 %d"),
+        ])
+        lines.append("[font_size=9][color=#1f6f78]----------------[/color][/font_size]")
         for step_idx: int in range(tier_steps.size()):
             var step_count: int = int(tier_steps[step_idx])
-            var step_tier: int = step_idx + 1
-            var tier_info: Dictionary = tiers_data.get(str(step_tier), {})
-            var bonus_text: String = str(tier_info.get("note", "Bonus T%d" % step_tier))
-            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_tier], bonus_text)
+            var tier_info: Dictionary = tiers_data.get(str(step_count), {})
+            var bonus_text: String = str(tier_info.get("note", "Bonus %d" % step_count))
+            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_count], bonus_text)
             var line_color: String = "#f1f1e8" if current_count >= step_count else "#6f7678"
-            lines.append("[font_size=13][color=%s](%d) %s[/color][/font_size]" % [line_color, step_count, bonus_text])
+            lines.append("[font_size=13][color=%s]%s[/color][/font_size]" % [
+                line_color,
+                _format_weapon_tag_detail_line(step_count, bonus_text),
+            ])
     return "\n".join(lines)
+
+func _format_weapon_tag_detail_line(step_count: int, bonus_text: String) -> String:
+    return _tf("ui.shop.weapon_tag_tier_detail_fmt", [step_count, bonus_text], "%d件：%s")
 
 func _find_merge_partner_for_slot(slots: Array, source_index: int) -> int:
     if source_index < 0 or source_index >= slots.size():
@@ -2166,7 +2191,7 @@ func _resolve_offer_desc(offer: Dictionary) -> String:
             var dmg: float = float(profile.get("base_damage", 0.0))
             var interval: float = float(profile.get("interval", 1.0))
             var w_range: float = float(profile.get("range", 0.0))
-            var stats_line: String = "\n伤害:%d 频率:%.2fs 范围:%d" % [dmg, interval, w_range]
+            var stats_line: String = "\n%s:%d\n%s:%.2fs\n%s:%d" % [_tx("ui.shop.weapon_detail.damage", "Damage"), dmg, _tx("ui.shop.weapon_detail.cooldown", "Cooldown"), interval, _tx("ui.shop.weapon_detail.range", "Range"), w_range]
             base_desc += stats_line
     else:
         var item_id: String = str(offer.get("item_id", ""))
@@ -2178,9 +2203,27 @@ func _resolve_offer_desc(offer: Dictionary) -> String:
             var parts: Array[String] = []
             for key in effects.keys():
                 parts.append("%s: %s" % [key, str(effects[key])])
-            base_desc = ", ".join(parts)
+            base_desc = "\n".join(parts)
+        elif offer.get("effects", {}) is Dictionary and not (offer.get("effects", {}) as Dictionary).is_empty():
+            base_desc = _split_offer_bonus_lines(base_desc)
             
     return base_desc
+
+func _split_offer_bonus_lines(text: String) -> String:
+    var normalized: String = text.strip_edges()
+    if normalized.is_empty():
+        return ""
+    normalized = normalized.replace("，", "\n")
+    normalized = normalized.replace(", ", "\n")
+    normalized = normalized.replace(",", "\n")
+
+    var lines: Array[String] = []
+    for raw_line: String in normalized.split("\n", false):
+        var line: String = raw_line.strip_edges()
+        if line.is_empty():
+            continue
+        lines.append(line)
+    return "\n".join(lines)
 
 func _load_offer_icon(offer: Dictionary) -> Texture2D:
     var icon_path: String = str(offer.get("icon_path", ""))
@@ -2297,7 +2340,7 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
     var tag_state: Dictionary = _shop_system.resolve_weapon_tag_state(shop_state)
     var counts: Dictionary = tag_state.get("counts", {})
     var screen_size: Vector2 = get_viewport_rect().size
-    var tooltip_w: float = 240.0
+    var tooltip_w: float = 300.0
     var spacing: float = 10.0
     
     # 智能定位：优先右侧，如果右侧出界则显示在左侧
@@ -2305,6 +2348,7 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
     var target_x: float = anchor_pos.x + anchor.size.x + spacing
     if target_x + tooltip_w > screen_size.x - 20:
         target_x = anchor_pos.x - tooltip_w - spacing
+    target_x = clampf(target_x, 10.0, max(10.0, screen_size.x - tooltip_w - 10.0))
     
     var start_y: float = anchor_pos.y
     
@@ -2314,15 +2358,15 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
         var tag_name: String = tag_def.get("name", tag_id)
         
         var panel: PanelContainer = PanelContainer.new()
-        panel.custom_minimum_size = Vector2(240, 0)
+        panel.custom_minimum_size = Vector2(tooltip_w, 0)
         # 使用霓虹风格
         panel.add_theme_stylebox_override("panel", _build_neon_style(Color(0.08, 0.1, 0.12, 0.96), Color(0.0, 0.94, 1.0, 0.6), 1, 6))
         _tag_tooltip_container.add_child(panel)
         
         # 垂直堆叠定位，并防止底部出界
-        var panel_y: float = start_y + (i * 145)
+        var panel_y: float = start_y + (i * 164)
         # 如果整组太长，整体向上偏移
-        var total_height_needed: float = tag_ids.size() * 145
+        var total_height_needed: float = tag_ids.size() * 164
         if start_y + total_height_needed > screen_size.y - 20:
              panel_y -= (start_y + total_height_needed - (screen_size.y - 20))
         
@@ -2342,9 +2386,13 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
         # 标题：标签名 + 当前拥有数量
         var title_lbl: Label = Label.new()
         var current_count: int = int(counts.get(tag_id, 0))
-        title_lbl.text = "%s (%d)" % [tag_name, current_count]
+        title_lbl.text = "%s  %s" % [
+            tag_name,
+            _tf("ui.shop.weapon_tag_count_fmt", [current_count], "当前 %d"),
+        ]
         title_lbl.add_theme_color_override("font_color", Color("#00f0ff"))
         title_lbl.add_theme_font_size_override("font_size", 18)
+        title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
         vb.add_child(title_lbl)
         
         # 分割线
@@ -2357,23 +2405,23 @@ func _spawn_tag_tooltips(tag_ids: Array, anchor: Control) -> void:
         var tiers_data: Dictionary = tag_def.get("tiers", {})
         for step_idx in range(tier_steps.size()):
             var step_count: int = int(tier_steps[step_idx])
-            var step_tier: int = step_idx + 1
-            var tier_info: Dictionary = tiers_data.get(str(step_tier), {})
+            var tier_info: Dictionary = tiers_data.get(str(step_count), {})
             
             var tier_lbl: Label = Label.new()
             var is_active: bool = current_count >= step_count
             
-            var bonus_text: String = tier_info.get("note", "Bonus T%d" % step_tier)
+            var bonus_text: String = tier_info.get("note", "Bonus %d" % step_count)
             # 翻译（如果可用）
-            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_tier], bonus_text)
+            bonus_text = _tx("ui.tag.%s.tier%d" % [tag_id, step_count], bonus_text)
             
-            tier_lbl.text = "(%d) %s" % [step_count, bonus_text]
+            tier_lbl.text = _format_weapon_tag_detail_line(step_count, bonus_text)
             if is_active:
                 tier_lbl.add_theme_color_override("font_color", Color.WHITE)
             else:
                 tier_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 0.6))
             
             tier_lbl.add_theme_font_size_override("font_size", 14)
+            tier_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
             vb.add_child(tier_lbl)
 
 func _resolve_next_stage_id(current_stage_id: String) -> String:
