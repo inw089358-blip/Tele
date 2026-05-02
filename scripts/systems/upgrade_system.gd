@@ -405,7 +405,13 @@ static func _scale_effects_by_rarity(effects: Array, rarity: String, scaling_raw
         if effect.has("value"):
             var effect_type: String = str(effect.get("type", ""))
             var raw_value: Variant = effect.get("value")
-            if raw_value is float and _is_multiplier_effect_type(effect_type):
+            if _is_integer_effect_type(effect_type):
+                var base_value: float = float(raw_value)
+                var scaled_value: int = int(round(base_value * multiplier))
+                if scaled_value == 0 and not is_zero_approx(base_value):
+                    scaled_value = 1 if base_value > 0.0 else -1
+                effect["value"] = scaled_value
+            elif raw_value is float and _is_multiplier_effect_type(effect_type):
                 var base_multiplier: float = float(raw_value)
                 if base_multiplier >= 1.0:
                     effect["value"] = 1.0 + (base_multiplier - 1.0) * multiplier
@@ -430,6 +436,9 @@ static func _is_multiplier_effect_type(effect_type: String) -> bool:
         or effect_type == "gold_gain_mult"
         or effect_type == "stamina_recover_mult"
     )
+
+static func _is_integer_effect_type(effect_type: String) -> bool:
+    return effect_type == "max_hp_flat"
 
 static func _compose_reward_choice_id(base_id: String, rarity: String) -> String:
     var rarity_key: String = rarity.strip_edges().to_lower()
