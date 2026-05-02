@@ -440,8 +440,7 @@ const ENDLESS_SPEED_PER_LEVEL: float = 0.02
 const ENDLESS_SPEED_MULT_CAP: float = 1.6
 const ENDLESS_SPAWN_INTERVAL_REDUCTION_PER_LEVEL: float = 0.04
 const ENDLESS_MIN_SPAWN_INTERVAL: float = 0.18
-const ENDLESS_MAX_ENEMY_COUNT_PER_LEVEL: int = 6
-const ENDLESS_MAX_ENEMY_COUNT_CAP: int = HARD_MAX_ACTIVE_ENEMY_COUNT
+const ENDLESS_MAX_ENEMY_COUNT_CAP: int = 120
 const ENDLESS_ELITE_FIRST_SPAWN_MIN: float = 25.0
 const ENDLESS_ELITE_FIRST_SPAWN_MAX: float = 45.0
 const ENDLESS_ELITE_RESPAWN_MIN: float = 45.0
@@ -626,7 +625,6 @@ func _process(delta: float) -> void :
     _wave_elapsed += delta
     if _is_endless_mode:
         _endless_elapsed += delta
-        _endless_shop_timer += delta
         _refresh_endless_level()
     _update_stage_timer(delta)
     if _stage_clear_triggered:
@@ -879,8 +877,6 @@ func _update_stage_timer(_delta: float) -> void:
         return
     if _is_endless_mode:
         hud.call("set_stage_timer", true, _format_endless_timer_text(), Color(0.72, 1.0, 0.86, 0.98))
-        if _endless_shop_timer >= ENDLESS_SHOP_INTERVAL and not _endless_shop_transitioning:
-            _trigger_endless_shop()
         return
     if _wave_duration_runtime <= 0.0:
         hud.call("set_stage_timer", false)
@@ -1532,8 +1528,7 @@ func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy
 func _get_active_max_enemy_count() -> int:
     if not _is_endless_mode:
         return clampi(_max_enemy_count_runtime, 1, HARD_MAX_ACTIVE_ENEMY_COUNT)
-    var base_count: int = _endless_base_max_enemy_count if _endless_base_max_enemy_count > 0 else _max_enemy_count_runtime
-    return clampi(base_count + _endless_level * ENDLESS_MAX_ENEMY_COUNT_PER_LEVEL, 1, HARD_MAX_ACTIVE_ENEMY_COUNT)
+    return ENDLESS_MAX_ENEMY_COUNT_CAP
 
 func _apply_endless_elite_schedule() -> void:
     _elite_schedule_enabled = true
@@ -4064,7 +4059,7 @@ func _create_endless_choice_panel() -> void:
     vbox.add_child(title)
 
     var desc: Label = Label.new()
-    desc.text = _tx("ui.endless_choice.desc", "第20关已完成。进入无尽模式后计时会继续累加，商店每80秒开启一次，敌人会持续成长。")
+    desc.text = _tx("ui.endless_choice.desc", "第20关已完成。进入无尽模式后计时会继续累加，敌人会持续成长，直到角色倒下。")
     desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     desc.add_theme_font_size_override("font_size", 20)

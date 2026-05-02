@@ -22,6 +22,8 @@ var _burst_timer: float = 0.0
 var _strike_timer: float = 0.0
 var _radial_timer: float = 0.0
 var _strafe_sign: float = 1.0
+var _strafe_timer: float = 0.0
+var _action_lockout_timer: float = 0.0
 var _pending_strikes: Array[Dictionary] = []
 
 func _ready() -> void:
@@ -32,6 +34,7 @@ func _ready() -> void:
     _burst_timer = burst_interval * 0.55
     _strike_timer = strike_interval * 0.4
     _radial_timer = radial_interval * 0.75
+    _strafe_timer = randf_range(1.1, 2.6)
 
 func _apply_profile_from_balance() -> void:
     var profile: Dictionary = BalanceService.get_enemy_profile("elite_clockwork_seer")
@@ -66,29 +69,48 @@ func tick_ai(delta: float) -> void:
     var distance: float = to_player.length()
     if distance > 0.001:
         var dir_to_player: Vector2 = to_player / distance
+        _strafe_timer = max(0.0, _strafe_timer - delta)
+        if _strafe_timer <= 0.0:
+            _strafe_sign *= -1.0
+            _strafe_timer = randf_range(1.2, 2.8)
         if distance < desired_min_distance:
-            velocity = -dir_to_player * move_speed * 0.65
+            velocity = (-dir_to_player + dir_to_player.orthogonal() * _strafe_sign * 0.32).normalized() * move_speed * 0.86
         elif distance > desired_max_distance:
-            velocity = dir_to_player * move_speed
+            velocity = (dir_to_player + dir_to_player.orthogonal() * _strafe_sign * 0.24).normalized() * move_speed
         else:
-            velocity = dir_to_player.orthogonal() * _strafe_sign * move_speed * 0.62
+            velocity = dir_to_player.orthogonal() * _strafe_sign * move_speed * 0.68
 
     _tick_pending_strikes(delta)
+    _action_lockout_timer = max(0.0, _action_lockout_timer - delta)
     _burst_timer = max(0.0, _burst_timer - delta)
-    if _burst_timer <= 0.0 and to_player.length_squared() > 0.0001:
+    if _burst_timer <= 0.0 and to_player.length_squared() > 0.0001 and _action_lockout_timer <= 0.0:
         _burst_timer = burst_interval
-        _fire_triple_burst(to_player.normalized())
+        _fire_triple_burst(_aim_at_target(burst_speed, 0.5))
+        _action_lockout_timer = 0.24
 
     _strike_timer = max(0.0, _strike_timer - delta)
-    if _strike_timer <= 0.0:
+    if _strike_timer <= 0.0 and _action_lockout_timer <= 0.0:
         _strike_timer = strike_interval
         _schedule_orbital_strike()
+        _action_lockout_timer = 0.25
 
     _radial_timer = max(0.0, _radial_timer - delta)
-    if _radial_timer <= 0.0:
+    if _radial_timer <= 0.0 and _action_lockout_timer <= 0.0:
         _radial_timer = radial_interval
         _fire_radial_pulse()
+        _action_lockout_timer = 0.35
     queue_redraw()
+
+func _aim_at_target(projectile_speed: float, lead_factor: float) -> Vector2:
+    if _target == null or not is_instance_valid(_target):
+        return Vector2.RIGHT
+    var target_position: Vector2 = _target.global_position
+    if _target is CharacterBody2D:
+        var body: CharacterBody2D = _target as CharacterBody2D
+        var travel_time: float = global_position.distance_to(target_position) / max(1.0, projectile_speed)
+        target_position += body.velocity * clampf(travel_time * lead_factor, 0.0, 0.6)
+    var aim_vector: Vector2 = target_position - global_position
+    return aim_vector.normalized() if aim_vector.length_squared() > 0.0001 else Vector2.RIGHT
 
 func _fire_triple_burst(base_dir: Vector2) -> void:
     var angle: float = deg_to_rad(burst_angle_deg)
@@ -99,7 +121,11 @@ func _fire_triple_burst(base_dir: Vector2) -> void:
 func _schedule_orbital_strike() -> void:
     if _target == null or not is_instance_valid(_target):
         return
-    var center: Vector2 = _target.global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(0.0, 80.0)
+    var predicted_position: Vector2 = _target.global_position
+    if _target is CharacterBody2D:
+        var body: CharacterBody2D = _target as CharacterBody2D
+        predicted_position += body.velocity * clampf(strike_warning * 0.5, 0.0, 0.55)
+    var center: Vector2 = predicted_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(0.0, 80.0)
     _spawn_warning_circle(center, strike_radius, strike_warning)
     _pending_strikes.append({
         "delay": strike_warning,

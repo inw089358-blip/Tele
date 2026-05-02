@@ -218,6 +218,8 @@
             "move_speed": 105,
             "max_hp": 54,
             "xp_drop": 20,
+            "desired_min_distance": 230,
+            "desired_max_distance": 340,
             "shield_interval": 8,
             "shield_duration": 3,
             "shield_damage_reduction": 0.55,
@@ -485,6 +487,9 @@
             "shock_projectile_count": 10,
             "shock_projectile_damage": 2,
             "shock_projectile_speed": 190,
+            "flank_distance": 230,
+            "flank_strength": 0.44,
+            "charge_lead_factor": 0.42,
             "visual": {
                 "sprite_sheet_path": "res://sprite/enemies/barrage_glitch/battle_sheet.png",
                 "hframes": 4,
@@ -516,8 +521,8 @@
             "max_hp": 58,
             "xp_drop": 22,
             "body_radius": 22,
-            "desired_min_distance": 120,
-            "desired_max_distance": 220,
+            "desired_min_distance": 155,
+            "desired_max_distance": 260,
             "burst_interval": 2.2,
             "burst_damage": 2,
             "burst_speed": 230,
@@ -917,7 +922,7 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 10000,
+                "elite_hp_override": 80000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -1032,7 +1037,7 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 13000,
+                "elite_hp_override": 11000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -1283,7 +1288,7 @@
                 "mine_seeder_weight": 0.02
             },
             "boss": {
-                "hp": 28000,
+                "hp": 26000,
                 "damage_multiplier": 1,
                 "contact_damage": 2,
                 "p1_beam_cd": 2,

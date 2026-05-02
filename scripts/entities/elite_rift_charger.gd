@@ -21,17 +21,24 @@ enum RiftState {
 @export var shock_projectile_count: int = 6
 @export var shock_projectile_damage: int = 1
 @export var shock_projectile_speed: float = 190.0
+@export var flank_distance: float = 230.0
+@export var flank_strength: float = 0.44
+@export var charge_lead_factor: float = 0.42
 
 var _rift_state: RiftState = RiftState.CHASE
 var _state_timer: float = 0.0
 var _cooldown_timer: float = 0.0
 var _charge_direction: Vector2 = Vector2.RIGHT
+var _flank_sign: float = 1.0
+var _flank_timer: float = 0.0
 
 func _ready() -> void:
     enemy_type = EnemyType.ELITE_RIFT_CHARGER
     is_elite = true
+    _flank_sign = -1.0 if randi() % 2 == 0 else 1.0
     super._ready()
     _cooldown_timer = charge_cooldown * randf_range(0.35, 0.75)
+    _flank_timer = randf_range(1.0, 2.4)
 
 func _apply_profile_from_balance() -> void:
     var profile: Dictionary = BalanceService.get_enemy_profile("elite_rift_charger")
@@ -50,6 +57,9 @@ func _apply_profile_from_balance() -> void:
     shock_projectile_count = int(profile.get("shock_projectile_count", shock_projectile_count))
     shock_projectile_damage = int(profile.get("shock_projectile_damage", shock_projectile_damage))
     shock_projectile_speed = float(profile.get("shock_projectile_speed", shock_projectile_speed))
+    flank_distance = float(profile.get("flank_distance", flank_distance))
+    flank_strength = float(profile.get("flank_strength", flank_strength))
+    charge_lead_factor = float(profile.get("charge_lead_factor", charge_lead_factor))
     _hit_sfx_path = str(profile.get("hit_sfx_path", _hit_sfx_path))
     _hit_sfx_volume_db = float(profile.get("hit_sfx_volume_db", _hit_sfx_volume_db))
     _hit_sfx_cooldown = max(0.0, float(profile.get("hit_sfx_cooldown", _hit_sfx_cooldown)))
@@ -68,23 +78,46 @@ func tick_ai(delta: float) -> void:
         RiftState.RECOVER:
             _tick_recover(delta)
         _:
-            _tick_chase()
+            _tick_chase(delta)
     queue_redraw()
 
-func _tick_chase() -> void:
+func _tick_chase(delta: float) -> void:
     var to_player: Vector2 = _target.global_position - global_position
     var distance: float = to_player.length()
     if distance <= 0.001:
         velocity = Vector2.ZERO
         return
     var direction: Vector2 = to_player / distance
-    velocity = direction * move_speed
+    _flank_timer = max(0.0, _flank_timer - delta)
+    if _flank_timer <= 0.0:
+        _flank_sign *= -1.0
+        _flank_timer = randf_range(1.1, 2.6)
+
+    var side: Vector2 = direction.orthogonal() * _flank_sign
+    if distance > charge_trigger_distance:
+        velocity = (direction + side * flank_strength).normalized() * move_speed
+    elif distance > flank_distance:
+        velocity = (direction * 0.72 + side * flank_strength).normalized() * move_speed
+    else:
+        velocity = side * move_speed * 0.58
+
     if _cooldown_timer <= 0.0 and distance <= charge_trigger_distance:
-        _charge_direction = direction
+        _charge_direction = _resolve_charge_direction()
         _rift_state = RiftState.WINDUP
         _state_timer = charge_windup
         velocity = Vector2.ZERO
         _spawn_warning_line()
+
+func _resolve_charge_direction() -> Vector2:
+    if _target == null or not is_instance_valid(_target):
+        return _charge_direction
+    var target_position: Vector2 = _target.global_position
+    if _target is CharacterBody2D:
+        var body: CharacterBody2D = _target as CharacterBody2D
+        var travel_time: float = global_position.distance_to(target_position) / max(1.0, charge_speed)
+        target_position += body.velocity * clampf(travel_time * charge_lead_factor, 0.0, 0.45)
+    var aim: Vector2 = target_position - global_position
+    return aim.normalized() if aim.length_squared() > 0.0001 else _charge_direction
 
 func _tick_windup(delta: float) -> void:
     velocity = Vector2.ZERO
@@ -109,6 +142,7 @@ func _tick_recover(delta: float) -> void:
     if _state_timer <= 0.0:
         _rift_state = RiftState.CHASE
         _cooldown_timer = charge_cooldown
+        _flank_timer = randf_range(0.8, 1.8)
 
 func _spawn_warning_line() -> void:
     if ENEMY_WARNING_ZONE_SCRIPT == null or get_parent() == null:
