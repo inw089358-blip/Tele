@@ -88,9 +88,6 @@ func _tick_chase() -> void:
 
 func _tick_windup(delta: float) -> void:
     velocity = Vector2.ZERO
-    var to_player: Vector2 = _target.global_position - global_position
-    if to_player.length_squared() > 0.0001:
-        _charge_direction = to_player.normalized()
     _state_timer = max(0.0, _state_timer - delta)
     if _state_timer <= 0.0:
         _rift_state = RiftState.CHARGE

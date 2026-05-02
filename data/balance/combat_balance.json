@@ -516,8 +516,8 @@
             "max_hp": 58,
             "xp_drop": 22,
             "body_radius": 22,
-            "desired_min_distance": 260,
-            "desired_max_distance": 380,
+            "desired_min_distance": 120,
+            "desired_max_distance": 220,
             "burst_interval": 2.2,
             "burst_damage": 2,
             "burst_speed": 230,
@@ -887,11 +887,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 1.25,
-                "spawn_interval_end": 0.95,
-                "max_enemy_count": 220,
-                "spawn_batch_start": 15,
-                "spawn_batch_end": 18
+                "spawn_interval_start": 4.4,
+                "spawn_interval_end": 3.4,
+                "max_enemy_count": 110,
+                "spawn_batch_start": 9,
+                "spawn_batch_end": 13
             },
             "waves": [
                 {
@@ -903,21 +903,21 @@
                 "melee_weight": 0.46,
                 "fast_melee_weight": 0.2,
                 "charger_weight": 0.15,
-                "ranged_weight": 0.65,
-                "barrage_weight": 0.5,
+                "ranged_weight": 0.38,
+                "barrage_weight": 0.14,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.08,
-                "mine_seeder_weight": 0.06
+                "sniper_weight": 0.04,
+                "mine_seeder_weight": 0.03
             },
             "enemy_hp_multiplier": 2.5,
             "enemy_move_speed_multiplier": 1.26,
             "enemy_damage_multiplier": 2,
             "next_stage_id": "stage_012",
             "elite_schedule": {
-                "first_spawn_time": 20,
+                "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 18000,
+                "elite_hp_override": 10000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -936,11 +936,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 1.2,
-                "spawn_interval_end": 0.9,
-                "max_enemy_count": 240,
-                "spawn_batch_start": 15,
-                "spawn_batch_end": 18
+                "spawn_interval_start": 4.2,
+                "spawn_interval_end": 3.2,
+                "max_enemy_count": 120,
+                "spawn_batch_start": 13,
+                "spawn_batch_end": 16
             },
             "waves": [
                 {
@@ -952,11 +952,11 @@
                 "melee_weight": 0.43,
                 "fast_melee_weight": 0.2,
                 "charger_weight": 0.17,
-                "ranged_weight": 0.7,
-                "barrage_weight": 0.55,
+                "ranged_weight": 0.42,
+                "barrage_weight": 0.16,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.09,
-                "mine_seeder_weight": 0.07
+                "sniper_weight": 0.05,
+                "mine_seeder_weight": 0.04
             },
             "enemy_hp_multiplier": 2.8,
             "enemy_move_speed_multiplier": 1.27,
@@ -969,11 +969,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 1.15,
-                "spawn_interval_end": 0.85,
-                "max_enemy_count": 260,
-                "spawn_batch_start": 15,
-                "spawn_batch_end": 18
+                "spawn_interval_start": 4,
+                "spawn_interval_end": 3,
+                "max_enemy_count": 120,
+                "spawn_batch_start": 14,
+                "spawn_batch_end": 17
             },
             "waves": [
                 {
@@ -985,11 +985,11 @@
                 "melee_weight": 0.4,
                 "fast_melee_weight": 0.19,
                 "charger_weight": 0.18,
-                "ranged_weight": 0.75,
-                "barrage_weight": 0.6,
+                "ranged_weight": 0.46,
+                "barrage_weight": 0.18,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.1,
-                "mine_seeder_weight": 0.08
+                "sniper_weight": 0.06,
+                "mine_seeder_weight": 0.05
             },
             "enemy_hp_multiplier": 3.1,
             "enemy_move_speed_multiplier": 1.28,
@@ -1002,11 +1002,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 1.1,
-                "spawn_interval_end": 0.8,
-                "max_enemy_count": 285,
-                "spawn_batch_start": 18,
-                "spawn_batch_end": 22
+                "spawn_interval_start": 3.8,
+                "spawn_interval_end": 2.8,
+                "max_enemy_count": 120,
+                "spawn_batch_start": 15,
+                "spawn_batch_end": 18
             },
             "waves": [
                 {
@@ -1018,21 +1018,21 @@
                 "melee_weight": 0.38,
                 "fast_melee_weight": 0.18,
                 "charger_weight": 0.19,
-                "ranged_weight": 0.8,
-                "barrage_weight": 0.65,
+                "ranged_weight": 0.5,
+                "barrage_weight": 0.2,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.1,
-                "mine_seeder_weight": 0.08
+                "sniper_weight": 0.06,
+                "mine_seeder_weight": 0.05
             },
             "enemy_hp_multiplier": 3.5,
             "enemy_move_speed_multiplier": 1.29,
             "enemy_damage_multiplier": 2.3,
             "next_stage_id": "stage_015",
             "elite_schedule": {
-                "first_spawn_time": 20,
+                "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 24000,
+                "elite_hp_override": 13000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -1055,11 +1055,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 1,
-                "spawn_interval_end": 0.75,
-                "max_enemy_count": 310,
-                "spawn_batch_start": 18,
-                "spawn_batch_end": 22
+                "spawn_interval_start": 3.6,
+                "spawn_interval_end": 2.6,
+                "max_enemy_count": 120,
+                "spawn_batch_start": 16,
+                "spawn_batch_end": 19
             },
             "waves": [
                 {
@@ -1071,11 +1071,11 @@
                 "melee_weight": 0.36,
                 "fast_melee_weight": 0.18,
                 "charger_weight": 0.2,
-                "ranged_weight": 0.85,
-                "barrage_weight": 0.7,
+                "ranged_weight": 0.54,
+                "barrage_weight": 0.22,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.11,
-                "mine_seeder_weight": 0.09
+                "sniper_weight": 0.07,
+                "mine_seeder_weight": 0.06
             },
             "enemy_hp_multiplier": 4,
             "enemy_move_speed_multiplier": 1.3,
@@ -1085,7 +1085,7 @@
                 "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 22000,
+                "elite_hp_override": 12000,
                 "elite_pool": [
                     {
                         "type": "elite_rift_charger",
@@ -1104,11 +1104,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.95,
-                "spawn_interval_end": 0.7,
-                "max_enemy_count": 335,
-                "spawn_batch_start": 18,
-                "spawn_batch_end": 22
+                "spawn_interval_start": 3.4,
+                "spawn_interval_end": 2.4,
+                "max_enemy_count": 120,
+                "spawn_batch_start": 17,
+                "spawn_batch_end": 20
             },
             "waves": [
                 {
@@ -1120,11 +1120,11 @@
                 "melee_weight": 0.34,
                 "fast_melee_weight": 0.17,
                 "charger_weight": 0.21,
-                "ranged_weight": 0.9,
-                "barrage_weight": 0.75,
+                "ranged_weight": 0.58,
+                "barrage_weight": 0.24,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.11,
-                "mine_seeder_weight": 0.09
+                "sniper_weight": 0.08,
+                "mine_seeder_weight": 0.06
             },
             "enemy_hp_multiplier": 4.5,
             "enemy_move_speed_multiplier": 1.31,
@@ -1137,11 +1137,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.9,
-                "spawn_interval_end": 0.65,
-                "max_enemy_count": 360,
-                "spawn_batch_start": 20,
-                "spawn_batch_end": 25
+                "spawn_interval_start": 3.2,
+                "spawn_interval_end": 2.2,
+                "max_enemy_count": 120,
+                "spawn_batch_start": 18,
+                "spawn_batch_end": 22
             },
             "waves": [
                 {
@@ -1153,21 +1153,21 @@
                 "melee_weight": 0.32,
                 "fast_melee_weight": 0.16,
                 "charger_weight": 0.22,
-                "ranged_weight": 0.95,
-                "barrage_weight": 0.8,
+                "ranged_weight": 0.62,
+                "barrage_weight": 0.26,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.12,
-                "mine_seeder_weight": 0.1
+                "sniper_weight": 0.09,
+                "mine_seeder_weight": 0.07
             },
             "enemy_hp_multiplier": 5.1,
             "enemy_move_speed_multiplier": 1.32,
             "enemy_damage_multiplier": 2.6,
             "next_stage_id": "stage_018",
             "elite_schedule": {
-                "first_spawn_time": 20,
+                "first_spawn_time": 1,
                 "respawn_check_interval": 9999,
                 "max_alive": 1,
-                "elite_hp_override": 30000,
+                "elite_hp_override": 15000,
                 "elite_pool": [
                     {
                         "type": "elite_warden",
@@ -1190,11 +1190,11 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.82,
-                "spawn_interval_end": 0.6,
-                "max_enemy_count": 390,
-                "spawn_batch_start": 20,
-                "spawn_batch_end": 25
+                "spawn_interval_start": 3,
+                "spawn_interval_end": 2,
+                "max_enemy_count": 120,
+                "spawn_batch_start": 19,
+                "spawn_batch_end": 23
             },
             "waves": [
                 {
@@ -1206,11 +1206,11 @@
                 "melee_weight": 0.3,
                 "fast_melee_weight": 0.16,
                 "charger_weight": 0.23,
-                "ranged_weight": 1,
-                "barrage_weight": 0.85,
+                "ranged_weight": 0.66,
+                "barrage_weight": 0.28,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.12,
-                "mine_seeder_weight": 0.1
+                "sniper_weight": 0.1,
+                "mine_seeder_weight": 0.08
             },
             "enemy_hp_multiplier": 5.8,
             "enemy_move_speed_multiplier": 1.33,
@@ -1223,9 +1223,9 @@
             "background_key": "combat",
             "spawn_profile": {
                 "target_duration": 60,
-                "spawn_interval_start": 0.75,
-                "spawn_interval_end": 0.55,
-                "max_enemy_count": 420,
+                "spawn_interval_start": 2.8,
+                "spawn_interval_end": 1.8,
+                "max_enemy_count": 120,
                 "spawn_batch_start": 20,
                 "spawn_batch_end": 25
             },
@@ -1239,11 +1239,11 @@
                 "melee_weight": 0.28,
                 "fast_melee_weight": 0.15,
                 "charger_weight": 0.23,
-                "ranged_weight": 1,
-                "barrage_weight": 0.9,
+                "ranged_weight": 0.7,
+                "barrage_weight": 0.3,
                 "splitter_weight": 0.12,
-                "sniper_weight": 0.12,
-                "mine_seeder_weight": 0.1
+                "sniper_weight": 0.1,
+                "mine_seeder_weight": 0.08
             },
             "enemy_hp_multiplier": 6.5,
             "enemy_move_speed_multiplier": 1.34,
@@ -1260,11 +1260,11 @@
             },
             "spawn_profile": {
                 "target_duration": 90,
-                "spawn_interval_start": 1.8,
-                "spawn_interval_end": 1.15,
-                "max_enemy_count": 320,
-                "spawn_batch_start": 12,
-                "spawn_batch_end": 18
+                "spawn_interval_start": 4.6,
+                "spawn_interval_end": 3.4,
+                "max_enemy_count": 180,
+                "spawn_batch_start": 10,
+                "spawn_batch_end": 14
             },
             "waves": [
                 {
@@ -1276,14 +1276,14 @@
                 "melee_weight": 0.7,
                 "fast_melee_weight": 0.15,
                 "charger_weight": 0.11,
-                "ranged_weight": 0.35,
-                "barrage_weight": 0.25,
+                "ranged_weight": 0.24,
+                "barrage_weight": 0.08,
                 "splitter_weight": 0.08,
-                "sniper_weight": 0.06,
-                "mine_seeder_weight": 0.04
+                "sniper_weight": 0.03,
+                "mine_seeder_weight": 0.02
             },
             "boss": {
-                "hp": 72000,
+                "hp": 28000,
                 "damage_multiplier": 1,
                 "contact_damage": 2,
                 "p1_beam_cd": 2,

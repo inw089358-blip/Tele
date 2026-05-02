@@ -32,9 +32,9 @@ const WEAPON_RARITY_EFFECT_MULTIPLIERS: Dictionary = {
 }
 const WEAPON_RARITY_PRICE_MULTIPLIERS: Dictionary = {
     "common": 1.0,
-    "rare": 1.25,
-    "epic": 1.55,
-    "legendary": 2.0,
+    "rare": 2.0,
+    "epic": 3.4,
+    "legendary": 5.2,
 }
 const WEAPON_RARITY_EFFECT_SCALING_KEYS: Dictionary = {
     "bonus_attack_damage": true,

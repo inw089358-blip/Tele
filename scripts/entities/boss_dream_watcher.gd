@@ -73,12 +73,12 @@ func tick_ai(delta: float) -> void :
     var dist: float = to_player.length()
     if dist > 0.001:
         var dir_to_player: Vector2 = to_player / dist
-        if dist > 360.0:
+        if dist > 210.0:
             velocity = dir_to_player * move_speed
-        elif dist < 220.0:
-            velocity = -dir_to_player * move_speed * 0.5
+        elif dist < 120.0:
+            velocity = -dir_to_player * move_speed * 0.45
         else:
-            velocity = dir_to_player.orthogonal() * move_speed * 0.35
+            velocity = dir_to_player.orthogonal() * move_speed * 0.55
     else:
         velocity = Vector2.ZERO
     set_phase_by_hp()

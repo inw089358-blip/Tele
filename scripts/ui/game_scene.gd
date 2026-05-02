@@ -324,6 +324,7 @@ var _stage_retry_snapshot: Dictionary = {}
 
 const INITIAL_ENEMY_COUNT: int = 40
 const MAX_ENEMY_COUNT: int = 120
+const HARD_MAX_ACTIVE_ENEMY_COUNT: int = 120
 const ENEMY_SPAWN_INTERVAL: float = 0.15
 const ENEMY_MIN_SPAWN_RADIUS: float = 380.0
 const ENEMY_MAX_SPAWN_RADIUS: float = 620.0
@@ -440,7 +441,7 @@ const ENDLESS_SPEED_MULT_CAP: float = 1.6
 const ENDLESS_SPAWN_INTERVAL_REDUCTION_PER_LEVEL: float = 0.04
 const ENDLESS_MIN_SPAWN_INTERVAL: float = 0.18
 const ENDLESS_MAX_ENEMY_COUNT_PER_LEVEL: int = 6
-const ENDLESS_MAX_ENEMY_COUNT_CAP: int = 180
+const ENDLESS_MAX_ENEMY_COUNT_CAP: int = HARD_MAX_ACTIVE_ENEMY_COUNT
 const ENDLESS_ELITE_FIRST_SPAWN_MIN: float = 25.0
 const ENDLESS_ELITE_FIRST_SPAWN_MAX: float = 45.0
 const ENDLESS_ELITE_RESPAWN_MIN: float = 45.0
@@ -1290,7 +1291,8 @@ func _on_endless_finish_pressed() -> void:
     if _endless_choice_panel != null:
         _endless_choice_panel.visible = false
     _set_pause_overlay_visible(false)
-    _complete_stage_by_timer()
+    _set_crt_effects_enabled(true)
+    GameManager.go_to_menu()
 
 func _start_endless_mode() -> void:
     get_tree().paused = false
@@ -1484,6 +1486,8 @@ func _roll_melee_pressure_spawn_type() -> Enemy.EnemyType:
     return Enemy.EnemyType.CHARGER
 
 func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy:
+    if _count_active_enemies() >= _get_active_max_enemy_count():
+        return null
     var enemy: Enemy = null
     match spawn_type:
         Enemy.EnemyType.FAST_MELEE:
@@ -1527,9 +1531,9 @@ func _spawn_enemy(spawn_type: Enemy.EnemyType, spawn_position: Vector2) -> Enemy
 
 func _get_active_max_enemy_count() -> int:
     if not _is_endless_mode:
-        return _max_enemy_count_runtime
+        return clampi(_max_enemy_count_runtime, 1, HARD_MAX_ACTIVE_ENEMY_COUNT)
     var base_count: int = _endless_base_max_enemy_count if _endless_base_max_enemy_count > 0 else _max_enemy_count_runtime
-    return clampi(base_count + _endless_level * ENDLESS_MAX_ENEMY_COUNT_PER_LEVEL, 1, ENDLESS_MAX_ENEMY_COUNT_CAP)
+    return clampi(base_count + _endless_level * ENDLESS_MAX_ENEMY_COUNT_PER_LEVEL, 1, HARD_MAX_ACTIVE_ENEMY_COUNT)
 
 func _apply_endless_elite_schedule() -> void:
     _elite_schedule_enabled = true
@@ -1560,6 +1564,8 @@ func _try_spawn_elite_by_schedule() -> void :
     else:
         _next_elite_spawn_time += _elite_respawn_check_interval_runtime
     if _count_alive_elites() >= _elite_max_alive_runtime:
+        return
+    if _count_active_enemies() >= _get_active_max_enemy_count():
         return
     _spawn_elite()
 
@@ -1612,8 +1618,6 @@ func _spawn_elite() -> void :
     _active_elite = enemy
     _elite_spawn_relief_timer = ELITE_SPAWN_RELIEF_DURATION
     print("[Elite] Spawned %s at %.2fs" % [enemy.get_display_name(), _battle_elapsed])
-    if hud.has_method("show_boss_bar"):
-        hud.call("show_boss_bar", enemy.get_display_name(), float(enemy.max_hp), float(enemy.current_hp))
 
 func _apply_endless_elite_spawn_enrage(enemy: Enemy) -> void:
     if enemy == null or not is_instance_valid(enemy):
@@ -4023,15 +4027,15 @@ func _create_elite_chest_panel() -> void:
 func _create_endless_choice_panel() -> void:
     var panel: PanelContainer = PanelContainer.new()
     panel.visible = false
-    panel.custom_minimum_size = Vector2(620.0, 320.0)
+    panel.custom_minimum_size = Vector2(700.0, 320.0)
     panel.anchors_preset = Control.PRESET_CENTER
     panel.anchor_left = 0.5
     panel.anchor_top = 0.5
     panel.anchor_right = 0.5
     panel.anchor_bottom = 0.5
-    panel.offset_left = -310.0
+    panel.offset_left = -350.0
     panel.offset_top = -160.0
-    panel.offset_right = 310.0
+    panel.offset_right = 350.0
     panel.offset_bottom = 160.0
     panel.add_theme_stylebox_override("panel", _build_neon_panel_style(
         Color(0.012, 0.045, 0.07, 0.96),
@@ -4053,14 +4057,14 @@ func _create_endless_choice_panel() -> void:
     margin.add_child(vbox)
 
     var title: Label = Label.new()
-    title.text = "ENDLESS MODE"
+    title.text = _tx("ui.endless_choice.title", "无尽模式")
     title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     title.add_theme_font_size_override("font_size", 34)
     title.add_theme_color_override("font_color", Color(0.62, 1.0, 0.86, 1.0))
     vbox.add_child(title)
 
     var desc: Label = Label.new()
-    desc.text = "Stage 20 complete. Continue into Endless: timer counts up, shop opens every 80 seconds, enemies keep scaling."
+    desc.text = _tx("ui.endless_choice.desc", "第20关已完成。进入无尽模式后计时会继续累加，商店每80秒开启一次，敌人会持续成长。")
     desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     desc.add_theme_font_size_override("font_size", 20)
@@ -4073,12 +4077,12 @@ func _create_endless_choice_panel() -> void:
     vbox.add_child(button_row)
 
     _endless_finish_button = Button.new()
-    _style_neon_action_button(_endless_finish_button, "Finish Run")
+    _style_neon_action_button(_endless_finish_button, _tx("ui.endless_choice.finish", "完成"))
     _endless_finish_button.pressed.connect(_on_endless_finish_pressed)
     button_row.add_child(_endless_finish_button)
 
     _endless_continue_button = Button.new()
-    _style_neon_action_button(_endless_continue_button, "Enter Endless")
+    _style_neon_action_button(_endless_continue_button, _tx("ui.endless_choice.enter", "进入无尽"))
     _endless_continue_button.pressed.connect(_on_endless_continue_pressed)
     button_row.add_child(_endless_continue_button)
 
@@ -6053,11 +6057,19 @@ func _apply_enemy_mix_from_balance(stage_id: String) -> void:
 
 func _target_melee_spawn_ratio(stage_number: int, is_boss_stage: bool) -> float:
     if is_boss_stage:
-        return 0.76
+        return 0.82
     if stage_number <= 4:
         return 0.78
     if stage_number <= 7:
         return 0.74
+    if stage_number <= 10:
+        return 0.70
+    if stage_number <= 13:
+        return 0.76
+    if stage_number <= 16:
+        return 0.80
+    if stage_number <= 19:
+        return 0.84
     return 0.70
 
 func _apply_stage_runtime_from_balance(stage_id: String) -> void:
@@ -6097,7 +6109,11 @@ func _apply_stage_runtime_from_balance(stage_id: String) -> void:
         float(combat_params.get("contact_damage_interval", CONTACT_DAMAGE_INTERVAL))
     )
     var base_max_enemy_count: int = int(spawn_profile.get("max_enemy_count", MAX_ENEMY_COUNT))
-    _max_enemy_count_runtime = max(1, int(round(float(base_max_enemy_count) * _enemy_count_multiplier)))
+    _max_enemy_count_runtime = clampi(
+        int(round(float(base_max_enemy_count) * _enemy_count_multiplier)),
+        1,
+        HARD_MAX_ACTIVE_ENEMY_COUNT
+    )
     _spawn_interval_start_runtime = float(spawn_profile.get("spawn_interval_start", ENEMY_SPAWN_INTERVAL))
     _spawn_interval_end_runtime = float(spawn_profile.get("spawn_interval_end", ENEMY_SPAWN_INTERVAL))
     _spawn_batch_start_runtime = max(1, int(spawn_profile.get("spawn_batch_start", 1)))
