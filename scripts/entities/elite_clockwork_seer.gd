@@ -3,8 +3,8 @@ extends Enemy
 
 const ENEMY_WARNING_ZONE_SCRIPT: Script = preload("res://scripts/effects/enemy_warning_zone.gd")
 
-@export var desired_min_distance: float = 260.0
-@export var desired_max_distance: float = 380.0
+@export var desired_min_distance: float = 120.0
+@export var desired_max_distance: float = 220.0
 @export var burst_interval: float = 3.2
 @export var burst_damage: int = 1
 @export var burst_speed: float = 230.0
@@ -67,11 +67,11 @@ func tick_ai(delta: float) -> void:
     if distance > 0.001:
         var dir_to_player: Vector2 = to_player / distance
         if distance < desired_min_distance:
-            velocity = -dir_to_player * move_speed
+            velocity = -dir_to_player * move_speed * 0.65
         elif distance > desired_max_distance:
             velocity = dir_to_player * move_speed
         else:
-            velocity = dir_to_player.orthogonal() * _strafe_sign * move_speed * 0.45
+            velocity = dir_to_player.orthogonal() * _strafe_sign * move_speed * 0.62
 
     _tick_pending_strikes(delta)
     _burst_timer = max(0.0, _burst_timer - delta)
