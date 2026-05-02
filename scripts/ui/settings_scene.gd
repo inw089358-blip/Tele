@@ -24,46 +24,22 @@ const FPS_CAP_LABEL_KEYS: PackedStringArray = [
     "ui.settings.option.120", 
     "ui.settings.option.unlimited", 
 ]
-const CRT_KEYS: PackedStringArray = ["off", "low", "mid", "high"]
-const CRT_LABEL_KEYS: PackedStringArray = [
-    "ui.settings.option.off",
-    "ui.settings.option.low",
-    "ui.settings.option.mid",
-    "ui.settings.option.high",
-]
-const COLORBLIND_KEYS: PackedStringArray = ["off", "protanopia", "deuteranopia", "tritanopia"]
-const COLORBLIND_LABEL_KEYS: PackedStringArray = [
-    "ui.settings.option.off",
-    "ui.settings.option.protanopia",
-    "ui.settings.option.deuteranopia",
-    "ui.settings.option.tritanopia",
-]
-const FONT_SIZE_KEYS: PackedStringArray = ["small", "medium", "large"]
-const FONT_SIZE_LABEL_KEYS: PackedStringArray = [
-    "ui.settings.option.small",
-    "ui.settings.option.medium",
-    "ui.settings.option.large",
-]
 const LANGUAGE_KEYS: PackedStringArray = ["zh_CN", "en_US"]
 
 @onready var display_tab_button: Button = %DisplayTabButton
 @onready var audio_tab_button: Button = %AudioTabButton
-@onready var input_tab_button: Button = %InputTabButton
 @onready var system_tab_button: Button = %SystemTabButton
 @onready var crt_frame: PanelContainer = $ScreenCenter/CRTFrame
 @onready var title_label: Label = $ScreenCenter/CRTFrame/MainMargin/RootVBox/TitleLabel
 
 @onready var display_panel: VBoxContainer = %DisplayPanel
 @onready var audio_panel: VBoxContainer = %AudioPanel
-@onready var input_panel: VBoxContainer = %InputPanel
-@onready var accessibility_panel: VBoxContainer = %AccessibilityPanel
 @onready var system_panel: VBoxContainer = %SystemPanel
 
 @onready var resolution_option: OptionButton = %ResolutionOption
 @onready var window_mode_option: OptionButton = %WindowModeOption
 @onready var vsync_checkbox: CheckBox = %VSyncCheckBox
 @onready var fps_cap_option: OptionButton = %FpsCapOption
-@onready var crt_option: OptionButton = %CrtIntensityOption
 @onready var ui_scale_slider: HSlider = %UiScaleSlider
 @onready var ui_scale_value_label: Label = %UiScaleValueLabel
 
@@ -76,16 +52,9 @@ const LANGUAGE_KEYS: PackedStringArray = ["zh_CN", "en_US"]
 @onready var ui_volume_slider: HSlider = %UiVolumeSlider
 @onready var ui_volume_value_label: Label = %UiVolumeValueLabel
 
-@onready var right_click_skill_checkbox: CheckBox = %RightClickSkillCheckBox
-
-@onready var colorblind_option: OptionButton = %ColorblindModeOption
-@onready var high_contrast_checkbox: CheckBox = %HighContrastCheckBox
-@onready var font_size_option: OptionButton = %FontSizeOption
-@onready var glitch_intensity_option: OptionButton = %GlitchIntensityOption
-@onready var simple_ui_checkbox: CheckBox = %SimpleUICheckBox
-
 @onready var language_option: OptionButton = %LanguageOption
 @onready var show_boss_test_checkbox: CheckBox = %ShowBossTestCheckBox
+@onready var show_boss_test_label: Label = %ShowBossTestLabel
 
 @onready var apply_button: Button = %ApplyButton
 @onready var cancel_button: Button = %CancelButton
@@ -99,16 +68,14 @@ const LANGUAGE_KEYS: PackedStringArray = ["zh_CN", "en_US"]
 var _saved_settings: Dictionary = {}
 var _active_category: String = "graphics"
 var _embedded_mode: bool = false
-var _graphics_extra_label: Label
 var _status_message_key: String = ""
 var _status_message_args: Array = []
 var _suppress_locale_preview: bool = false
 
 func _ready() -> void :
     _setup_options()
+    _disable_boss_test_setting()
     _connect_signals()
-    _merge_graphics_sections()
-    _enable_graphics_scrolling()
     _load_settings()
     _show_category(_active_category)
     _refresh_live_labels()
@@ -123,16 +90,11 @@ func _setup_options() -> void :
     _fill_option_from_values(resolution_option, RESOLUTION_OPTIONS)
     _fill_option_from_key_label_keys(window_mode_option, WINDOW_MODE_KEYS, WINDOW_MODE_LABEL_KEYS)
     _fill_option_from_int_label_keys(fps_cap_option, FPS_CAP_KEYS, FPS_CAP_LABEL_KEYS)
-    _fill_option_from_key_label_keys(crt_option, CRT_KEYS, CRT_LABEL_KEYS)
-    _fill_option_from_key_label_keys(colorblind_option, COLORBLIND_KEYS, COLORBLIND_LABEL_KEYS)
-    _fill_option_from_key_label_keys(font_size_option, FONT_SIZE_KEYS, FONT_SIZE_LABEL_KEYS)
-    _fill_option_from_key_label_keys(glitch_intensity_option, CRT_KEYS, CRT_LABEL_KEYS)
     _fill_language_option()
 
 func _connect_signals() -> void :
     display_tab_button.pressed.connect(_on_display_tab_pressed)
     audio_tab_button.pressed.connect(_on_audio_tab_pressed)
-    input_tab_button.pressed.connect(_on_input_tab_pressed)
     system_tab_button.pressed.connect(_on_system_tab_pressed)
 
     ui_scale_slider.value_changed.connect(_on_ui_scale_changed)
@@ -154,12 +116,7 @@ func _connect_signals() -> void :
         LocaleService.locale_changed.connect(_on_locale_changed)
 
 func _load_settings() -> void :
-    var save_data: Dictionary = SaveSystem.load_save()
-    var settings_value: Variant = save_data.get("settings", SaveSystem.DEFAULT_SETTINGS.duplicate(true))
-
-    _saved_settings = SaveSystem.DEFAULT_SETTINGS.duplicate(true)
-    if settings_value is Dictionary:
-        _saved_settings = settings_value.duplicate(true)
+    _saved_settings = SaveSystem.get_settings().duplicate(true)
 
     _apply_settings_to_controls(_saved_settings)
     GameManager.apply_runtime_settings(_saved_settings)
@@ -168,86 +125,19 @@ func _show_category(category: String) -> void :
     _active_category = category
     display_panel.visible = category == "graphics"
     audio_panel.visible = category == "audio"
-    input_panel.visible = category == "controls"
-    accessibility_panel.visible = false
     system_panel.visible = category == "gameplay"
     _refresh_nav_visuals()
-
-func _merge_graphics_sections() -> void:
-    if display_panel == null or accessibility_panel == null:
-        return
-    if accessibility_panel.get_parent() != display_panel.get_parent():
-        return
-    var moved_marker: Node = display_panel.get_node_or_null("GraphicsExtraMarker")
-    if moved_marker != null:
-        return
-
-    var marker: Node = Node.new()
-    marker.name = "GraphicsExtraMarker"
-    display_panel.add_child(marker)
-
-    var separator: HSeparator = HSeparator.new()
-    display_panel.add_child(separator)
-    _graphics_extra_label = Label.new()
-    _graphics_extra_label.text = _tx("ui.settings.advanced_visual_options", "Advanced Visual Options")
-    _graphics_extra_label.add_theme_font_size_override("font_size", 22)
-    _graphics_extra_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.86, 1.0))
-    display_panel.add_child(_graphics_extra_label)
-
-    var children_to_move: Array[Node] = []
-    for child: Node in accessibility_panel.get_children():
-        children_to_move.append(child)
-    for child: Node in children_to_move:
-        accessibility_panel.remove_child(child)
-        display_panel.add_child(child)
-
-func _enable_graphics_scrolling() -> void:
-    if display_panel == null:
-        return
-    if display_panel.get_node_or_null("GraphicsScroll") != null:
-        return
-
-    var title: Node = display_panel.get_node_or_null("DisplayTitle")
-    var content_nodes: Array[Node] = []
-    for child: Node in display_panel.get_children():
-        if child == title:
-            continue
-        content_nodes.append(child)
-
-    if content_nodes.is_empty():
-        return
-
-    var scroll: ScrollContainer = ScrollContainer.new()
-    scroll.name = "GraphicsScroll"
-    scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    scroll.follow_focus = true
-    display_panel.add_child(scroll)
-
-    var content_vbox: VBoxContainer = VBoxContainer.new()
-    content_vbox.name = "GraphicsScrollContent"
-    content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    content_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    content_vbox.add_theme_constant_override("separation", 10)
-    scroll.add_child(content_vbox)
-
-    for child: Node in content_nodes:
-        display_panel.remove_child(child)
-        content_vbox.add_child(child)
 
 func _apply_settings_to_controls(settings: Dictionary) -> void :
     _suppress_locale_preview = true
     var display_settings: Dictionary = settings.get("display", {})
     var audio_settings: Dictionary = settings.get("audio", {})
-    var input_settings: Dictionary = settings.get("input", {})
-    var accessibility_settings: Dictionary = settings.get("accessibility", {})
     var system_settings: Dictionary = settings.get("system", {})
 
     _select_option_by_text(resolution_option, str(display_settings.get("resolution", "1920x1080")))
     _select_option_by_metadata(window_mode_option, str(display_settings.get("window_mode", "fullscreen")))
     vsync_checkbox.button_pressed = bool(display_settings.get("vsync", true))
     _select_option_by_metadata(fps_cap_option, int(display_settings.get("fps_cap", 60)))
-    _select_option_by_metadata(crt_option, str(display_settings.get("crt_intensity", "mid")))
     ui_scale_slider.value = int(display_settings.get("ui_scale", 100))
 
     master_volume_slider.value = int(audio_settings.get("master_volume", 80))
@@ -255,28 +145,26 @@ func _apply_settings_to_controls(settings: Dictionary) -> void :
     sfx_volume_slider.value = int(audio_settings.get("sfx_volume", 90))
     ui_volume_slider.value = int(audio_settings.get("ui_volume", 80))
 
-    right_click_skill_checkbox.button_pressed = bool(input_settings.get("right_click_skill", true))
-
-    _select_option_by_metadata(colorblind_option, str(accessibility_settings.get("colorblind_mode", "off")))
-    high_contrast_checkbox.button_pressed = bool(accessibility_settings.get("high_contrast_ui", false))
-    _select_option_by_metadata(font_size_option, str(accessibility_settings.get("font_size", "medium")))
-    _select_option_by_metadata(glitch_intensity_option, str(accessibility_settings.get("glitch_intensity", "mid")))
-    simple_ui_checkbox.button_pressed = bool(accessibility_settings.get("simple_ui", false))
-
     _select_option_by_metadata(language_option, str(system_settings.get("language", "zh_CN")))
-    show_boss_test_checkbox.button_pressed = bool(system_settings.get("show_boss_test_entry", true))
+    show_boss_test_checkbox.button_pressed = false
     _refresh_live_labels()
     _suppress_locale_preview = false
 
 func _collect_settings_from_controls() -> Dictionary:
-    var settings: Dictionary = SaveSystem.DEFAULT_SETTINGS.duplicate(true)
+    var settings: Dictionary = _saved_settings.duplicate(true) if not _saved_settings.is_empty() else SaveSystem.DEFAULT_SETTINGS.duplicate(true)
+
+    if not settings.has("display") or not (settings["display"] is Dictionary):
+        settings["display"] = SaveSystem.DEFAULT_SETTINGS["display"].duplicate(true)
+    if not settings.has("audio") or not (settings["audio"] is Dictionary):
+        settings["audio"] = SaveSystem.DEFAULT_SETTINGS["audio"].duplicate(true)
+    if not settings.has("system") or not (settings["system"] is Dictionary):
+        settings["system"] = SaveSystem.DEFAULT_SETTINGS["system"].duplicate(true)
 
     var display_settings: Dictionary = settings["display"]
     display_settings["resolution"] = resolution_option.get_item_text(resolution_option.selected)
     display_settings["window_mode"] = _selected_option_metadata_as_string(window_mode_option, "fullscreen")
     display_settings["vsync"] = vsync_checkbox.button_pressed
     display_settings["fps_cap"] = _selected_option_metadata_as_int(fps_cap_option, 60)
-    display_settings["crt_intensity"] = _selected_option_metadata_as_string(crt_option, "mid")
     display_settings["ui_scale"] = int(ui_scale_slider.value)
 
     var audio_settings: Dictionary = settings["audio"]
@@ -285,21 +173,19 @@ func _collect_settings_from_controls() -> Dictionary:
     audio_settings["sfx_volume"] = int(sfx_volume_slider.value)
     audio_settings["ui_volume"] = int(ui_volume_slider.value)
 
-    var input_settings: Dictionary = settings["input"]
-    input_settings["right_click_skill"] = right_click_skill_checkbox.button_pressed
-
-    var accessibility_settings: Dictionary = settings["accessibility"]
-    accessibility_settings["colorblind_mode"] = _selected_option_metadata_as_string(colorblind_option, "off")
-    accessibility_settings["high_contrast_ui"] = high_contrast_checkbox.button_pressed
-    accessibility_settings["font_size"] = _selected_option_metadata_as_string(font_size_option, "medium")
-    accessibility_settings["glitch_intensity"] = _selected_option_metadata_as_string(glitch_intensity_option, "mid")
-    accessibility_settings["simple_ui"] = simple_ui_checkbox.button_pressed
-
     var system_settings: Dictionary = settings["system"]
     system_settings["language"] = _selected_option_metadata_as_string(language_option, "zh_CN")
-    system_settings["show_boss_test_entry"] = show_boss_test_checkbox.button_pressed
+    system_settings["show_boss_test_entry"] = false
 
     return settings
+
+func _disable_boss_test_setting() -> void:
+    if show_boss_test_label != null:
+        show_boss_test_label.visible = false
+    if show_boss_test_checkbox != null:
+        show_boss_test_checkbox.button_pressed = false
+        show_boss_test_checkbox.disabled = true
+        show_boss_test_checkbox.visible = false
 
 func _refresh_live_labels() -> void :
     ui_scale_value_label.text = "%d%%" % int(ui_scale_slider.value)
@@ -313,9 +199,6 @@ func _on_display_tab_pressed() -> void :
 
 func _on_audio_tab_pressed() -> void :
     _show_category("audio")
-
-func _on_input_tab_pressed() -> void :
-    _show_category("controls")
 
 func _on_system_tab_pressed() -> void :
     _show_category("gameplay")
@@ -460,7 +343,6 @@ func set_embedded_mode(enabled: bool) -> void :
 func _refresh_nav_visuals() -> void:
     _set_tab_active(display_tab_button, _active_category == "graphics")
     _set_tab_active(audio_tab_button, _active_category == "audio")
-    _set_tab_active(input_tab_button, _active_category == "controls")
     _set_tab_active(system_tab_button, _active_category == "gameplay")
 
 func _set_tab_active(button: Button, is_active: bool) -> void:
@@ -481,8 +363,6 @@ func _on_locale_changed(_locale: String) -> void:
 
 func _refresh_i18n_texts() -> void:
     _refresh_option_labels()
-    if _graphics_extra_label != null:
-        _graphics_extra_label.text = _tx("ui.settings.advanced_visual_options", "Advanced Visual Options")
     if title_label != null:
         title_label.text = _tx("ui.settings.title", "SYSTEM SETTINGS")
     _refresh_static_label_texts()
@@ -492,29 +372,19 @@ func _refresh_static_label_texts() -> void:
     var node_texts: Dictionary = {
         "DisplayTabButton": "DISPLAY",
         "AudioTabButton": "AUDIO",
-        "InputTabButton": "INPUT",
         "SystemTabButton": "SYSTEM",
         "DisplayTitle": "Graphics",
         "AudioTitle": "Audio",
-        "InputTitle": "Controls",
-        "AccessibilityTitle": "Accessibility",
         "SystemTitle": "SYSTEM",
         "ResolutionLabel": "Resolution",
         "WindowModeLabel": "Window Mode",
         "VSyncLabel": "VSync",
         "FpsCapLabel": "FPS Cap",
-        "CrtIntensityLabel": "CRT Intensity",
         "UiScaleLabel": "UI Scale",
         "MasterLabel": "Master Volume",
         "MusicLabel": "Music Volume",
         "SfxLabel": "SFX Volume",
         "UiLabel": "UI Volume",
-        "RightClickSkillLabel": "Enable Right Click Skill",
-        "ColorblindModeLabel": "Colorblind Mode",
-        "HighContrastLabel": "High Contrast UI",
-        "FontSizeLabel": "Font Size",
-        "GlitchIntensityLabel": "Glitch Intensity",
-        "SimpleUILabel": "Simple UI",
         "LanguageLabel": "Language",
         "ShowBossTestLabel": "Boss Test Entry",
         "ApplyButton": "APPLY",
@@ -529,10 +399,6 @@ func _refresh_static_label_texts() -> void:
             target.set("text", _tx(key, key))
     if vsync_checkbox != null:
         vsync_checkbox.text = _tx("Enable VSync", "Enable VSync")
-    if high_contrast_checkbox != null:
-        high_contrast_checkbox.text = _tx("Enable", "Enable")
-    if simple_ui_checkbox != null:
-        simple_ui_checkbox.text = _tx("Enable", "Enable")
     if show_boss_test_checkbox != null:
         show_boss_test_checkbox.text = _tx("Show on Main Menu", "Show on Main Menu")
     if unsaved_confirm_dialog != null:
@@ -546,28 +412,16 @@ func _refresh_static_label_texts() -> void:
 func _refresh_option_labels() -> void:
     var window_mode_selection: String = _selected_option_metadata_as_string(window_mode_option, "fullscreen")
     var fps_selection: int = _selected_option_metadata_as_int(fps_cap_option, 60)
-    var crt_selection: String = _selected_option_metadata_as_string(crt_option, "mid")
-    var colorblind_selection: String = _selected_option_metadata_as_string(colorblind_option, "off")
-    var font_size_selection: String = _selected_option_metadata_as_string(font_size_option, "medium")
-    var glitch_selection: String = _selected_option_metadata_as_string(glitch_intensity_option, "mid")
     var language_selection: String = _selected_option_metadata_as_string(language_option, "zh_CN")
 
     _suppress_locale_preview = true
     _fill_option_from_key_label_keys(window_mode_option, WINDOW_MODE_KEYS, WINDOW_MODE_LABEL_KEYS)
     _fill_option_from_int_label_keys(fps_cap_option, FPS_CAP_KEYS, FPS_CAP_LABEL_KEYS)
-    _fill_option_from_key_label_keys(crt_option, CRT_KEYS, CRT_LABEL_KEYS)
-    _fill_option_from_key_label_keys(colorblind_option, COLORBLIND_KEYS, COLORBLIND_LABEL_KEYS)
-    _fill_option_from_key_label_keys(font_size_option, FONT_SIZE_KEYS, FONT_SIZE_LABEL_KEYS)
-    _fill_option_from_key_label_keys(glitch_intensity_option, CRT_KEYS, CRT_LABEL_KEYS)
     _fill_language_option()
     _suppress_locale_preview = false
 
     _select_option_by_metadata(window_mode_option, window_mode_selection)
     _select_option_by_metadata(fps_cap_option, fps_selection)
-    _select_option_by_metadata(crt_option, crt_selection)
-    _select_option_by_metadata(colorblind_option, colorblind_selection)
-    _select_option_by_metadata(font_size_option, font_size_selection)
-    _select_option_by_metadata(glitch_intensity_option, glitch_selection)
     _select_option_by_metadata(language_option, language_selection)
 
 func _set_status(message_key: String, args: Array = []) -> void:

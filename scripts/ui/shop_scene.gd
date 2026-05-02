@@ -979,8 +979,25 @@ func _on_offer_buy_pressed(offer_id: String) -> void:
         hint_label.text = _tx("msg.shop.weapon_slots_full_click_replace", "Weapon slots full. Click a slot below to replace.")
         _rebuild_ui()
         return
-    hint_label.text = _tx(str(result.get("message", "msg.shop.purchase_failed")), "Purchase failed")
+    var failure_message: String = str(result.get("message", "msg.shop.purchase_failed"))
+    var failure_fallback: String = "最大生命不足，无法购买。" if failure_message == "msg.shop.not_enough_max_hp" else "Purchase failed"
+    hint_label.text = _tx(failure_message, failure_fallback)
     _rebuild_ui()
+
+func _offer_requires_too_much_max_hp(offer: Dictionary) -> bool:
+    var effects_value: Variant = offer.get("effects", {})
+    if not (effects_value is Dictionary):
+        return false
+    var effects: Dictionary = effects_value
+    var max_hp_cost: int = 0
+    if effects.has("max_hp"):
+        max_hp_cost += max(0, -int(effects.get("max_hp", 0)))
+    if effects.has("max_hp_flat"):
+        max_hp_cost += max(0, -int(effects.get("max_hp_flat", 0)))
+    if max_hp_cost <= 0:
+        return false
+    var current_max_hp: int = max(1, int(_snapshot.get("player_max_hp", 100)))
+    return current_max_hp <= max_hp_cost
 
 func _on_offer_lock_pressed(offer_id: String) -> void:
     if _is_shop_interaction_blocked():
@@ -1402,7 +1419,10 @@ func _rebuild_offer_cards() -> void:
         var buy_button: Button = Button.new()
         buy_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         buy_button.text = _tx("ui.shop.sold_out", "已售罄") if sold else _tf("ui.shop.buy_fmt", [int(offer.get("price", 0))], "购买 - %dG")
-        buy_button.disabled = sold or current_gold < int(offer.get("price", 0))
+        var lacks_max_hp: bool = _offer_requires_too_much_max_hp(offer)
+        buy_button.disabled = sold or current_gold < int(offer.get("price", 0)) or lacks_max_hp
+        if lacks_max_hp and not sold:
+            buy_button.tooltip_text = _tx("msg.shop.not_enough_max_hp", "最大生命不足，无法购买。")
         buy_button.pressed.connect(_on_offer_buy_pressed.bind(str(offer.get("offer_id", ""))))
         
         # 按钮样式
@@ -1491,7 +1511,10 @@ func _rebuild_offer_cards_brotato() -> void:
         var buy_button: Button = Button.new()
         buy_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         buy_button.text = _tx("ui.shop.sold_out", "Sold Out") if sold else _tf("ui.shop.buy_fmt", [int(offer.get("price", 0))], "Buy - %dG")
-        buy_button.disabled = sold or current_gold < int(offer.get("price", 0))
+        var lacks_max_hp: bool = _offer_requires_too_much_max_hp(offer)
+        buy_button.disabled = sold or current_gold < int(offer.get("price", 0)) or lacks_max_hp
+        if lacks_max_hp and not sold:
+            buy_button.tooltip_text = _tx("msg.shop.not_enough_max_hp", "最大生命不足，无法购买。")
         buy_button.pressed.connect(_on_offer_buy_pressed.bind(str(offer.get("offer_id", ""))))
         var normal_button_style: StyleBoxFlat = _make_brotato_panel_style(Color(0.08, 0.08, 0.08, 1.0), Color(0.16, 0.16, 0.16, 1.0), 1, 5)
         var hover_button_style: StyleBoxFlat = _make_brotato_panel_style(Color(0.13, 0.13, 0.13, 1.0), Color(0.58, 0.58, 0.48, 1.0), 1, 5)
@@ -1676,6 +1699,11 @@ func _rebuild_attr_panel() -> void:
     var safe_base_attack_speed_mult: float = max(0.01, base_attack_speed_mult)
     var current_attack_speed_mult: float = float(stats.get("attack_speed_mult", safe_base_attack_speed_mult))
     var extra_attack_speed_percent: float = (current_attack_speed_mult / safe_base_attack_speed_mult - 1.0) * 100.0
+    var base_pickup_radius: float = _resolve_character_base_pickup_radius(character_id)
+    var current_pickup_radius: float = float(_snapshot.get("pickup_radius", base_pickup_radius))
+    var extra_pickup_radius: float = current_pickup_radius - base_pickup_radius
+    var xp_gain_percent: float = (float(stats.get("xp_gain_mult", 1.0)) - 1.0) * 100.0
+    var gold_gain_percent: float = (float(_snapshot.get("gold_gain_multiplier", 1.0)) - 1.0) * 100.0
     var tag_state: Dictionary = {}
     var tag_state_raw: Variant = shop_state.get("weapon_tag_state", {})
     if tag_state_raw is Dictionary:
@@ -1695,12 +1723,15 @@ func _rebuild_attr_panel() -> void:
     _add_stat_line(lines, _tx("ui.shop.attr_luck", "Luck"), float(stats.get("luck", 0.0)), "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_harvest", "Harvest"), float(stats.get("harvest", 0.0)), "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_range", "Range"), float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_pickup_range", "Pickup Range"), extra_pickup_radius, "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_move_speed", "Speed"), extra_move_speed, "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_armor", "Armor"), float(stats.get("armor", 0.0)), "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_dodge", "Dodge"), float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_attack_speed", "Attack Speed"), extra_attack_speed_percent, "%", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_crit", "Crit Chance"), float(stats.get("crit_chance", 0.05)) * 100.0, "%", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_lifesteal", "Lifesteal"), float(stats.get("lifesteal", 0.0)) * 100.0, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_xp_gain", "XP Gain"), xp_gain_percent, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_gold_gain", "Gold Gain"), gold_gain_percent, "%", 0, true)
     lines.append("[/table]")
     _append_weapon_tag_lines(lines, tag_state)
     attr_label.text = "\n".join(lines)
@@ -1720,6 +1751,9 @@ func _add_stat_line(lines: Array[String], label: String, val: Variant, unit: Str
         
     lines.append("[cell][color=#95a5a6]%s:[/color][/cell] [cell][color=%s]%s%s[/color][/cell]" % [label, color, val_str, unit])
 
+func _add_stat_text_line(lines: Array[String], label: String, value_text: String) -> void:
+    lines.append("[cell][color=#95a5a6]%s:[/color][/cell] [cell][color=#ffffff]%s[/color][/cell]" % [label, value_text])
+
 func _rebuild_attr_panel_brotato() -> void:
     var stats: Dictionary = _snapshot.get("player_stats", {})
     var character_id: String = _resolve_snapshot_character_id()
@@ -1729,6 +1763,13 @@ func _rebuild_attr_panel_brotato() -> void:
     var base_attack_speed_mult: float = max(0.01, _resolve_character_base_attack_speed_mult(character_id))
     var current_attack_speed_mult: float = float(stats.get("attack_speed_mult", base_attack_speed_mult))
     var extra_attack_speed_percent: float = (current_attack_speed_mult / base_attack_speed_mult - 1.0) * 100.0
+    var base_pickup_radius: float = _resolve_character_base_pickup_radius(character_id)
+    var current_pickup_radius: float = float(_snapshot.get("pickup_radius", base_pickup_radius))
+    var extra_pickup_radius: float = current_pickup_radius - base_pickup_radius
+    var xp_gain_percent: float = (float(stats.get("xp_gain_mult", 1.0)) - 1.0) * 100.0
+    var gold_gain_percent: float = (float(_snapshot.get("gold_gain_multiplier", 1.0)) - 1.0) * 100.0
+    var current_stamina: int = int(round(float(_snapshot.get("player_stamina", 100.0))))
+    var max_stamina: int = int(round(float(_snapshot.get("player_stamina_max", 100.0))))
 
     var lines: Array[String] = []
     lines.append("[center][b][color=#f1f1e8]%s[/color][/b][/center]" % _tx("ui.shop.attr_title", "ATTRIBUTES"))
@@ -1741,10 +1782,12 @@ func _rebuild_attr_panel_brotato() -> void:
     _add_stat_line(lines, _tx("ui.shop.attr_ranged_damage", "Ranged Damage"), int(stats.get("bonus_ranged_attack_damage", 0)), "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_attack_speed", "Attack Speed"), extra_attack_speed_percent, "%", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_range", "Range"), float(_snapshot.get("bonus_target_range", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_pickup_range", "Pickup Range"), extra_pickup_radius, "", 0, true)
     lines.append("[/table]")
     lines.append("")
     lines.append("[b][color=#d8d8cf]%s[/color][/b]" % _tx("ui.shop.attr_secondary", "SECONDARY"))
     lines.append("[table=2]")
+    _add_stat_text_line(lines, _tx("ui.shop.attr_stamina", "Stamina"), "%d/%d" % [current_stamina, max_stamina])
     _add_stat_line(lines, _tx("ui.shop.attr_hp_regen", "HP Regen"), float(stats.get("hp_regen", 0.0)), "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_armor", "Armor"), float(stats.get("armor", 0.0)), "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_dodge", "Dodge"), float(stats.get("dodge_chance", 0.0)) * 100.0, "%", 0, true)
@@ -1753,6 +1796,8 @@ func _rebuild_attr_panel_brotato() -> void:
     _add_stat_line(lines, _tx("ui.shop.attr_move_speed", "Speed"), extra_move_speed, "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_luck", "Luck"), float(stats.get("luck", 0.0)), "", 0, true)
     _add_stat_line(lines, _tx("ui.shop.attr_harvest", "Harvest"), float(stats.get("harvest", 0.0)), "", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_xp_gain", "XP Gain"), xp_gain_percent, "%", 0, true)
+    _add_stat_line(lines, _tx("ui.shop.attr_gold_gain", "Gold Gain"), gold_gain_percent, "%", 0, true)
     lines.append("[/table]")
     attr_label.text = "\n".join(lines)
 
@@ -1767,6 +1812,10 @@ func _resolve_snapshot_character_id() -> String:
 func _resolve_character_base_move_speed(character_id: String) -> float:
     var profile: Dictionary = BalanceService.get_character_profile(character_id)
     return float(profile.get("move_speed", 220.0))
+
+func _resolve_character_base_pickup_radius(character_id: String) -> float:
+    var profile: Dictionary = BalanceService.get_character_profile(character_id)
+    return float(profile.get("pickup_radius", 92.0))
 
 func _resolve_character_base_attack_speed_mult(character_id: String) -> float:
     var profile: Dictionary = BalanceService.get_character_profile(character_id)

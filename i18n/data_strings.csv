@@ -136,105 +136,105 @@ data.character.the_chariot.passive.desc,持续移动后进入推进状态，获�
 data.character.the_sun.passive.name,日冕余辉,Corona Afterglow
 data.character.the_sun.passive.desc,每击杀一定数量敌人触发治疗；满生命时转为短暂攻击速度加成。,After several kills
 data.item.item_bible_old.name,旧圣经,Bible Old
-data.item.item_bible_old.desc,"护甲 +2, 移动速度 -9","Armor +2, Move Speed -9"
+data.item.item_bible_old.desc,"护甲 +2, 移动速度 -7","Armor +2, Move Speed -7"
 data.item.item_dagger_rusty.name,生锈匕首,Dagger Rusty
-data.item.item_dagger_rusty.desc,"攻击速度 +5%, 最大生命 -3","Attack Speed +5%, Max HP -3"
+data.item.item_dagger_rusty.desc,"攻击速度 +5%, 最大生命 -2","Attack Speed +5%, Max HP -2"
 data.item.item_lantern_apprentice.name,学徒提灯,Lantern Apprentice
-data.item.item_lantern_apprentice.desc,"拾取范围 +24, 幸运 -2","Pickup Range +24, Luck -2"
+data.item.item_lantern_apprentice.desc,"拾取范围 +32, 幸运 -2","Pickup Range +32, Luck -2"
 data.item.item_herb_dry.name,干草药,Herb Dry
-data.item.item_herb_dry.desc,"生命回复 +1, 全局伤害 -3","HP Regen +1, Global Damage -3"
+data.item.item_herb_dry.desc,"生命回复 +1, 全局伤害 -2","HP Regen +1, Global Damage -2"
 data.item.item_mirror_crude.name,粗糙镜片,Mirror Crude
-data.item.item_mirror_crude.desc,"护甲 +2, 闪避 -1%","Armor +2, Dodge -1%"
+data.item.item_mirror_crude.desc,"护甲 +2, 闪避 -0.5%","Armor +2, Dodge -0.5%"
 data.item.item_bullet_lead.name,铅弹,Bullet Lead
-data.item.item_bullet_lead.desc,"远程伤害 +2, 攻击速度 -2%","Ranged Damage +2, Attack Speed -2%"
+data.item.item_bullet_lead.desc,"远程伤害 +2, 攻击速度 -1%","Ranged Damage +2, Attack Speed -1%"
 data.item.item_whetstone_heavy.name,重磨刀石,Whetstone Heavy
-data.item.item_whetstone_heavy.desc,"近战伤害 +2, 攻击速度 -2%","Melee Damage +2, Attack Speed -2%"
+data.item.item_whetstone_heavy.desc,"近战伤害 +2, 攻击速度 -1%","Melee Damage +2, Attack Speed -1%"
 data.item.item_coin_broken.name,破损硬币,Coin Broken
-data.item.item_coin_broken.desc,"收获 +7, 闪避 -2%","harvest +7, Dodge -2%"
+data.item.item_coin_broken.desc,"收获 +9, 闪避 -1%","harvest +9, Dodge -1%"
 data.item.item_rabbit_foot.name,兔脚,Rabbit Foot
-data.item.item_rabbit_foot.desc,"幸运 +8, 最大生命 -3","Luck +8, Max HP -3"
+data.item.item_rabbit_foot.desc,"幸运 +10, 最大生命 -2","Luck +10, Max HP -2"
 data.item.item_feather_light.name,轻羽,Feather Light
-data.item.item_feather_light.desc,"移动速度 +11, 护甲 -1","Move Speed +11, Armor -1"
+data.item.item_feather_light.desc,"移动速度 +14, 护甲 -1","Move Speed +14, Armor -1"
 data.item.item_tarot_fragment.name,塔罗碎片,Tarot Fragment
-data.item.item_tarot_fragment.desc,"经验获取 +5%, 幸运 -2","XP Gain +5%, Luck -2"
+data.item.item_tarot_fragment.desc,"经验获取 +8%, 幸运 -2","XP Gain +8%, Luck -2"
 data.item.item_lens_shard.name,透镜碎片,Lens Shard
-data.item.item_lens_shard.desc,"索敌范围 +28, 攻击速度 -3%","Target Range +28, Attack Speed -3%"
+data.item.item_lens_shard.desc,"索敌范围 +36, 攻击速度 -2%","Target Range +36, Attack Speed -2%"
 data.item.item_bandage_bloody.name,染血绷带,Bandage Bloody
-data.item.item_bandage_bloody.desc,"吸血 +1%, 护甲 -1","Lifesteal +1%, Armor -1"
+data.item.item_bandage_bloody.desc,"吸血 +2%, 护甲 -1","Lifesteal +2%, Armor -1"
 data.item.item_alchemist_coin.name,炼金硬币,Alchemist Coin
-data.item.item_alchemist_coin.desc,"收获 +10, 移动速度 -7","harvest +10, Move Speed -7"
+data.item.item_alchemist_coin.desc,"收获 +12, 移动速度 -5","harvest +12, Move Speed -5"
 data.item.item_shield_wood.name,木盾,Shield Wood
-data.item.item_shield_wood.desc,"闪避 +4%, 全局伤害 -3","Dodge +4%, Global Damage -3"
+data.item.item_shield_wood.desc,"闪避 +4%, 全局伤害 -2","Dodge +4%, Global Damage -2"
 data.item.item_beads_meditation.name,冥想念珠,Beads Meditation
-data.item.item_beads_meditation.desc,"生命回复 +1, 攻击速度 -4%","HP Regen +1, Attack Speed -4%"
+data.item.item_beads_meditation.desc,"生命回复 +1, 攻击速度 -2%","HP Regen +1, Attack Speed -2%"
 data.item.item_potion_strange.name,奇异药剂,Potion Strange
-data.item.item_potion_strange.desc,"全局伤害 +8, 最大生命 -5","Global Damage +8, Max HP -5"
+data.item.item_potion_strange.desc,"全局伤害 +8, 最大生命 -4","Global Damage +8, Max HP -4"
 data.item.item_bottle_empty.name,空瓶,Bottle Empty
-data.item.item_bottle_empty.desc,"攻击速度 +5%, 移动速度 +9, 护甲 -3","Attack Speed +5%, Move Speed +9, Armor -3"
+data.item.item_bottle_empty.desc,"攻击速度 +5%, 移动速度 +9, 护甲 -2","Attack Speed +5%, Move Speed +9, Armor -2"
 data.item.item_candle_ritual.name,仪式蜡烛,Candle Ritual
-data.item.item_candle_ritual.desc,"暴击率 +4%, 护甲 -2","Crit Chance +4%, Armor -2"
+data.item.item_candle_ritual.desc,"暴击率 +4%, 护甲 -1","Crit Chance +4%, Armor -1"
 data.item.item_boots_iron.name,铁靴,Boots Iron
-data.item.item_boots_iron.desc,"护甲 +4, 移动速度 -15","Armor +4, Move Speed -15"
+data.item.item_boots_iron.desc,"护甲 +4, 移动速度 -12","Armor +4, Move Speed -12"
 data.item.item_pope_robe.name,教皇长袍,Pope Robe
-data.item.item_pope_robe.desc,"护甲 +4, 最大生命 +8, 移动速度 -11","Armor +4, Max HP +8, Move Speed -11"
+data.item.item_pope_robe.desc,"护甲 +4, 最大生命 +8, 移动速度 -9","Armor +4, Max HP +8, Move Speed -9"
 data.item.item_magician_poker.name,魔术师扑克,Magician Poker
-data.item.item_magician_poker.desc,"暴击率 +8%, crit_multiplier_flat +0.1, 最大生命 -5","Crit Chance +8%, crit_multiplier_flat +0.1, Max HP -5"
+data.item.item_magician_poker.desc,"暴击率 +8%, crit_multiplier_flat +0.1, 最大生命 -4","Crit Chance +8%, crit_multiplier_flat +0.1, Max HP -4"
 data.item.item_chariot_wheel.name,战车之轮,Chariot Wheel
-data.item.item_chariot_wheel.desc,"移动速度 +26, 拾取范围 +18, 护甲 -2","Move Speed +26, Pickup Range +18, Armor -2"
+data.item.item_chariot_wheel.desc,"移动速度 +26, 拾取范围 +24, 护甲 -1","Move Speed +26, Pickup Range +24, Armor -1"
 data.item.item_priestess_mercy.name,女祭司慈悲,Priestess Mercy
-data.item.item_priestess_mercy.desc,"吸血 +2%, 生命回复 +2, 全局伤害 -5","Lifesteal +2%, HP Regen +2, Global Damage -5"
+data.item.item_priestess_mercy.desc,"吸血 +2.5%, 生命回复 +2, 全局伤害 -4","Lifesteal +2.5%, HP Regen +2, Global Damage -4"
 data.item.item_hermit_candle.name,隐者蜡烛,Hermit Candle
-data.item.item_hermit_candle.desc,"全局伤害 +16, 攻击速度 -8%","Global Damage +16, Attack Speed -8%"
+data.item.item_hermit_candle.desc,"全局伤害 +16, 攻击速度 -6%","Global Damage +16, Attack Speed -6%"
 data.item.item_piggy_bank.name,存钱罐,Piggy Bank
-data.item.item_piggy_bank.desc,"收获 +16, 全局伤害 -5","harvest +16, Global Damage -5"
+data.item.item_piggy_bank.desc,"收获 +19, 全局伤害 -4","harvest +19, Global Damage -4"
 data.item.item_merchant_scale.name,商人天平,Merchant Scale
-data.item.item_merchant_scale.desc,"收获 +20, 全局伤害 -8","harvest +20, Global Damage -8"
+data.item.item_merchant_scale.desc,"收获 +23, 全局伤害 -6","harvest +23, Global Damage -6"
 data.item.item_revenge_arrow.name,复仇箭,Revenge Arrow
-data.item.item_revenge_arrow.desc,"远程伤害 +5, 闪避 -4%","Ranged Damage +5, Dodge -4%"
+data.item.item_revenge_arrow.desc,"远程伤害 +5, 闪避 -3%","Ranged Damage +5, Dodge -3%"
 data.item.item_cursed_eye.name,诅咒之眼,Cursed Eye
-data.item.item_cursed_eye.desc,"全局伤害 +14, 攻击速度 +8%, 幸运 -18","Global Damage +14, Attack Speed +8%, Luck -18"
+data.item.item_cursed_eye.desc,"全局伤害 +14, 攻击速度 +8%, 幸运 -14","Global Damage +14, Attack Speed +8%, Luck -14"
 data.item.item_star_dust.name,星尘,Star Dust
-data.item.item_star_dust.desc,"经验获取 +15%, 幸运 +8, 全局伤害 -6","XP Gain +15%, Luck +8, Global Damage -6"
+data.item.item_star_dust.desc,"经验获取 +18%, 幸运 +8, 全局伤害 -5","XP Gain +18%, Luck +8, Global Damage -5"
 data.item.item_stake_tough.name,坚韧木桩,Stake Tough
-data.item.item_stake_tough.desc,"最大生命 +16, 移动速度 -11","Max HP +16, Move Speed -11"
+data.item.item_stake_tough.desc,"最大生命 +16, 移动速度 -9","Max HP +16, Move Speed -9"
 data.item.item_razor_sharp.name,锋利剃刀,Razor Sharp
-data.item.item_razor_sharp.desc,"近战伤害 +6, 攻击速度 +6%, 护甲 -4","Melee Damage +6, Attack Speed +6%, Armor -4"
+data.item.item_razor_sharp.desc,"近战伤害 +6, 攻击速度 +6%, 护甲 -3","Melee Damage +6, Attack Speed +6%, Armor -3"
 data.item.item_telescope.name,望远镜,Telescope
-data.item.item_telescope.desc,"索敌范围 +65, 远程伤害 +4, 闪避 -4%","Target Range +65, Ranged Damage +4, Dodge -4%"
+data.item.item_telescope.desc,"索敌范围 +72, 远程伤害 +4, 闪避 -3%","Target Range +72, Ranged Damage +4, Dodge -3%"
 data.item.item_watch_magnetic.name,磁力怀表,Watch Magnetic
-data.item.item_watch_magnetic.desc,"拾取范围 +80, 全局伤害 -7","Pickup Range +80, Global Damage -7"
+data.item.item_watch_magnetic.desc,"拾取范围 +92, 全局伤害 -5","Pickup Range +92, Global Damage -5"
 data.item.item_crown_thorn.name,荆棘王冠,Crown Thorn
-data.item.item_crown_thorn.desc,"全局伤害 +14, 最大生命 -12","Global Damage +14, Max HP -12"
+data.item.item_crown_thorn.desc,"全局伤害 +14, 最大生命 -10","Global Damage +14, Max HP -10"
 data.item.item_death_scythe.name,死神镰刀,Death Scythe
-data.item.item_death_scythe.desc,"暴击率 +12%, 生命回复 -5","Crit Chance +12%, HP Regen -5"
+data.item.item_death_scythe.desc,"暴击率 +12%, 生命回复 -4","Crit Chance +12%, HP Regen -4"
 data.item.item_wheel_fortune.name,命运之轮,Wheel Fortune
-data.item.item_wheel_fortune.desc,"幸运 +24, 护甲 -6","Luck +24, Armor -6"
+data.item.item_wheel_fortune.desc,"幸运 +28, 护甲 -5","Luck +28, Armor -5"
 data.item.item_inquisitor_chain.name,审判锁链,Inquisitor Chain
-data.item.item_inquisitor_chain.desc,"全局伤害 +22, 攻击速度 -8%","Global Damage +22, Attack Speed -8%"
+data.item.item_inquisitor_chain.desc,"全局伤害 +22, 攻击速度 -6%","Global Damage +22, Attack Speed -6%"
 data.item.item_temperance_sacrament.name,节制圣礼,Temperance Sacrament
-data.item.item_temperance_sacrament.desc,"生命回复 +5, 移动速度 -31","HP Regen +5, Move Speed -31"
+data.item.item_temperance_sacrament.desc,"生命回复 +5, 移动速度 -26","HP Regen +5, Move Speed -26"
 data.item.item_demon_contract.name,恶魔契约,Demon Contract
-data.item.item_demon_contract.desc,"全局伤害 +32, 收获 +16, 最大生命 -18","Global Damage +32, harvest +16, Max HP -18"
+data.item.item_demon_contract.desc,"全局伤害 +32, 收获 +16, 最大生命 -16","Global Damage +32, harvest +16, Max HP -16"
 data.item.item_alchemist_crucible.name,炼金坩埚,Alchemist Crucible
-data.item.item_alchemist_crucible.desc,"金币获取 +15%, attack_damage_flat +4, 护甲 -6","Gold Gain +15%, attack_damage_flat +4, Armor -6"
+data.item.item_alchemist_crucible.desc,"金币获取 +15%, attack_damage_flat +4, 护甲 -5","Gold Gain +15%, attack_damage_flat +4, Armor -5"
 data.item.item_moon_veil.name,月之面纱,Moon Veil
-data.item.item_moon_veil.desc,"闪避 +14%, 最大生命 -10","Dodge +14%, Max HP -10"
+data.item.item_moon_veil.desc,"闪避 +14%, 最大生命 -8","Dodge +14%, Max HP -8"
 data.item.item_justice_guillotine.name,正义断头台,Justice Guillotine
-data.item.item_justice_guillotine.desc,"全局伤害 +24, 护甲 -5","Global Damage +24, Armor -5"
+data.item.item_justice_guillotine.desc,"全局伤害 +24, 护甲 -4","Global Damage +24, Armor -4"
 data.item.item_world_tree_sapling.name,世界树幼苗,World Tree Sapling
-data.item.item_world_tree_sapling.desc,"最大生命 +38, 全局伤害 -18","Max HP +38, Global Damage -18"
+data.item.item_world_tree_sapling.desc,"最大生命 +42, 全局伤害 -16","Max HP +42, Global Damage -16"
 data.item.item_glutton_greed.name,贪食之欲,Glutton Greed
-data.item.item_glutton_greed.desc,"收获 +18, 闪避 -8%","harvest +18, Dodge -8%"
+data.item.item_glutton_greed.desc,"收获 +22, 闪避 -6%","harvest +22, Dodge -6%"
 data.item.item_emperor_throne.name,皇帝王座,Emperor Throne
-data.item.item_emperor_throne.desc,"全局伤害 +26, 攻击速度 +18%, 移动速度 -40","Global Damage +26, Attack Speed +18%, Move Speed -40"
+data.item.item_emperor_throne.desc,"全局伤害 +26, 攻击速度 +18%, 移动速度 -34","Global Damage +26, Attack Speed +18%, Move Speed -34"
 data.item.item_astronomy_orb.name,天文宝珠,Astronomy Orb
-data.item.item_astronomy_orb.desc,"幸运 +20, 收获 +18, 经验获取 +12%","Luck +20, harvest +18, XP Gain +12%"
+data.item.item_astronomy_orb.desc,"幸运 +24, 收获 +22, 经验获取 +15%","Luck +24, harvest +22, XP Gain +15%"
 data.item.item_fool_pocket.name,愚者口袋,Fool Pocket
-data.item.item_fool_pocket.desc,"攻击速度 +14%, 金币获取 +15%, 护甲 -4","Attack Speed +14%, Gold Gain +15%, Armor -4"
+data.item.item_fool_pocket.desc,"攻击速度 +14%, 金币获取 +15%, 护甲 -3","Attack Speed +14%, Gold Gain +15%, Armor -3"
 data.item.item_star_source.name,星辰源核,Star Source
-data.item.item_star_source.desc,"经验获取 +12%, 幸运 +14, 生命回复 +2","XP Gain +12%, Luck +14, HP Regen +2"
+data.item.item_star_source.desc,"经验获取 +16%, 幸运 +18, 生命回复 +3","XP Gain +16%, Luck +18, HP Regen +3"
 data.item.item_world_omni.name,世界全相,World Omni
-data.item.item_world_omni.desc,"最大生命 +12, 护甲 +5, 闪避 +5%, 暴击率 +5%, 幸运 +8, 收获 +8","Max HP +12, Armor +5, Dodge +5%, Crit Chance +5%, Luck +8, harvest +8"
+data.item.item_world_omni.desc,"最大生命 +16, 护甲 +5, 闪避 +5%, 暴击率 +5%, 幸运 +10, 收获 +10","Max HP +16, Armor +5, Dodge +5%, Crit Chance +5%, Luck +10, harvest +10"
 data.tarot.pageofcups.name,圣杯侍从,Page of Cups
 data.tarot.pageofcups.desc,最大生命 +4,Max HP +4
 data.tarot.knightofcups.name,圣杯骑士,Knight of Cups

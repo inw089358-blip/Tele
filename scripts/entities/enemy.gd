@@ -40,6 +40,7 @@ signal enemy_projectile_fired(
 @export var xp_drop_amount: int = 5
 @export var enemy_type: EnemyType = EnemyType.MELEE
 @export var is_elite: bool = false
+@export var contact_damage_override: int = 0
 
 var current_hp: int = max_hp
 var damage_reduction_ratio: float = 0.0
@@ -138,6 +139,16 @@ func get_display_name() -> String:
 func scale_outgoing_damage(base_damage: int) -> int:
     return max(1, int(round(float(max(1, base_damage)) * max(0.1, damage_multiplier))))
 
+func is_knockback_immune() -> bool:
+    return is_elite or _is_elite_enemy_type()
+
+func _is_elite_enemy_type() -> bool:
+    return (
+        enemy_type == EnemyType.ELITE_WARDEN
+        or enemy_type == EnemyType.ELITE_RIFT_CHARGER
+        or enemy_type == EnemyType.ELITE_CLOCKWORK_SEER
+    )
+
 func try_fire_projectile(
     direction: Vector2,
     speed: float,
@@ -177,6 +188,7 @@ func take_damage(amount: int) -> int:
     final_damage = max(1, final_damage)
 
     current_hp = max(0, current_hp - final_damage)
+    _play_hit_sfx()
     queue_redraw()
     if current_hp <= 0:
         _is_dead = true
@@ -193,16 +205,20 @@ func apply_knockback(direction: Vector2, strength: float, duration: float) -> vo
         return
     if direction.length_squared() <= 0.0001:
         return
-    var final_strength: float = strength
-    if is_elite or enemy_type == EnemyType.ELITE_WARDEN:
-        final_strength *= ELITE_KNOCKBACK_MULTIPLIER
-    var impulse: Vector2 = direction.normalized() * final_strength
+    if is_knockback_immune():
+        return
+    var impulse: Vector2 = direction.normalized() * strength
     if impulse.length_squared() >= _knockback_velocity.length_squared():
         _knockback_velocity = impulse
     _knockback_timer = max(_knockback_timer, duration)
     _knockback_duration = max(_knockback_duration, duration)
 
 func _apply_knockback_to_velocity(base_velocity: Vector2, delta: float) -> Vector2:
+    if is_knockback_immune():
+        _knockback_timer = 0.0
+        _knockback_duration = 0.0
+        _knockback_velocity = Vector2.ZERO
+        return base_velocity
     if _knockback_timer <= 0.0 or _knockback_velocity.length_squared() <= 0.0001:
         _knockback_timer = 0.0
         _knockback_duration = 0.0

@@ -91,7 +91,7 @@ ui.save_slot.title_save,保存进度,Save Slot
 ui.save_slot.hint_save,选择要覆盖的槽位,Select a slot to overwrite
 ui.save_slot.title_load,读取存档,Load Slot
 ui.save_slot.hint_load,选择要继续的槽位,Select a slot to continue
-ui.save_slot.slot_filled,槽位 %d  %s  第 %d 波,Slot %d  %s  WAVE %d
+ui.save_slot.slot_filled,槽位 %d  %s,Slot %d  %s
 ui.save_slot.slot_empty,槽位 %d  <空>,Slot %d  <Empty>
 ui.common.back,返回,Back
 ui.reward.placeholder,奖励占位界面：后续接入三选一卡牌。,Reward placeholder: integrate 3-choice cards later.
@@ -392,6 +392,10 @@ ui.shop.attr_dodge,闪避,Dodge
 ui.shop.attr_attack_speed,攻击速度,Attack Speed
 ui.shop.attr_crit,暴击率,Crit Chance
 ui.shop.attr_lifesteal,生命窃取,Lifesteal
+ui.shop.attr_pickup_range,拾取范围,Pickup Range
+ui.shop.attr_xp_gain,经验获取,XP Gain
+ui.shop.attr_gold_gain,金币获取,Gold Gain
+ui.shop.attr_stamina,体力,Stamina
 ui.shop.weapon_detail.damage,伤害,Damage
 ui.shop.weapon_detail.cooldown,冷却,Cooldown
 ui.shop.weapon_detail.range,范围,Range
@@ -408,3 +412,73 @@ You have unsaved changes. Leave without applying?,存在未应用的更改。确
 Continue Editing,继续编辑,Continue Editing
 Leave,离开,Leave
 Cancel,取消,Cancel
+ui.stat.hp,生命,HP
+ui.stat.stamina,体力,Stamina
+ui.stat.level,等级,Level
+ui.stat.xp,经验,XP
+ui.stat.gold,金币,Gold
+ui.stat.damage,伤害,Damage
+ui.stat.attack,攻击,Attack
+ui.stat.melee,近战伤害,Melee Damage
+ui.stat.ranged,远程伤害,Ranged Damage
+ui.stat.attack_speed,攻击速度,Attack Speed
+ui.stat.crit,暴击率,Crit Chance
+ui.stat.crit_damage,暴击伤害,Crit Damage
+ui.stat.armor,护甲,Armor
+ui.stat.dodge,闪避,Dodge
+ui.stat.move,移动速度,Move Speed
+ui.stat.range,范围,Range
+ui.stat.lifesteal,生命窃取,Lifesteal
+ui.stat.luck,幸运,Luck
+ui.stat.harvest,收获,Harvest
+ui.stat.max_hp,最大生命值,Max HP
+ui.stat.heal,治疗,Heal
+ui.stat.hp_regen,生命再生,HP Regen
+ui.stat.xp_gain,经验获取,XP Gain
+ui.stat.gold_gain,金币获取,Gold Gain
+ui.stat.stamina_regen,体力恢复,Stamina Regen
+ui.character_select.title,选择角色,Choose Character
+ui.character.the_fool,愚者,The Fool
+ui.character.the_sun,太阳,The Sun
+ui.character.the_chariot,战车,The Chariot
+ui.character_select.profile_title,战斗档案,Combat Profile
+ui.character_select.confirm,确认,Confirm
+ui.difficulty_select.title,出战准备,Run Preparation
+ui.difficulty_select.character_panel,角色,Character
+ui.difficulty_select.weapon_panel,初始武器,Starter Weapon
+ui.difficulty_select.danger_panel,危险等级,Danger Level
+ui.difficulty_select.start,开始战斗,Start Run
+ui.difficulty_select.character_ready,已选择角色，准备部署。,Selected Hero ready for deployment.
+ui.difficulty_select.unknown_weapon,未知武器,Unknown
+ui.difficulty_select.danger_name_fmt,危险 %d,Danger %d
+ui.difficulty_select.danger_0_desc,基础战斗压力。,Baseline combat pressure.
+ui.difficulty_select.danger_1_desc,标准战斗压力。,The standard run pressure.
+ui.difficulty_select.danger_2_desc,敌群开始逼近。,The swarm starts to close in.
+ui.difficulty_select.danger_3_desc,敌人更多，攻击更凶。,More bodies, sharper hits.
+ui.difficulty_select.danger_4_desc,高压路线。,High-pressure routing.
+ui.difficulty_select.danger_5_desc,持续不断的高密度战斗。,Relentless combat density.
+ui.difficulty_select.mod_fmt,%s %s,%s %s
+ui.difficulty_select.mod_enemy_hp,敌人生命,Enemy HP
+ui.difficulty_select.mod_enemy_count,敌人数量,Enemy Count
+ui.difficulty_select.mod_spawn_rate,刷新频率,Spawn Rate
+ui.difficulty_select.mod_enemy_damage,敌人伤害,Enemy Damage
+ui.difficulty_select.mod_enemy_speed,敌人速度,Enemy Speed
+ui.game_scene.reward_effect.damage_fmt,伤害 %s,Damage %s
+ui.game_scene.reward_effect.melee_fmt,近战伤害 %s,Melee Damage %s
+ui.game_scene.reward_effect.ranged_fmt,远程伤害 %s,Ranged Damage %s
+ui.game_scene.reward_effect.range_fmt,范围 %s,Range %s
+ui.game_scene.reward_effect.move_fmt,移动速度 %s,Move Speed %s
+ui.game_scene.reward_effect.max_hp_fmt,最大生命值 %s,Max HP %s
+ui.game_scene.reward_effect.heal_fmt,治疗 %s,Heal %s
+ui.game_scene.reward_effect.armor_fmt,护甲 %s,Armor %s
+ui.game_scene.reward_effect.dodge_fmt,闪避 %s,Dodge %s
+ui.game_scene.reward_effect.crit_fmt,暴击率 %s,Crit Chance %s
+ui.game_scene.reward_effect.crit_damage_fmt,暴击伤害 %s,Crit Damage %s
+ui.game_scene.reward_effect.lifesteal_fmt,生命窃取 %s,Lifesteal %s
+ui.game_scene.reward_effect.luck_fmt,幸运 %s,Luck %s
+ui.game_scene.reward_effect.harvest_fmt,收获 %s,Harvest %s
+ui.game_scene.reward_effect.hp_regen_fmt,生命再生 %s,HP Regen %s
+ui.game_scene.reward_effect.xp_gain_fmt,经验获取 %s,XP Gain %s
+ui.game_scene.reward_effect.gold_gain_fmt,金币获取 %s,Gold Gain %s
+ui.game_scene.reward_effect.stamina_regen_fmt,体力恢复 %s,Stamina Regen %s
+ui.game_scene.reward_effect.attack_speed_fmt,攻击速度 %s,Attack Speed %s

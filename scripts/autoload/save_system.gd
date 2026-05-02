@@ -35,14 +35,19 @@ const DEFAULT_SETTINGS: Dictionary = {
     }, 
     "system": {
         "language": "zh_CN", 
-        "show_boss_test_entry": true, 
+        "show_boss_test_entry": false,
     }, 
 }
 
 func load_save() -> Dictionary:
     var slot_data: Dictionary = load_from_slot(SLOT_IDS[0])
     if slot_data.is_empty():
-        return _default_save()
+        var fallback_save: Dictionary = _default_save()
+        var root: Dictionary = _load_slot_root()
+        var root_settings: Variant = root.get("settings", {})
+        if root_settings is Dictionary:
+            fallback_save["settings"] = _normalize_settings(root_settings)
+        return fallback_save
     return slot_data
 
 func write_save(data: Dictionary) -> void :
@@ -103,6 +108,7 @@ func save_to_slot(slot_id: String, data: Dictionary) -> void :
     var normalized: Dictionary = _normalize_save_data(data)
     slots[slot_id] = normalized
     root["slots"] = slots
+    root["settings"] = _normalize_settings(normalized.get("settings", {}))
     _write_slot_root(root)
 
     if slot_id == SLOT_IDS[0]:
@@ -152,7 +158,11 @@ func _read_json_dict(path: String) -> Dictionary:
 
 func _normalize_slot_root(raw_root: Dictionary) -> Dictionary:
     var slots: Dictionary = _extract_slots_dict(raw_root)
-    return {"slots": slots}
+    var normalized: Dictionary = {"slots": slots}
+    var settings_value: Variant = raw_root.get("settings", {})
+    if settings_value is Dictionary:
+        normalized["settings"] = _normalize_settings(settings_value)
+    return normalized
 
 func _extract_slots_dict(root: Dictionary) -> Dictionary:
     var slots_value: Variant = root.get("slots", {})

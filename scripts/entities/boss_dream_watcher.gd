@@ -103,7 +103,7 @@ func _tick_phase_one() -> void :
     var to_player: Vector2 = (_target.global_position - global_position).normalized()
     if _skill_timers["p1_beam"] <= 0.0:
         _skill_timers["p1_beam"] = float(_boss_config.get("p1_beam_cd", 2.4))
-        try_fire_projectile(to_player, 430.0, 14, 6.0, 4.2, Color(1.0, 0.25, 0.22, 1.0))
+        try_fire_projectile(to_player, 430.0, int(_boss_config.get("p1_beam_damage", 4)), 6.0, 4.2, Color(1.0, 0.25, 0.22, 1.0))
     if _skill_timers["p1_gaze"] <= 0.0:
         _skill_timers["p1_gaze"] = float(_boss_config.get("p1_gaze_cd", 5.5))
         _schedule_gaze_strike()
@@ -117,7 +117,7 @@ func _tick_phase_two() -> void :
         _skill_timers["p2_sweep"] = float(_boss_config.get("p2_sweep_cd", 3.0))
         var arc_step: float = deg_to_rad(10.0)
         for i: int in range( - 2, 3):
-            try_fire_projectile(to_player.rotated(arc_step * float(i)), 290.0, 12, 5.0, 3.8, Color(1.0, 0.38, 0.2, 1.0))
+            try_fire_projectile(to_player.rotated(arc_step * float(i)), 290.0, int(_boss_config.get("p2_sweep_damage", 4)), 5.0, 3.8, Color(1.0, 0.38, 0.2, 1.0))
     if _skill_timers["p2_scan"] <= 0.0:
         _skill_timers["p2_scan"] = float(_boss_config.get("p2_scan_cd", 6.5))
         _schedule_scan_line()
@@ -127,7 +127,7 @@ func _tick_phase_two() -> void :
         for i: int in range(tracking_count):
             var offset_center: float = float(i) - (float(tracking_count) / 2.0)
             var offset: float = deg_to_rad(offset_center * 7.0)
-            try_fire_projectile(to_player.rotated(offset), 320.0, 13, 5.0, 4.0, Color(1.0, 0.62, 0.28, 1.0))
+            try_fire_projectile(to_player.rotated(offset), 320.0, int(_boss_config.get("p2_tracking_damage", 4)), 5.0, 4.0, Color(1.0, 0.62, 0.28, 1.0))
     if _skill_timers["p2_summon"] <= 0.0:
         _skill_timers["p2_summon"] = float(_boss_config.get("p2_summon_interval", 35.0))
         summon_requested.emit(int(_boss_config.get("p2_summon_count", 3)))
@@ -138,12 +138,12 @@ func _tick_phase_three() -> void :
         _skill_timers["p3_laser"] = float(_boss_config.get("p3_death_laser_interval", 10.0))
         var scan_step: float = deg_to_rad(8.0)
         for i: int in range( - 3, 4):
-            try_fire_projectile(to_player.rotated(scan_step * float(i)), 390.0, 18, 6.0, 4.4, Color(1.0, 0.16, 0.16, 1.0))
+            try_fire_projectile(to_player.rotated(scan_step * float(i)), 390.0, int(_boss_config.get("p3_laser_damage", 5)), 6.0, 4.4, Color(1.0, 0.16, 0.16, 1.0))
     if _skill_timers["p3_storm"] <= 0.0:
         _skill_timers["p3_storm"] = float(_boss_config.get("p3_storm_interval", 7.0))
         for i: int in range(6):
             var storm_dir: Vector2 = Vector2.RIGHT.rotated(float(i) * TAU / 6.0 + randf_range(-0.18, 0.18))
-            try_fire_projectile(storm_dir, 255.0, 10, 4.0, 3.2, Color(1.0, 0.5, 0.2, 1.0))
+            try_fire_projectile(storm_dir, 255.0, int(_boss_config.get("p3_storm_damage", 3)), 4.0, 3.2, Color(1.0, 0.5, 0.2, 1.0))
     if _skill_timers["p3_collapse"] <= 0.0:
         _skill_timers["p3_collapse"] = float(_boss_config.get("p3_collapse_cd", 8.0))
         _schedule_dream_collapse()
@@ -153,7 +153,7 @@ func _tick_phase_three() -> void :
         _skill_timers["p3_despair"] = float(_boss_config.get("p3_despair_interval", 12.0))
         for i: int in range(10):
             var pulse_dir: Vector2 = Vector2.RIGHT.rotated(float(i) * TAU / 10.0)
-            try_fire_projectile(pulse_dir, 275.0, 9, 4.5, 3.5, Color(1.0, 0.3, 0.3, 1.0))
+            try_fire_projectile(pulse_dir, 275.0, int(_boss_config.get("p3_despair_damage", 3)), 4.5, 3.5, Color(1.0, 0.3, 0.3, 1.0))
 
 func _schedule_gaze_strike() -> void:
     if _target == null:

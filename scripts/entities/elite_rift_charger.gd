@@ -132,6 +132,9 @@ func _fire_shock_ring() -> void:
 func get_display_name() -> String:
     return "Elite Rift Charger"
 
+func is_knockback_immune() -> bool:
+    return _rift_state == RiftState.CHARGE or super.is_knockback_immune()
+
 func _draw() -> void:
     if not _visual_has_sprite:
         draw_circle(Vector2.ZERO, body_radius + 6.0, Color(0.16, 0.02, 0.01, 0.96))

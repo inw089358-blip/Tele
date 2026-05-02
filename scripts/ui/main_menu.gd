@@ -128,9 +128,7 @@ func _set_menu_enabled(enabled: bool) -> void :
     quit_button.disabled = not enabled
 
 func _apply_test_entry_visibility() -> void :
-    var settings: Dictionary = SaveSystem.get_settings()
-    var system_settings: Dictionary = settings.get("system", {})
-    boss_test_button.visible = bool(system_settings.get("show_boss_test_entry", true))
+    boss_test_button.visible = false
     _refresh_menu_panel_height()
 
 func _refresh_menu_panel_height() -> void :

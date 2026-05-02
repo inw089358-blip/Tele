@@ -1,6 +1,8 @@
 extends Node
 
 const SFX_POOL_SIZE: int = 8
+const BUS_MASTER: StringName = &"Master"
+const BUS_SFX: StringName = &"SFX"
 const BGM_MENU_PATH: String = "res://audio/CRT_Transformer.mp3"
 const BGM_PREPARE_PATH: String = "res://audio/Velvet_Hexagon.mp3"
 const BGM_COMBAT_PATH: String = "res://audio/Factory_Synapse.mp3"
@@ -18,13 +20,14 @@ var _last_ui_select_sfx_msec: int = -1000
 
 func _ready() -> void :
     process_mode = Node.PROCESS_MODE_ALWAYS
+    _ensure_audio_bus(BUS_SFX, BUS_MASTER)
     _bgm_player = AudioStreamPlayer.new()
-    _bgm_player.bus = &"Master"
+    _bgm_player.bus = BUS_MASTER
     add_child(_bgm_player)
 
     for i in SFX_POOL_SIZE:
         var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
-        sfx_player.bus = &"Master"
+        sfx_player.bus = BUS_SFX
         add_child(sfx_player)
         _sfx_players.append(sfx_player)
 
@@ -106,6 +109,15 @@ func _get_available_sfx_player() -> AudioStreamPlayer:
         if not player.playing:
             return player
     return _sfx_players[0]
+
+func _ensure_audio_bus(bus_name: StringName, send_bus_name: StringName) -> void:
+    if AudioServer.get_bus_index(bus_name) >= 0:
+        return
+    AudioServer.add_bus(AudioServer.bus_count)
+    var bus_index: int = AudioServer.bus_count - 1
+    AudioServer.set_bus_name(bus_index, bus_name)
+    if AudioServer.get_bus_index(send_bus_name) >= 0:
+        AudioServer.set_bus_send(bus_index, send_bus_name)
 
 func _ensure_stream_loop(stream: AudioStream) -> void :
     if stream is AudioStreamMP3:
